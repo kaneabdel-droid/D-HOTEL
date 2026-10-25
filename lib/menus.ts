@@ -98,10 +98,15 @@ export const SECTIONS_MENUS: MenuItem[] = [
   },
   {
     id: "personnel",
-    titre: "Personnel & Planning",
+    titre: "Personnel & RH",
     icone: "UserCheck",
     items: [
       { titre: "Planning des Quarts (Shifts)", href: "/personnel" },
+      { titre: "Salariés & Prestataires", href: "/personnel/salaries" },
+      { titre: "Contrats & Conventions", href: "/personnel/contrats" },
+      { titre: "Pointage & Présences", href: "/personnel/pointage" },
+      { titre: "Bulletins & Paie", href: "/personnel/paie" },
+      { titre: "Cotisations & Impôts", href: "/personnel/cotisations" },
       { titre: "Tronc des Pourboires", href: "/personnel/pourboires" },
     ],
   },
