@@ -19,6 +19,7 @@ import {
   Layers,
 } from "lucide-react";
 import { formatXOF } from "@/lib/utils";
+import { genererFactureFolioPdf } from "@/lib/pdf/facture-pdf";
 
 interface LigneDepense {
   designation: string;
@@ -417,11 +418,30 @@ export default function FacturesFoliosPage() {
                 Fermer
               </button>
               <button
-                onClick={() => window.print()}
+                onClick={async () => {
+                  await genererFactureFolioPdf({
+                    numeroFacture: factureSelectionnee.numeroFacture,
+                    client: factureSelectionnee.client,
+                    chambre: factureSelectionnee.chambre,
+                    dates: factureSelectionnee.dates,
+                    nuits: factureSelectionnee.nuits,
+                    totalHebergement: factureSelectionnee.totalHebergement,
+                    totalRestauration: factureSelectionnee.totalRestauration,
+                    totalExtras: factureSelectionnee.totalExtras,
+                    taxeSejour: factureSelectionnee.taxeSejour,
+                    totalTTC: factureSelectionnee.totalTTC,
+                    totalRegle: factureSelectionnee.totalRegle,
+                    soldeDu: factureSelectionnee.soldeDu,
+                    modeReglement: factureSelectionnee.modeReglement,
+                    lignes: factureSelectionnee.lignes,
+                  });
+                  setSuccesMsg(`Facture officielle ${factureSelectionnee.numeroFacture} téléchargée avec succès (Format PDF A4 haute définition).`);
+                  setTimeout(() => setSuccesMsg(null), 4000);
+                }}
                 className="px-4 py-2 text-sm font-bold rounded-lg bg-[var(--primary)] text-[var(--primary-foreground)] shadow-sm hover:opacity-95 flex items-center gap-2"
               >
                 <Printer className="w-4 h-4" />
-                Imprimer la Facture A4
+                Télécharger la Facture A4 (PDF)
               </button>
             </div>
           </div>

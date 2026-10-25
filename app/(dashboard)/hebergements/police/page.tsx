@@ -17,6 +17,7 @@ import {
   AlertCircle,
   Building,
 } from "lucide-react";
+import { genererFichePolicePdf } from "@/lib/pdf/police-pdf";
 
 interface FichePolice {
   id: string;
@@ -159,7 +160,33 @@ export default function FichesPolicePage() {
   });
 
   const handleImprimerFiche = () => {
-    window.print();
+    if (ficheSelectionnee) {
+      genererFichePolicePdf({
+        ficheNumero: ficheSelectionnee.ficheNumero,
+        nom: ficheSelectionnee.nom,
+        prenom: ficheSelectionnee.prenom,
+        sexe: ficheSelectionnee.sexe,
+        dateNaissance: ficheSelectionnee.dateNaissance,
+        lieuNaissance: ficheSelectionnee.lieuNaissance,
+        nationalite: ficheSelectionnee.nationalite,
+        profession: ficheSelectionnee.profession,
+        domicileHabituel: ficheSelectionnee.domicileHabituel,
+        typePiece: ficheSelectionnee.typePiece,
+        numeroPiece: ficheSelectionnee.numeroPiece,
+        dateDelivrance: ficheSelectionnee.dateDelivrance,
+        lieuDelivrance: ficheSelectionnee.lieuDelivrance,
+        provenance: ficheSelectionnee.provenance,
+        destination: ficheSelectionnee.destination,
+        motifSejour: ficheSelectionnee.motifSejour,
+        chambre: ficheSelectionnee.chambre,
+        dateArrivee: ficheSelectionnee.dateArrivee,
+        dateDepartPrevue: ficheSelectionnee.dateDepartPrevue,
+      });
+      setSuccesMsg(`Fiche individuelle de police ${ficheSelectionnee.ficheNumero} téléchargée avec succès (PDF A4 Officiel).`);
+      setTimeout(() => setSuccesMsg(null), 4000);
+    } else {
+      window.print();
+    }
   };
 
   const handleExportRegistre = () => {
