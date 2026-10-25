@@ -95,10 +95,11 @@ export function genererBulletinPaiePdf(
   doc.text(`Jours travaillés : ${bulletin.joursTravailles} / ${bulletin.joursOuvresMois} j`, 85, 56);
 
   // Colonne 3
+  // Colonne 3
   doc.text(`Heures normales : ${bulletin.heuresNormales} h`, 150, 42);
   doc.text(`Heures supp. : ${bulletin.heuresSupp} h`, 150, 47);
-  doc.text(`Taux horaire : ${formatMontantPdf(bulletin.tauxHoraire)} F`, 150, 52);
-  doc.text(`Devise : FCFA (XOF)`, 150, 56);
+  doc.text(`Taux horaire : ${formatMontantPdf(bulletin.tauxHoraire, bulletin.devise)} ${bulletin.symboleDevise}`, 150, 52);
+  doc.text(`Devise : ${bulletin.symboleDevise} (${bulletin.devise})`, 150, 56);
 
   // 3. Corps du Bulletin (Tableau des rubriques avec autotable)
   const bodyRows: (string | { content: string; colSpan?: number; styles?: object })[][] = [];
@@ -106,8 +107,8 @@ export function genererBulletinPaiePdf(
   const typesOrdre: { key: "gain" | "retenue_absence" | "retenue_salariale" | "charge_patronale"; titre: string; bg: [number, number, number] }[] = [
     { key: "gain", titre: "1. GAINS & INDEMNITÉS IMPOSABLES ET EXONÉRÉES", bg: [241, 245, 249] },
     { key: "retenue_absence", titre: "2. DÉDUCTIONS TEMPS DE TRAVAIL & ABSENCES", bg: [254, 242, 242] },
-    { key: "retenue_salariale", titre: "3. RETENUES SALARIALES & COTISATIONS (IPRES, IPM, IMPÔTS)", bg: [243, 244, 246] },
-    { key: "charge_patronale", titre: "4. COTISATIONS PATRONALES (IPRES, CSS, CFCE, IPM - POUR INFORMATION)", bg: [238, 242, 255] },
+    { key: "retenue_salariale", titre: "3. RETENUES SALARIALES & COTISATIONS (ORGANISMES SOCIAUX & IMPÔTS)", bg: [243, 244, 246] },
+    { key: "charge_patronale", titre: "4. COTISATIONS PATRONALES (CHARGES DE L'EMPLOYEUR)", bg: [238, 242, 255] },
   ];
 
   for (const group of typesOrdre) {
@@ -125,17 +126,17 @@ export function genererBulletinPaiePdf(
     for (const ligne of lignesGroup) {
       bodyRows.push([
         ligne.libelle,
-        ligne.base > 0 ? formatMontantPdf(ligne.base) : "—",
+        ligne.base > 0 ? formatMontantPdf(ligne.base, bulletin.devise) : "—",
         ligne.taux != null ? `${ligne.taux} %` : "—",
-        ligne.montantSalarial !== 0 ? formatMontantPdf(ligne.montantSalarial) : "—",
-        ligne.montantPatronal != null && ligne.montantPatronal > 0 ? formatMontantPdf(ligne.montantPatronal) : "—",
+        ligne.montantSalarial !== 0 ? formatMontantPdf(ligne.montantSalarial, bulletin.devise) : "—",
+        ligne.montantPatronal != null && ligne.montantPatronal > 0 ? formatMontantPdf(ligne.montantPatronal, bulletin.devise) : "—",
       ]);
     }
   }
 
   autoTable(doc, {
     startY: 63,
-    head: [["Rubrique / Désignation", "Base (FCFA)", "Taux", "Part Salariale", "Part Patronale"]],
+    head: [[`Rubrique / Désignation`, `Base (${bulletin.symboleDevise})`, "Taux", "Part Salariale", "Part Patronale"]],
     body: bodyRows,
     styles: {
       fontSize: 8,
@@ -170,13 +171,13 @@ export function genererBulletinPaiePdf(
     head: [["Salaire Brut Total", "Total Retenues Salariales", "NET À PAYER SALARIÉ", "Coût Total Employeur"]],
     body: [
       [
-        `${formatMontantPdf(bulletin.salaireBrutTotal)} FCFA`,
-        `${formatMontantPdf(bulletin.totalRetenuesSalariales)} FCFA`,
+        `${formatMontantPdf(bulletin.salaireBrutTotal, bulletin.devise)} ${bulletin.symboleDevise}`,
+        `${formatMontantPdf(bulletin.totalRetenuesSalariales, bulletin.devise)} ${bulletin.symboleDevise}`,
         {
-          content: `${formatMontantPdf(bulletin.netAPayer)} FCFA`,
+          content: `${formatMontantPdf(bulletin.netAPayer, bulletin.devise)} ${bulletin.symboleDevise}`,
           styles: { fontStyle: "bold", fontSize: 11, textColor: [15, 27, 43], fillColor: [254, 243, 199] },
         },
-        `${formatMontantPdf(bulletin.coutTotalEmployeur)} FCFA`,
+        `${formatMontantPdf(bulletin.coutTotalEmployeur, bulletin.devise)} ${bulletin.symboleDevise}`,
       ],
     ],
     styles: { fontSize: 8.5, halign: "center", cellPadding: 2.5 },

@@ -1,14 +1,17 @@
 // Devise de référence et formatage multi-devises pour D-HOTEL
 // Conforme au standard DembaSolution
 
-export type DeviseCode = 'XOF' | 'XAF' | 'MRU' | 'MAD' | 'GNF' | 'EUR' | 'USD' | 'AUCUNE';
+export type DeviseCode = 'XOF' | 'XAF' | 'MRU' | 'MAD' | 'GNF' | 'NGN' | 'GMD' | 'GHS' | 'EUR' | 'USD' | 'AUCUNE';
 
 export const DEVISES: Record<DeviseCode, { label: string; symbole: string; decimales: number }> = {
   XOF: { label: 'Franc CFA — BCEAO (XOF)', symbole: 'FCFA', decimales: 0 },
   XAF: { label: 'Franc CFA — BEAC (XAF)', symbole: 'FCFA', decimales: 0 },
   MRU: { label: 'Ouguiya mauritanien (MRU)', symbole: 'MRU', decimales: 2 },
-  MAD: { label: 'Dirham marocain (MAD)', symbole: 'MAD', decimales: 2 },
+  MAD: { label: 'Dirham marocain (MAD)', symbole: 'DH', decimales: 2 },
   GNF: { label: 'Franc guinéen (GNF)', symbole: 'GNF', decimales: 0 },
+  NGN: { label: 'Naira nigérian (NGN)', symbole: '₦', decimales: 2 },
+  GMD: { label: 'Dalasi gambien (GMD)', symbole: 'D', decimales: 2 },
+  GHS: { label: 'Cedi ghanéen (GHS)', symbole: 'GH₵', decimales: 2 },
   EUR: { label: 'Euro (EUR)', symbole: '€', decimales: 2 },
   USD: { label: 'Dollar US (USD)', symbole: '$', decimales: 2 },
   AUCUNE: { label: 'Sans unité (autre pays)', symbole: '', decimales: 2 },

@@ -107,6 +107,7 @@ export const SECTIONS_MENUS: MenuItem[] = [
       { titre: "Pointage & Présences", href: "/personnel/pointage" },
       { titre: "Bulletins & Paie", href: "/personnel/paie" },
       { titre: "Cotisations & Impôts", href: "/personnel/cotisations" },
+      { titre: "Paramètres RH & Législations", href: "/personnel/parametres" },
       { titre: "Tronc des Pourboires", href: "/personnel/pourboires" },
     ],
   },
