@@ -1,0 +1,17 @@
+{
+  "name": "D-HOTEL — Gestion Hôtelière, Résidences & Resorts",
+  "short_name": "D-HOTEL",
+  "description": "Plateforme intégrée de gestion hôtelière (PMS, POS Restauration & Bar, MICE, Housekeeping & Comptabilité SYSCOHADA) avec autonomie hors-ligne",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0F1B2B",
+  "theme_color": "#D4AF37",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

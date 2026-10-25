@@ -1,0 +1,140 @@
+@import "tailwindcss";
+
+/*
+  D-HOTEL Design System :
+  Identité hôtelière haut de gamme, Shell façon Slack.
+  3 Thèmes intégrés :
+  1. Palace & Teranga (Défaut : Lin, or champagne & bleu saphir profond)
+  2. Oasis & Eco-Lodge (Sable chaud, bois flotté & vert canopée)
+  3. Midnight Luxury (Sombre : Noir obsidienne, titane & or impérial éclatant)
+*/
+
+:root {
+  color-scheme: light;
+
+  --background: #FAF8F5;
+  --surface: #FFFFFF;
+  --surface-border: #E8DFD3;
+  --surface-muted: #F4EFEB;
+  --foreground: #1A1714;
+  --foreground-muted: #6B6359;
+
+  --sidebar: #0F1B2B;
+  --sidebar-foreground: #F2F5F8;
+  --sidebar-muted: #8E9EAF;
+  --sidebar-border: rgba(255, 255, 255, 0.08);
+  --sidebar-hover: rgba(255, 255, 255, 0.06);
+  --sidebar-actif: #D4AF37;
+  --sidebar-actif-foreground: #120F05;
+
+  --primary: #9E2A2B;
+  --primary-hover: #822223;
+  --primary-foreground: #FFFFFF;
+  --primary-soft: #F9EBEB;
+  --accent: #D4AF37;
+  --accent-soft: #FAF4DE;
+
+  --status-clean: #10B981;
+  --status-occupied: #3B82F6;
+  --status-cleaning: #F59E0B;
+  --status-maintenance: #EF4444;
+  --status-reserved: #8B5CF6;
+
+  --danger: #DC2626;
+  --success: #16A34A;
+  --warning: #D97706;
+  --info: #2563EB;
+}
+
+.theme-oasis {
+  color-scheme: light;
+
+  --background: #F6F3ED;
+  --surface: #FFFFFF;
+  --surface-border: #E2DBD0;
+  --surface-muted: #EFE9E0;
+  --foreground: #142018;
+  --foreground-muted: #57655B;
+
+  --sidebar: #132B1E;
+  --sidebar-foreground: #E9F1EB;
+  --sidebar-muted: #8DA997;
+  --sidebar-border: rgba(255, 255, 255, 0.08);
+  --sidebar-hover: rgba(255, 255, 255, 0.06);
+  --sidebar-actif: #2E8B67;
+  --sidebar-actif-foreground: #FFFFFF;
+
+  --primary: #2E8B67;
+  --primary-hover: #246F52;
+  --primary-foreground: #FFFFFF;
+  --primary-soft: #E3F2EC;
+  --accent: #A27546;
+  --accent-soft: #F6EEE6;
+}
+
+.theme-midnight {
+  color-scheme: dark;
+
+  --background: #0A0E14;
+  --surface: #141B26;
+  --surface-border: #232D3F;
+  --surface-muted: #1A2332;
+  --foreground: #F0F4F8;
+  --foreground-muted: #94A3B8;
+
+  --sidebar: #070A0F;
+  --sidebar-foreground: #E2E8F0;
+  --sidebar-muted: #64748B;
+  --sidebar-border: rgba(255, 255, 255, 0.06);
+  --sidebar-hover: rgba(255, 255, 255, 0.05);
+  --sidebar-actif: #E6B93F;
+  --sidebar-actif-foreground: #0B0E14;
+
+  --primary: #E6B93F;
+  --primary-hover: #C99E2E;
+  --primary-foreground: #0B0E14;
+  --primary-soft: #2E2512;
+  --accent: #38BDF8;
+  --accent-soft: #0E2938;
+
+  --status-clean: #34D399;
+  --status-occupied: #60A5FA;
+  --status-cleaning: #FBBF24;
+  --status-maintenance: #F87171;
+  --status-reserved: #A78BFA;
+
+  --danger: #F87171;
+  --success: #4ADE80;
+  --warning: #FBBF24;
+  --info: #60A5FA;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  overflow-x: hidden;
+}
+
+/* Glassmorphism subtil pour cartes de prestige */
+.glass-card {
+  background: var(--surface);
+  border: 1px solid var(--surface-border);
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.04);
+}
+
+/* Scrollbar soignée */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--surface-border);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--foreground-muted);
+}
