@@ -30,6 +30,7 @@ import { SECTIONS_MENUS, type MenuItem, type SousMenuItem } from "@/lib/menus";
 import { ThemeSwitcher } from "@/components/ThemeSwitcher";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { cn } from "@/lib/utils";
+import { warmAppOfflineCache } from "@/lib/offline/warmer";
 
 const ICONES: Record<string, any> = {
   LayoutDashboard,
@@ -73,6 +74,30 @@ export function AppShell({
   });
   const [searchModalOuvert, setSearchModalOuvert] = useState(false);
   const [recherche, setRecherche] = useState("");
+
+  useEffect(() => {
+    document.cookie = 'demba_offline_active=1; path=/; max-age=2592000; SameSite=Lax';
+
+    if (typeof navigator !== 'undefined' && navigator.serviceWorker?.controller) {
+      navigator.serviceWorker.controller.postMessage({ type: 'SET_OFFLINE_SESSION', active: true });
+    }
+
+    if (typeof navigator !== 'undefined' && navigator.onLine) {
+      const routesToWarm = [
+        '/',
+        '/hebergements',
+        '/restauration',
+        '/clients',
+        '/tresorerie',
+        '/economat',
+        '/personnel',
+        '/evenements',
+        '/loisirs',
+        '/gouvernance',
+      ];
+      warmAppOfflineCache(routesToWarm, 'demba-offline-dhotel-v4');
+    }
+  }, []);
 
   // Raccourci Ctrl+K / Cmd+K
   useEffect(() => {

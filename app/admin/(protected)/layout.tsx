@@ -68,14 +68,12 @@ export default async function AdminProtectedLayout({
 
         <div className="p-4 border-t border-slate-800 space-y-2">
           <a
-            href="https://dembasolution.com/admin"
-            target="_blank"
-            rel="noopener noreferrer"
+            href="https://siggie.dembasolution.com/admin"
             className="flex items-center justify-between px-3.5 py-2 rounded-lg text-xs font-medium text-slate-400 hover:text-white hover:bg-slate-800/50 transition-colors"
           >
             <span className="flex items-center gap-2">
-              <Building2 className="w-3.5 h-3.5" />
-              Portail DEMBA Admin
+              <Building2 className="w-3.5 h-3.5 text-blue-400" />
+              Hub DEMBA Central
             </span>
             <ExternalLink className="w-3 h-3" />
           </a>

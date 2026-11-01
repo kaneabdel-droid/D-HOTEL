@@ -2,46 +2,67 @@
 
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
+import { createAdminIdentityClient } from '@/utils/supabase/admin-identity'
+import { isAdminEmail } from '@/lib/admin/auth'
 
 export async function adminLogin(formData: FormData) {
   const email = (formData.get('email') as string || '').trim().toLowerCase()
   const password = (formData.get('password') as string || '').trim()
 
-  const allowedEmails = (process.env.ADMIN_EMAILS || 'admin@dembasolution.com,superadmin@dembasolution.com,kaneabdel@gmail.com')
-    .split(',')
-    .map(e => e.trim().toLowerCase())
-
-  // Validation
-  const isValidEmail = allowedEmails.includes(email) || email.endsWith('@dembasolution.com')
-  const isValidPass = password.length >= 6 // Master / Admin check
-
-  if (!isValidEmail || !isValidPass) {
-    return { error: 'Identifiants SuperAdmin incorrects ou non autorisés.' }
+  if (!email || !password) {
+    return { error: 'Veuillez renseigner votre email et mot de passe.' }
   }
 
-  const cookieStore = await cookies()
-  cookieStore.set('d_hotel_admin_session', 'authenticated_' + Date.now(), {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    maxAge: 60 * 60 * 24 * 7, // 7 jours
-    path: '/',
-  })
-  cookieStore.set('d_hotel_admin_email', email, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    maxAge: 60 * 60 * 24 * 7,
-    path: '/',
-  })
+  // 1. Connexion via le service d'identité SuperAdmin partagé (SSO DembaSolution)
+  try {
+    const supabase = await createAdminIdentityClient()
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password })
 
-  redirect('/admin')
+    if (!error && data.user) {
+      if (!isAdminEmail(data.user.email)) {
+        await supabase.auth.signOut()
+        return { error: "Ce compte n'est pas autorisé pour l'espace SuperAdmin." }
+      }
+      redirect('/admin')
+    }
+  } catch (err: any) {
+    if (err?.digest?.startsWith?.('NEXT_REDIRECT')) throw err
+    console.error('Erreur authentification SSO:', err)
+  }
+
+  // 2. Repli de secours pour environnement local / email autorisé
+  if (isAdminEmail(email) && password.length >= 6) {
+    const cookieStore = await cookies()
+    cookieStore.set('d_hotel_admin_session', 'authenticated_' + Date.now(), {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 60 * 60 * 24 * 7,
+      path: '/',
+    })
+    cookieStore.set('d_hotel_admin_email', email, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 60 * 60 * 24 * 7,
+      path: '/',
+    })
+    redirect('/admin')
+  }
+
+  return { error: 'Identifiants SuperAdmin incorrects ou non autorisés.' }
 }
 
 export async function adminLogout() {
+  try {
+    const supabase = await createAdminIdentityClient()
+    await supabase.auth.signOut()
+  } catch {}
+
   const cookieStore = await cookies()
   cookieStore.delete('d_hotel_admin_session')
   cookieStore.delete('d_hotel_admin_email')
+  cookieStore.delete('sb-demba-admin')
+
   redirect('/admin/login')
 }
-
