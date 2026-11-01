@@ -44,3 +44,4 @@ export async function adminLogout() {
   cookieStore.delete('d_hotel_admin_email')
   redirect('/admin/login')
 }
+

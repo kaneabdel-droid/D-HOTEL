@@ -7,3 +7,4 @@ export async function GET() {
   cookieStore.delete('d_hotel_admin_email')
   redirect('/admin/login')
 }
+
