@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { formatMontant, DeviseCode } from "@/lib/currency";
 import { MODELES_PAYS, CodePays } from "@/lib/rh";
+import ImportJournauxModal from "./ImportJournauxModal";
 
 interface EcritureComptableMultiPays {
   id: string;
@@ -35,6 +36,7 @@ export default function ComptabiliteMultiPaysPage() {
   const [recherche, setRecherche] = useState("");
   const [filtreJournal, setFiltreJournal] = useState("tous");
   const [succesMsg, setSuccesMsg] = useState<string | null>(null);
+  const [ecrituresImportees, setEcrituresImportees] = useState<EcritureComptableMultiPays[]>([]);
 
   const modele = MODELES_PAYS[paysCompta];
 
@@ -113,7 +115,34 @@ export default function ComptabiliteMultiPaysPage() {
     ],
   };
 
-  const ecrituresActuelles = ecrituresParPays[paysCompta] || ecrituresParPays.SN;
+  const ecrituresActuelles = [...(ecrituresParPays[paysCompta] || ecrituresParPays.SN), ...ecrituresImportees];
+
+  const handleImportSuccess = (importedRows: any[]) => {
+    const newEcritures: EcritureComptableMultiPays[] = importedRows.map((r, idx) => ({
+      id: `imp-${Date.now()}-${idx}`,
+      date: r.date,
+      journal: (['VTE', 'PAIE', 'BQE', 'CAI', 'ACH'].includes(r.journal?.toUpperCase())
+        ? r.journal.toUpperCase()
+        : r.journal?.toLowerCase() === 'ventes'
+        ? 'VTE'
+        : r.journal?.toLowerCase() === 'achats'
+        ? 'ACH'
+        : r.journal?.toLowerCase() === 'caisse'
+        ? 'CAI'
+        : r.journal?.toLowerCase() === 'banque'
+        ? 'BQE'
+        : 'VTE') as any,
+      compte: r.compte,
+      libelleCompte: r.libelle,
+      libelleEcriture: r.libelle,
+      pieceRef: r.piece || 'IMP-EXT',
+      debit: Number(r.debit) || 0,
+      credit: Number(r.credit) || 0,
+    }));
+    setEcrituresImportees((prev) => [...prev, ...newEcritures]);
+    setSuccesMsg(`${importedRows.length} ligne(s) d'écriture(s) importée(s) et intégrée(s) au Grand-Livre avec succès !`);
+    setTimeout(() => setSuccesMsg(null), 4000);
+  };
 
   const totalDebit = ecrituresActuelles.reduce((acc, e) => acc + e.debit, 0);
   const totalCredit = ecrituresActuelles.reduce((acc, e) => acc + e.credit, 0);
@@ -151,7 +180,8 @@ export default function ComptabiliteMultiPaysPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
+          <ImportJournauxModal onImportSuccess={handleImportSuccess} />
           <button
             onClick={handleExportCompta}
             className="flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm transition"
