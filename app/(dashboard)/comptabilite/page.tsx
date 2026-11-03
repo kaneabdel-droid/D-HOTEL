@@ -18,6 +18,7 @@ import {
 import { formatMontant, DeviseCode } from "@/lib/currency";
 import { MODELES_PAYS, CodePays } from "@/lib/rh";
 import ImportJournauxModal from "./ImportJournauxModal";
+import ArchiveComptableButton from "./ArchiveComptableButton";
 
 interface EcritureComptableMultiPays {
   id: string;
@@ -124,14 +125,14 @@ export default function ComptabiliteMultiPaysPage() {
       journal: (['VTE', 'PAIE', 'BQE', 'CAI', 'ACH'].includes(r.journal?.toUpperCase())
         ? r.journal.toUpperCase()
         : r.journal?.toLowerCase() === 'ventes'
-        ? 'VTE'
-        : r.journal?.toLowerCase() === 'achats'
-        ? 'ACH'
-        : r.journal?.toLowerCase() === 'caisse'
-        ? 'CAI'
-        : r.journal?.toLowerCase() === 'banque'
-        ? 'BQE'
-        : 'VTE') as any,
+          ? 'VTE'
+          : r.journal?.toLowerCase() === 'achats'
+            ? 'ACH'
+            : r.journal?.toLowerCase() === 'caisse'
+              ? 'CAI'
+              : r.journal?.toLowerCase() === 'banque'
+                ? 'BQE'
+                : 'VTE') as any,
       compte: r.compte,
       libelleCompte: r.libelle,
       libelleEcriture: r.libelle,
@@ -181,6 +182,12 @@ export default function ComptabiliteMultiPaysPage() {
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
+          <ArchiveComptableButton
+            nomStructure={`Établissement Hôtelier DEMBA (${modele.nomPlanComptable})`}
+            ecritures={ecrituresActuelles}
+            totalDebits={totalDebit}
+            totalCredits={totalCredit}
+          />
           <ImportJournauxModal onImportSuccess={handleImportSuccess} />
           <button
             onClick={handleExportCompta}
@@ -218,11 +225,10 @@ export default function ComptabiliteMultiPaysPage() {
               <button
                 key={code}
                 onClick={() => setPaysCompta(code as CodePays)}
-                className={`p-2.5 rounded-lg border text-left transition flex flex-col justify-between ${
-                  estActif
+                className={`p-2.5 rounded-lg border text-left transition flex flex-col justify-between ${estActif
                     ? "border-primary bg-primary/10 text-primary shadow-xs font-bold"
                     : "border-border bg-background hover:bg-muted text-muted-foreground hover:text-foreground"
-                }`}
+                  }`}
               >
                 <div className="flex items-center justify-between">
                   <span className="text-xs">{code}</span>
@@ -331,11 +337,10 @@ export default function ComptabiliteMultiPaysPage() {
                     <td className="py-3 px-4 font-mono text-muted-foreground">{e.date}</td>
                     <td className="py-3 px-4">
                       <span
-                        className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-bold ${
-                          e.journal === "PAIE"
+                        className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-bold ${e.journal === "PAIE"
                             ? "bg-purple-500/10 text-purple-600 border border-purple-500/20"
                             : "bg-blue-500/10 text-blue-600 border border-blue-500/20"
-                        }`}
+                          }`}
                       >
                         {e.journal}
                       </span>

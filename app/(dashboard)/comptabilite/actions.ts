@@ -82,3 +82,4 @@ export async function importerEcrituresBatch(ecritures: ImportEcriturePayload[])
   revalidatePath('/comptabilite')
   return { success: true, count: countImportees }
 }
+
