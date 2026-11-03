@@ -84,7 +84,7 @@ export function AppShell({
 
     if (typeof navigator !== 'undefined' && navigator.onLine) {
       const routesToWarm = [
-        '/',
+        '/dashboard',
         '/hebergements',
         '/restauration',
         '/clients',
@@ -125,7 +125,7 @@ export function AppShell({
 
   const estLienActif = (href?: string) => {
     if (!href) return false;
-    return href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(`${href}/`);
+    return href === "/dashboard" ? pathname === "/dashboard" : pathname === href || pathname.startsWith(`${href}/`);
   };
 
   return (

@@ -19,7 +19,7 @@ export const SECTIONS_MENUS: MenuItem[] = [
     id: "dashboard",
     titre: "Tableau de Bord",
     icone: "LayoutDashboard",
-    href: "/",
+    href: "/dashboard",
   },
   {
     id: "reception",
@@ -119,6 +119,7 @@ export const SECTIONS_MENUS: MenuItem[] = [
       { titre: "Indicateurs RevPAR / TO / ADR", href: "/direction/kpi" },
       { titre: "Grand-Livre SYSCOHADA", href: "/comptabilite" },
       { titre: "Paramètres de l'Hôtel", href: "/parametres" },
+      { titre: "Abonnement & Forfaits", href: "/abonnement" },
     ],
   },
 ];

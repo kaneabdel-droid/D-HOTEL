@@ -10,7 +10,8 @@ import {
   ExternalLink,
   ShieldCheck,
   Building2,
-  Users
+  Users,
+  Zap
 } from 'lucide-react'
 import { isSuperAdminAuthenticated, getSuperAdminUser } from '@/lib/admin/auth'
 
@@ -29,6 +30,7 @@ export default async function AdminProtectedLayout({
   const navItems = [
     { href: '/admin', label: 'Vue d’ensemble', icon: LayoutDashboard },
     { href: '/admin/etablissements', label: 'Établissements Hôteliers', icon: Hotel },
+    { href: '/admin/passerelles', label: 'Passerelles Maketou & Chariow', icon: Zap },
     { href: '/admin/abonnements', label: 'Abonnements & Revenus', icon: CreditCard },
   ]
 

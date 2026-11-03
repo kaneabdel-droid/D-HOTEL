@@ -210,9 +210,17 @@ export default function LoginPage() {
           </form>
 
           {/* Badge de sécurité Cloudflare & HSTS */}
-          <div className="pt-2 flex items-center justify-center gap-2 text-[10px] text-[#8E9EAF] border-t border-white/5">
-            <ShieldCheck className="w-3.5 h-3.5 text-[#10B981]" />
-            <span>Chiffrement HSTS • Bouclier Cloudflare WAF actif</span>
+          <div className="pt-2 flex items-center justify-between text-[11px] text-[#8E9EAF] border-t border-white/5">
+            <div className="flex items-center gap-1.5">
+              <ShieldCheck className="w-3.5 h-3.5 text-[#10B981]" />
+              <span>Bouclier HSTS actif</span>
+            </div>
+            <Link
+              href="/signup"
+              className="text-[#D4AF37] hover:underline font-semibold"
+            >
+              Créer un compte établissement
+            </Link>
           </div>
         </div>
 
