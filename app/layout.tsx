@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Inter, Outfit } from "next/font/google";
 import "./globals.css";
 import { ClientSecurityShield } from "@/components/ClientSecurityShield";
+import { getLocale } from "@/dictionaries";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -28,13 +29,16 @@ export const viewport: Viewport = {
   userScalable: false,
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const locale = await getLocale();
+  const dir = locale === "ar" ? "rtl" : "ltr";
+
   return (
-    <html lang="fr" className={`${inter.variable} ${outfit.variable}`}>
+    <html lang={locale} dir={dir} className={`${inter.variable} ${outfit.variable}`}>
       <head>
         <link rel="manifest" href="/manifest.json" />
         <link rel="icon" href="/icon.svg" type="image/svg+xml" />

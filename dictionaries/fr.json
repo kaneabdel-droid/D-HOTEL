@@ -70,5 +70,140 @@
     "dirty_stay": "À nettoyer (Recouche)",
     "maintenance": "Hors service",
     "reserved": "Réservée"
+  },
+  "themes": {
+    "palace": "Teranga & Sable Doré",
+    "riviera": "Riviera & Azur Doux",
+    "ecolodge": "Éco-Lodge & Sauge"
+  },
+  "landing": {
+    "meta_title": "D-HOTEL • Le Logiciel Hôtelier Tout-en-Un",
+    "meta_desc": "PMS hôtelier, Touch POS Restaurant & Bar avec report sur note de chambre, fiches de police dématérialisées, gouvernance ménage mobile et encaissements Wave / Orange Money.",
+    "suite_name": "DEMBA Hospitality Suite",
+    "nav_modules": "Modules Métier",
+    "nav_demo": "Démo Interactive",
+    "nav_guide": "Guide d'utilisation",
+    "nav_pricing": "Tarifs & Abonnements",
+    "nav_login": "Connexion",
+    "nav_signup": "Créer un compte",
+    "hero_badge": "PMS Moderne & Touch POS • 0% Commission sur vos réservations",
+    "hero_title_prefix": "La gestion hôtelière",
+    "hero_title_highlight": "d'excellence",
+    "hero_subtitle": "Planning interactif des chambres, Touch POS Restaurant & Bar avec report instantané sur la note de chambre, fiches de police conformes en 1 clic et encaissements Wave & Orange Money.",
+    "hero_cta_trial": "Essayer 7 jours gratuitement",
+    "hero_cta_demo": "Tester la démo interactive",
+    "hero_cta_guide": "Consulter le guide",
+    "kpi_occupancy": "Taux d'occupation moyen",
+    "kpi_commission": "Commission intermédiaire",
+    "kpi_police_val": "1 Clic",
+    "kpi_police_label": "Génération Fiche de Police",
+    "kpi_payment_val": "Wave & OM",
+    "kpi_payment_label": "Paiement Mobile Money direct",
+    "modules_tag": "Modules intégrés & sans silos",
+    "modules_title": "Tout ce dont votre établissement a besoin au quotidien",
+    "modules_subtitle": "De la réception aux étages, de la cuisine à la piscine, toutes vos opérations communiquent en temps réel sur une plateforme unique.",
+    "modules_items": {
+      "gantt": {
+        "title": "Rack Interactif (Gantt PMS)",
+        "desc": "Planning visuel drag & drop des chambres, bungalows et suites. Visualisation immédiate des disponibilités, des réservations en cours et des arrivées / départs du jour."
+      },
+      "pos": {
+        "title": "Touch POS Restaurant, Bar & Pool",
+        "desc": "Point de vente tactile rapide pour serveurs et barmans. Transfert direct et sécurisé de l'addition sur la note de chambre du client (Folio) en un clic."
+      },
+      "police": {
+        "title": "Fiches de Police en 1 Clic",
+        "desc": "Conformité stricte avec les exigences du Ministère de l'Intérieur et des services de sécurité. Export PDF instantané du registre journalier des voyageurs sans ressaisie manuscrite."
+      },
+      "housekeeping": {
+        "title": "Gouvernance & Housekeeping Mobile",
+        "desc": "Application smartphone dédiée aux gouvernantes et femmes de chambre : actualisation en temps réel de l'état des chambres (Propre, Sale, Recouche, Inspection terminée)."
+      },
+      "daypass": {
+        "title": "Billetterie Day-Pass & Piscine",
+        "desc": "Gestion des entrées et pass journée pour la clientèle extérieure venant profiter de la piscine, de la plage ou des formules déjeuner + baignade avec encaissement Wave / OM."
+      },
+      "mice": {
+        "title": "Salles de Séminaires & Événements (MICE)",
+        "desc": "Réservation et facturation des salles de conférence, banquets, réunions d'affaires et mariages avec planification des pauses-café et régies audiovisuelles."
+      },
+      "inventory": {
+        "title": "Économat & Stocks Boissons / F&B",
+        "desc": "Suivi rigoureux des caves à vin, spiritueux, packs d'eau et denrées culinaires avec fiches techniques recettes, déstockage automatique et alertes réapprovisionnement."
+      },
+      "night_audit": {
+        "title": "Audit de Nuit & Clôture SYSCOHADA",
+        "desc": "Génération automatique de la main courante journalière, contrôle des caisses (Espèces, Wave, Orange Money, CB) et export comptable normalisé SYSCOHADA."
+      }
+    },
+    "demo_tag": "Simulateur en ligne",
+    "demo_title": "Testez D-HOTEL directement dans votre navigateur",
+    "demo_desc": "Découvrez la vue interactive du rack de chambres, la simulation de séjour client, le transfert de consommations restaurant et l'émission du folio de départ.",
+    "demo_cta": "Ouvrir la Démo Interactive",
+    "pricing_tag": "Tarification transparente",
+    "pricing_title": "Des forfaits pensés pour votre rentabilité",
+    "pricing_subtitle_prefix": "Bénéficiez de",
+    "pricing_discount": "-10% de remise",
+    "pricing_subtitle_suffix": "en choisissant le paiement annuel. Sans engagement de durée en formule mensuelle.",
+    "pricing_yearly_badge": "si annuel",
+    "pricing_per_month_yearly": "FCFA / mois (annuel)",
+    "pricing_billed_prefix": "Soit",
+    "pricing_billed_suffix": "FCFA facturés par an",
+    "pricing_or_monthly_prefix": "ou",
+    "pricing_or_monthly_suffix": "F/mois sans engagement",
+    "pricing_included_title": "Inclus dans l'abonnement :",
+    "pricing_choose_prefix": "Choisir",
+    "pricing_trial_badge": "Essai gratuit 7 jours • Activation immédiate",
+    "pricing_compare_link": "Voir la comparaison détaillée de toutes les fonctionnalités",
+    "plans": {
+      "auberge": {
+        "name": "Auberge & Campement",
+        "type": "Auberges, campements villageois, écolodges & gîtes ruraux",
+        "badge": "Formule Écolodge & Campement",
+        "features": [
+          "PMS complet (Planning des hébergements interactif)",
+          "Check-in & Check-out express avec assignation des clés",
+          "Fiches de police conformes Ministère de l'Intérieur",
+          "Facturation des séjours & Folio client individuel ou groupe",
+          "Encaissement Wave, Orange Money, Espèces & Carte",
+          "Gouvernance & Statut ménage (Propre / Sale / Recouche)",
+          "Résilience hors-ligne (PWA) pour zones reculées",
+          "Support réactif WhatsApp & Téléphone 7j/7"
+        ]
+      },
+      "hotel": {
+        "name": "Hôtel & Résidence",
+        "type": "Hôtels d'affaires, résidences hôtelières meublées & resorts",
+        "badge": "Recommandé • Solution Complète",
+        "features": [
+          "Tout ce qui est inclus dans Auberge & Campement",
+          "Caisse Tactile Restaurant, Bar & Pool (Touch POS)",
+          "Transfert automatique des repas & boissons sur la note de chambre",
+          "Gouvernance mobile complète (Housekeeping smartphone)",
+          "Module MICE : Salles de séminaires, réunions & mariages",
+          "Billetterie piscine & Day-Pass pour clientèle extérieure",
+          "Économat & gestion des stocks matières premières et fiches recettes",
+          "Audit de nuit automatisé & Main courante journalière",
+          "Export et intégration comptable SYSCOHADA certifiée",
+          "Assistance personnalisée 24/7 au paramétrage"
+        ]
+      }
+    },
+    "onboarding_tag": "Déploiement Express en 2 Minutes",
+    "onboarding_title": "Créez votre établissement sur D-HOTEL",
+    "onboarding_subtitle": "Rejoignez le réseau des réceptifs hôteliers modernes du Sénégal et de la sous-région. Profitez de 7 jours d'essai gratuit avec accompagnement de nos ingénieurs.",
+    "step1_title": "Renseignez votre structure",
+    "step1_desc": "Nom de l'hôtel ou auberge, localisation, nombre de chambres et contact officiel.",
+    "step2_title": "Choisissez votre formule",
+    "step2_desc": "Auberge & Campement (15k/mois) ou Hôtel & Résidence (20k/mois), mensuel ou annuel (-10%).",
+    "step3_title": "Accès PMS immédiat",
+    "step3_desc": "Votre rack interactif, caisse restaurant et fiches de police sont immédiatement activés.",
+    "onboarding_cta": "Créer mon établissement maintenant",
+    "onboarding_guide": "Voir le guide de démarrage",
+    "guide_tag": "Documentation & Guides",
+    "guide_title": "Guide complet de prise en main pour vos équipes",
+    "guide_desc": "Fiches pratiques pour réceptionnistes, gouvernantes, barmans et comptables : check-in express, création de fiches de police, gestion de caisse et audit de nuit.",
+    "guide_cta": "Lire le guide d'utilisation",
+    "footer_copy": "D-HOTEL • DEMBA Hospitality Management System. Tous droits réservés."
   }
 }

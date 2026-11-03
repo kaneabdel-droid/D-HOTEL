@@ -70,5 +70,140 @@
     "dirty_stay": "Stayover Cleaning",
     "maintenance": "Out of Order",
     "reserved": "Reserved"
+  },
+  "themes": {
+    "palace": "Teranga & Golden Sand",
+    "riviera": "Riviera & Soft Azure",
+    "ecolodge": "Eco-Lodge & Sage"
+  },
+  "landing": {
+    "meta_title": "D-HOTEL • The All-in-One Hospitality Management Software",
+    "meta_desc": "Hospitality PMS, Touch POS for Restaurants & Bars with room charging, digital police registration slips, mobile housekeeping, and direct mobile money payments.",
+    "suite_name": "DEMBA Hospitality Suite",
+    "nav_modules": "Modules",
+    "nav_demo": "Interactive Demo",
+    "nav_guide": "User Guide",
+    "nav_pricing": "Pricing & Plans",
+    "nav_login": "Sign In",
+    "nav_signup": "Create an Account",
+    "hero_badge": "Modern PMS & Touch POS • 0% Commission on Direct Bookings",
+    "hero_title_prefix": "Hospitality management",
+    "hero_title_highlight": "at its finest",
+    "hero_subtitle": "Interactive room rack, Touch POS for restaurant and bar with instant room folio charge, 1-click police registration slips, and Wave & Orange Money payments.",
+    "hero_cta_trial": "Start 7-Day Free Trial",
+    "hero_cta_demo": "Try Interactive Demo",
+    "hero_cta_guide": "Browse User Guide",
+    "kpi_occupancy": "Average Occupancy Rate",
+    "kpi_commission": "Middleman Commission",
+    "kpi_police_val": "1 Click",
+    "kpi_police_label": "Police Slip Generation",
+    "kpi_payment_val": "Wave & OM",
+    "kpi_payment_label": "Direct Mobile Money",
+    "modules_tag": "Fully integrated & seamless",
+    "modules_title": "Everything your property needs every day",
+    "modules_subtitle": "From front desk to housekeeping, kitchen to swimming pool, all your operations sync in real time on one unified platform.",
+    "modules_items": {
+      "gantt": {
+        "title": "Interactive Rack (Gantt PMS)",
+        "desc": "Visual drag-and-drop planning for rooms, bungalows, and suites. Instant insight into real-time availability, active stays, and daily arrivals/departures."
+      },
+      "pos": {
+        "title": "Touch POS Restaurant, Bar & Pool",
+        "desc": "High-speed touch point-of-sale for waitstaff and bartenders. Direct, secure 1-click transfer of food & beverage checks onto guest room folios."
+      },
+      "police": {
+        "title": "1-Click Police Slips",
+        "desc": "Strict compliance with Interior Ministry and tourist police regulations. Instant PDF export of the daily guest registry with zero manual handwriting."
+      },
+      "housekeeping": {
+        "title": "Mobile Housekeeping & Linen",
+        "desc": "Dedicated smartphone web app for housekeepers and floor managers: live status updates (Clean, Dirty, Stayover, Inspected & Ready)."
+      },
+      "daypass": {
+        "title": "Day-Pass & Pool Ticketing",
+        "desc": "Management of day passes and pool/beach access for external visitors, with lunch + swim packages and instant Mobile Money checkouts."
+      },
+      "mice": {
+        "title": "Conference & Event Spaces (MICE)",
+        "desc": "Bookings and invoicing for seminar halls, banquets, business meetings, and weddings with coffee-break schedules and AV equipment coordination."
+      },
+      "inventory": {
+        "title": "Procurement & F&B Beverage Stock",
+        "desc": "Strict tracking of wine cellars, spirits, bottled water, and kitchen staples with recipe sheets, automated stock depletion, and low-level alerts."
+      },
+      "night_audit": {
+        "title": "Night Audit & Accounting Export",
+        "desc": "Automated generation of daily manager reports, multi-tender cash drawer balancing (Cash, Wave, OM, Cards), and standardized accounting exports."
+      }
+    },
+    "demo_tag": "Online Simulator",
+    "demo_title": "Experience D-HOTEL right inside your browser",
+    "demo_desc": "Explore the interactive room rack, simulate a guest check-in, transfer restaurant orders to room charges, and generate departure folios.",
+    "demo_cta": "Open Interactive Demo",
+    "pricing_tag": "Transparent Pricing",
+    "pricing_title": "Plans designed for your profitability",
+    "pricing_subtitle_prefix": "Save",
+    "pricing_discount": "10% off",
+    "pricing_subtitle_suffix": "when you choose annual billing. Cancel anytime on monthly plans.",
+    "pricing_yearly_badge": "annual plan",
+    "pricing_per_month_yearly": "XOF / month (billed yearly)",
+    "pricing_billed_prefix": "Equal to",
+    "pricing_billed_suffix": "XOF billed per year",
+    "pricing_or_monthly_prefix": "or",
+    "pricing_or_monthly_suffix": "F/mo no commitment",
+    "pricing_included_title": "Included in your subscription:",
+    "pricing_choose_prefix": "Choose",
+    "pricing_trial_badge": "7-day free trial • Instant activation",
+    "pricing_compare_link": "View comprehensive feature breakdown",
+    "plans": {
+      "auberge": {
+        "name": "Inn & Camp",
+        "type": "Inns, eco-lodges, rural guesthouses & holiday camps",
+        "badge": "Eco-Lodge & Camp Package",
+        "features": [
+          "Complete PMS (Interactive room & bungalow timeline)",
+          "Express check-in & check-out with key management",
+          "Official police registration slips compliant with regulations",
+          "Stay billing & Individual or Group Guest Folios",
+          "Direct payment via Wave, Orange Money, Cash & Card",
+          "Housekeeping & Room Status (Clean / Dirty / Stayover)",
+          "Offline PWA resilience for remote rural locations",
+          "Dedicated phone & WhatsApp support 7 days a week"
+        ]
+      },
+      "hotel": {
+        "name": "Hotel & Residence",
+        "type": "Boutique hotels, serviced apartments & beach resorts",
+        "badge": "Recommended • Full Suite",
+        "features": [
+          "Everything in Inn & Camp plan",
+          "Touch POS for Restaurant, Bar & Poolside",
+          "Instant automated charge of F&B bills to room folios",
+          "Full mobile housekeeping app for floor attendants",
+          "MICE Module: Conference rooms, corporate meetings & banquets",
+          "Day-pass & pool ticketing for non-resident guests",
+          "Inventory management for raw materials, cellar & recipe costing",
+          "Automated night audit & daily management shift reports",
+          "Standardized accounting ledger export",
+          "Personalized 24/7 onboarding & setup assistance"
+        ]
+      }
+    },
+    "onboarding_tag": "Fast 2-Minute Onboarding",
+    "onboarding_title": "Launch your property on D-HOTEL today",
+    "onboarding_subtitle": "Join forward-thinking hoteliers and resort owners across the region. Enjoy a 7-day complimentary trial with dedicated engineer support.",
+    "step1_title": "Enter your property details",
+    "step1_desc": "Hotel or guesthouse name, destination, room count, and official contact.",
+    "step2_title": "Select your plan",
+    "step2_desc": "Inn & Camp (15k/mo) or Hotel & Residence (20k/mo), monthly or annual (-10%).",
+    "step3_title": "Instant PMS Access",
+    "step3_desc": "Your interactive rack, restaurant POS, and police slip generators are immediately live.",
+    "onboarding_cta": "Register My Hotel Now",
+    "onboarding_guide": "View Setup Guide",
+    "guide_tag": "Documentation & Guides",
+    "guide_title": "Comprehensive onboarding guide for your staff",
+    "guide_desc": "Step-by-step procedures for front-desk clerks, housekeepers, bartenders, and accountants: express check-in, police records, cash control, and night audits.",
+    "guide_cta": "Read User Guide",
+    "footer_copy": "D-HOTEL • DEMBA Hospitality Management System. All rights reserved."
   }
 }
