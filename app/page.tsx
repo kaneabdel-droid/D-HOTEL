@@ -213,9 +213,9 @@ export default function DHotelHomePage() {
           </div>
 
           <h1 className="text-4xl sm:text-6xl font-black text-white tracking-tight max-w-4xl mx-auto leading-tight sm:leading-none">
-            La gestion hôtelière d&apos;excellence,{" "}
+            La gestion hôtelière{" "}
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-amber-300 to-amber-500">
-              pensée pour l&apos;Afrique
+              d&apos;excellence
             </span>
           </h1>
 
