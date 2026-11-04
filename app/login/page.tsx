@@ -45,7 +45,7 @@ export default function LoginPage() {
     if (!navigator.onLine) {
       const res = await authenticateOffline(identifiant, motDePasse);
       if (res.success) {
-        window.location.href = "/";
+        window.location.href = "/dashboard";
         return;
       }
       setErreur(res.error || "Échec de connexion hors-ligne");
@@ -86,7 +86,7 @@ export default function LoginPage() {
           console.warn("Échec sauvegarde compte local:", e);
         }
 
-        window.location.href = res.redirectUrl || "/";
+        window.location.href = res.redirectUrl || "/dashboard";
         return;
       }
 
@@ -96,7 +96,7 @@ export default function LoginPage() {
       // Repli hors-ligne en cas d'erreur réseau
       const resOffline = await authenticateOffline(identifiant, motDePasse);
       if (resOffline.success) {
-        window.location.href = "/";
+        window.location.href = "/dashboard";
         return;
       }
       setErreur("Connexion serveur impossible et aucun compte local trouvé sur cet appareil.");

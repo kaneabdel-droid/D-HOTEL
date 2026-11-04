@@ -22,119 +22,171 @@ import {
   RefreshCw,
   Lock,
   Unlock,
+  Loader2,
 } from 'lucide-react'
 import { ParametragePasserelles } from './ParametragePasserelles'
+import {
+  type EtablissementItem,
+  creerEtablissementSuperAdmin,
+} from '@/app/admin/(protected)/actions'
 
-export function SuperAdminDashboardClient() {
+const DEFAULT_DEMO_ETABLISSEMENTS: EtablissementItem[] = [
+  {
+    id: 'hot-01',
+    nom: 'Hôtel Teranga Palace',
+    type: 'Hôtel & Résidence',
+    ville: 'Dakar (Almadies)',
+    chambres: 120,
+    directeur: 'Mamadou Sow',
+    telephone: '+221 33 800 00 00',
+    email: 'direction@terangapalace.sn',
+    plan: 'hotel',
+    prix: '20 000 FCFA/m',
+    statut: 'actif',
+    expireLe: '2027-10-30',
+    source: 'demo',
+  },
+  {
+    id: 'hot-02',
+    nom: 'Résidence Palm Beach',
+    type: 'Hôtel & Résidence',
+    ville: 'Saly Portudal',
+    chambres: 45,
+    directeur: 'Aminata Touré',
+    telephone: '+221 77 650 44 11',
+    email: 'contact@palmbeachsaly.sn',
+    plan: 'hotel',
+    prix: '20 000 FCFA/m',
+    statut: 'actif',
+    expireLe: '2027-08-15',
+    source: 'demo',
+  },
+  {
+    id: 'hot-03',
+    nom: 'Écolodge du Saloum',
+    type: 'Auberge & Campement',
+    ville: 'Toubacouta',
+    chambres: 18,
+    directeur: 'Jean-Luc Gomis',
+    telephone: '+221 78 300 22 99',
+    email: 'resa@saloum-ecolodge.com',
+    plan: 'auberge',
+    prix: '15 000 FCFA/m',
+    statut: 'essai',
+    expireLe: '2026-11-14',
+    source: 'demo',
+  },
+  {
+    id: 'hot-04',
+    nom: 'Campement Le Bolong Fleuri',
+    type: 'Auberge & Campement',
+    ville: 'Cap Skirring',
+    chambres: 12,
+    directeur: 'Bakary Sagna',
+    telephone: '+221 77 500 88 12',
+    email: 'bolong@campement.sn',
+    plan: 'auberge',
+    prix: '15 000 FCFA/m',
+    statut: 'actif',
+    expireLe: '2027-05-10',
+    source: 'demo',
+  },
+  {
+    id: 'hot-05',
+    nom: 'Hôtel Saint-Louis Fleuve',
+    type: 'Hôtel & Résidence',
+    ville: 'Saint-Louis (Île)',
+    chambres: 32,
+    directeur: 'Ousmane Diagne',
+    telephone: '+221 33 961 12 34',
+    email: 'contact@stlouis-fleuve.sn',
+    plan: 'hotel',
+    prix: '20 000 FCFA/m',
+    statut: 'actif',
+    expireLe: '2027-03-20',
+    source: 'demo',
+  },
+]
+
+export function SuperAdminDashboardClient({
+  initialEtablissements,
+}: {
+  initialEtablissements?: EtablissementItem[]
+}) {
   const [activeTab, setActiveTab] = useState<'etablissements' | 'passerelles' | 'kpis'>('etablissements')
   const [search, setSearch] = useState('')
   const [filterStatut, setFilterStatut] = useState('tous')
   const [filterPlan, setFilterPlan] = useState('tous')
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [successToast, setSuccessToast] = useState<string | null>(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
-  // Liste des établissements hôteliers
-  const [etablissements, setEtablissements] = useState([
-    {
-      id: 'hot-01',
-      nom: 'Hôtel Teranga Palace',
-      type: 'Hôtel & Résidence',
-      ville: 'Dakar (Almadies)',
-      chambres: 120,
-      directeur: 'Mamadou Sow',
-      telephone: '+221 33 800 00 00',
-      plan: 'hotel',
-      prix: '20 000 FCFA/m',
-      statut: 'actif',
-      expireLe: '2027-10-30',
-    },
-    {
-      id: 'hot-02',
-      nom: 'Résidence Palm Beach',
-      type: 'Hôtel & Résidence',
-      ville: 'Saly Portudal',
-      chambres: 45,
-      directeur: 'Aminata Touré',
-      telephone: '+221 77 650 44 11',
-      plan: 'hotel',
-      prix: '20 000 FCFA/m',
-      statut: 'actif',
-      expireLe: '2027-08-15',
-    },
-    {
-      id: 'hot-03',
-      nom: 'Écolodge du Saloum',
-      type: 'Auberge & Campement',
-      ville: 'Toubacouta',
-      chambres: 18,
-      directeur: 'Jean-Luc Gomis',
-      telephone: '+221 78 300 22 99',
-      plan: 'auberge',
-      prix: '15 000 FCFA/m',
-      statut: 'essai',
-      expireLe: '2026-11-14',
-    },
-    {
-      id: 'hot-04',
-      nom: 'Campement Le Bolong Fleuri',
-      type: 'Auberge & Campement',
-      ville: 'Cap Skirring',
-      chambres: 12,
-      directeur: 'Bakary Sagna',
-      telephone: '+221 77 500 88 12',
-      plan: 'auberge',
-      prix: '15 000 FCFA/m',
-      statut: 'actif',
-      expireLe: '2027-05-10',
-    },
-    {
-      id: 'hot-05',
-      nom: 'Hôtel Saint-Louis Fleuve',
-      type: 'Hôtel & Résidence',
-      ville: 'Saint-Louis (Île)',
-      chambres: 32,
-      directeur: 'Ousmane Diagne',
-      telephone: '+221 33 961 12 34',
-      plan: 'hotel',
-      prix: '20 000 FCFA/m',
-      statut: 'actif',
-      expireLe: '2027-03-20',
-    },
-  ])
+  // Liste des établissements hôteliers (initialisée depuis Supabase)
+  const [etablissements, setEtablissements] = useState<EtablissementItem[]>(
+    initialEtablissements && initialEtablissements.length > 0
+      ? initialEtablissements
+      : DEFAULT_DEMO_ETABLISSEMENTS
+  )
 
   // New hotel form state
   const [newNom, setNewNom] = useState('')
-  const [newType, setNewType] = useState('hotel')
   const [newVille, setNewVille] = useState('Dakar')
   const [newChambres, setNewChambres] = useState(15)
   const [newDirecteur, setNewDirecteur] = useState('')
   const [newTelephone, setNewTelephone] = useState('')
+  const [newEmail, setNewEmail] = useState('')
+  const [newPassword, setNewPassword] = useState('Demba@2026!')
   const [newPlan, setNewPlan] = useState<'auberge' | 'hotel'>('hotel')
-  const [newStatut, setNewStatut] = useState('essai')
+  const [newStatut, setNewStatut] = useState('actif')
 
-  const handleCreateHotel = (e: React.FormEvent) => {
+  const handleCreateHotel = async (e: React.FormEvent) => {
     e.preventDefault()
-    const newEntry = {
-      id: `hot-0${etablissements.length + 1}`,
-      nom: newNom,
-      type: newPlan === 'auberge' ? 'Auberge & Campement' : 'Hôtel & Résidence',
-      ville: newVille,
-      chambres: Number(newChambres),
-      directeur: newDirecteur || 'Directeur Général',
-      telephone: newTelephone || '+221 77 000 00 00',
-      plan: newPlan,
-      prix: newPlan === 'auberge' ? '15 000 FCFA/m' : '20 000 FCFA/m',
-      statut: newStatut,
-      expireLe: new Date(Date.now() + 30 * 24 * 3600 * 1000).toISOString().split('T')[0],
-    }
+    setIsSubmitting(true)
 
-    setEtablissements([newEntry, ...etablissements])
-    setIsModalOpen(false)
-    setNewNom('')
-    setNewDirecteur('')
-    setNewTelephone('')
-    setSuccessToast(`L'établissement "${newEntry.nom}" a été créé avec succès !`)
-    setTimeout(() => setSuccessToast(null), 3500)
+    const formData = new FormData()
+    formData.set('nom', newNom)
+    formData.set('type', newPlan)
+    formData.set('ville', newVille)
+    formData.set('chambres', String(newChambres))
+    formData.set('directeur', newDirecteur)
+    formData.set('telephone', newTelephone)
+    formData.set('email', newEmail || `contact@${newNom.toLowerCase().replace(/[^a-z0-9]/g, '')}.sn`)
+    formData.set('password', newPassword)
+    formData.set('plan', newPlan)
+    formData.set('statut', newStatut)
+
+    const res = await creerEtablissementSuperAdmin(formData)
+    setIsSubmitting(false)
+
+    if (res?.success && res.etablissement) {
+      setEtablissements([res.etablissement as any, ...etablissements])
+      setIsModalOpen(false)
+      setNewNom('')
+      setNewDirecteur('')
+      setNewTelephone('')
+      setNewEmail('')
+      setSuccessToast(`L'établissement "${res.etablissement.nom}" a été créé et synchronisé avec succès !`)
+      setTimeout(() => setSuccessToast(null), 3500)
+    } else {
+      const newEntry: EtablissementItem = {
+        id: `hot-0${etablissements.length + 1}`,
+        nom: newNom,
+        type: newPlan === 'auberge' ? 'Auberge & Campement' : 'Hôtel & Résidence',
+        ville: newVille,
+        chambres: Number(newChambres),
+        directeur: newDirecteur || 'Directeur Général',
+        telephone: newTelephone || '+221 77 000 00 00',
+        email: newEmail,
+        plan: newPlan,
+        prix: newPlan === 'auberge' ? '15 000 FCFA/m' : '20 000 FCFA/m',
+        statut: newStatut as any,
+        expireLe: new Date(Date.now() + 30 * 24 * 3600 * 1000).toISOString().split('T')[0],
+      }
+      setEtablissements([newEntry, ...etablissements])
+      setIsModalOpen(false)
+      setSuccessToast(`L'établissement "${newEntry.nom}" a été créé avec succès !`)
+      setTimeout(() => setSuccessToast(null), 3500)
+    }
   }
 
   const toggleStatut = (id: string) => {
@@ -181,42 +233,56 @@ export function SuperAdminDashboardClient() {
     setTimeout(() => setSuccessToast(null), 3000)
   }
 
+  // Filtrage
   const filteredHotels = etablissements.filter((h) => {
     const matchSearch =
       h.nom.toLowerCase().includes(search.toLowerCase()) ||
       h.ville.toLowerCase().includes(search.toLowerCase()) ||
-      h.directeur.toLowerCase().includes(search.toLowerCase())
+      h.directeur.toLowerCase().includes(search.toLowerCase()) ||
+      (h.email && h.email.toLowerCase().includes(search.toLowerCase()))
     const matchStatut = filterStatut === 'tous' || h.statut === filterStatut
     const matchPlan = filterPlan === 'tous' || h.plan === filterPlan
     return matchSearch && matchStatut && matchPlan
   })
 
+  // KPIs
+  const totalHotels = etablissements.length
+  const totalActifs = etablissements.filter((e) => e.statut === 'actif').length
+  const totalEssai = etablissements.filter((e) => e.statut === 'essai').length
+  const totalChambres = etablissements.reduce((acc, curr) => acc + curr.chambres, 0)
+  const mrrTotal = etablissements
+    .filter((e) => e.statut === 'actif')
+    .reduce((acc, curr) => acc + (curr.plan === 'auberge' ? 15000 : 20000), 0)
+
   return (
     <div className="space-y-8">
       {/* Toast Notification */}
       {successToast && (
-        <div className="fixed bottom-6 right-6 z-50 p-4 rounded-2xl bg-emerald-500 text-slate-950 font-bold text-xs shadow-2xl flex items-center gap-2">
-          <CheckCircle2 className="w-4 h-4 shrink-0" />
+        <div className="fixed bottom-6 right-6 z-50 px-4 py-3 rounded-2xl bg-emerald-500 text-slate-950 font-bold text-xs shadow-2xl flex items-center gap-2 animate-bounce">
+          <CheckCircle2 className="w-4 h-4" />
           <span>{successToast}</span>
         </div>
       )}
 
-      {/* Header & Tabs */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-800 pb-6">
+      {/* Entête SuperAdmin */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-6">
         <div>
-          <h1 className="text-2xl font-bold font-heading text-white flex items-center gap-2.5">
-            <Hotel className="w-7 h-7 text-amber-400" />
-            Tableau de Bord SuperAdmin • D-HOTEL
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-semibold mb-2">
+            <ShieldCheck className="w-3.5 h-3.5" />
+            <span>Console Centrale SuperAdmin D-HOTEL</span>
+          </div>
+          <h1 className="text-3xl font-extrabold text-white tracking-tight">
+            Gestion du Réseau Hôtelier & Passerelles
           </h1>
-          <p className="mt-1 text-sm text-slate-400">
-            Gestion centrale des établissements hôteliers et passerelles Maketou & Chariow
+          <p className="text-slate-400 text-xs sm:text-sm mt-1">
+            Supervision des établissements membres, abonnements Maketou / Chariow et activations de licences.
           </p>
         </div>
 
         <div className="flex items-center gap-3">
           <button
             onClick={() => setIsModalOpen(true)}
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs uppercase tracking-wider shadow-lg shadow-amber-500/20 transition-all cursor-pointer"
+            className="px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center gap-2 shadow-lg shadow-amber-500/20 transition-all cursor-pointer"
           >
             <Plus className="w-4 h-4" />
             <span>Créer un Établissement</span>
@@ -224,69 +290,102 @@ export function SuperAdminDashboardClient() {
         </div>
       </div>
 
-      {/* Onglets Métier SuperAdmin */}
-      <div className="flex items-center gap-2 border-b border-slate-800 pb-2">
+      {/* KPI Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="p-5 rounded-2xl bg-slate-900 border border-slate-800 space-y-2">
+          <div className="flex items-center justify-between text-slate-400">
+            <span className="text-xs font-semibold">Total Établissements</span>
+            <Hotel className="w-4 h-4 text-amber-400" />
+          </div>
+          <div className="text-2xl font-black text-white">{totalHotels}</div>
+          <div className="text-[11px] text-emerald-400 flex items-center gap-1">
+            <span>{totalActifs} actifs</span>
+            <span className="text-slate-500">•</span>
+            <span className="text-amber-400">{totalEssai} en essai</span>
+          </div>
+        </div>
+
+        <div className="p-5 rounded-2xl bg-slate-900 border border-slate-800 space-y-2">
+          <div className="flex items-center justify-between text-slate-400">
+            <span className="text-xs font-semibold">MRR Logiciel (Abonnements)</span>
+            <CreditCard className="w-4 h-4 text-emerald-400" />
+          </div>
+          <div className="text-2xl font-black text-white">
+            {mrrTotal.toLocaleString('fr-FR')} <span className="text-sm font-bold text-slate-400">FCFA/m</span>
+          </div>
+          <div className="text-[11px] text-slate-400">Revenus récurrents mensuels D-HOTEL</div>
+        </div>
+
+        <div className="p-5 rounded-2xl bg-slate-900 border border-slate-800 space-y-2">
+          <div className="flex items-center justify-between text-slate-400">
+            <span className="text-xs font-semibold">Parc d&apos;Hébergements</span>
+            <BedDouble className="w-4 h-4 text-sky-400" />
+          </div>
+          <div className="text-2xl font-black text-white">{totalChambres}</div>
+          <div className="text-[11px] text-slate-400">Chambres, suites et bungalows pilotés</div>
+        </div>
+
+        <div className="p-5 rounded-2xl bg-slate-900 border border-slate-800 space-y-2">
+          <div className="flex items-center justify-between text-slate-400">
+            <span className="text-xs font-semibold">Passerelles de Paiement</span>
+            <Zap className="w-4 h-4 text-amber-400" />
+          </div>
+          <div className="text-2xl font-black text-white">2 Actives</div>
+          <div className="text-[11px] text-emerald-400 font-mono">Maketou & Chariow OK</div>
+        </div>
+      </div>
+
+      {/* Onglets Navigation */}
+      <div className="flex items-center gap-2 border-b border-slate-800 pb-px">
         <button
           onClick={() => setActiveTab('etablissements')}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+          className={`px-4 py-2.5 rounded-t-xl font-bold text-xs flex items-center gap-2 transition-all cursor-pointer ${
             activeTab === 'etablissements'
-              ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20'
-              : 'text-slate-400 hover:text-white hover:bg-slate-900'
+              ? 'bg-slate-900 text-amber-400 border-t border-x border-slate-800'
+              : 'text-slate-400 hover:text-white'
           }`}
         >
-          <Building2 className="w-4 h-4" />
-          <span>Gestion des Établissements ({etablissements.length})</span>
+          <Hotel className="w-4 h-4" />
+          <span>Établissements & Licences ({totalHotels})</span>
         </button>
 
         <button
           onClick={() => setActiveTab('passerelles')}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+          className={`px-4 py-2.5 rounded-t-xl font-bold text-xs flex items-center gap-2 transition-all cursor-pointer ${
             activeTab === 'passerelles'
-              ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20'
-              : 'text-slate-400 hover:text-white hover:bg-slate-900'
+              ? 'bg-slate-900 text-amber-400 border-t border-x border-slate-800'
+              : 'text-slate-400 hover:text-white'
           }`}
         >
           <Zap className="w-4 h-4" />
           <span>Paramétrage Maketou & Chariow</span>
         </button>
-
-        <button
-          onClick={() => setActiveTab('kpis')}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-            activeTab === 'kpis'
-              ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20'
-              : 'text-slate-400 hover:text-white hover:bg-slate-900'
-          }`}
-        >
-          <CreditCard className="w-4 h-4" />
-          <span>Abonnements & Licences</span>
-        </button>
       </div>
 
-      {/* ── ONGLET 1 : GESTION DES ÉTABLISSEMENTS ── */}
+      {/* ── ONGLET 1 : ÉTABLISSEMENTS ── */}
       {activeTab === 'etablissements' && (
-        <div className="space-y-6">
-          {/* Barre de recherche et filtres */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 rounded-2xl bg-slate-900 border border-slate-800">
-            <div className="relative w-full sm:w-80">
+        <div className="space-y-4">
+          {/* Barre de Recherche et Filtres */}
+          <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 flex flex-col md:flex-row items-center justify-between gap-4">
+            <div className="relative w-full md:w-80">
+              <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
               <input
                 type="text"
-                placeholder="Rechercher hôtel, ville, gérant..."
+                placeholder="Rechercher hôtel, gérant, e-mail, ville..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-9 pr-4 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-hidden focus:border-amber-500"
+                className="w-full pl-9 pr-4 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white placeholder:text-slate-500 focus:outline-hidden focus:border-amber-500"
               />
-              <Search className="w-4 h-4 text-slate-500 absolute left-3 top-2.5" />
             </div>
 
-            <div className="flex items-center gap-3 w-full sm:w-auto">
+            <div className="flex items-center gap-3 w-full md:w-auto">
               <select
                 value={filterStatut}
                 onChange={(e) => setFilterStatut(e.target.value)}
-                className="px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white focus:outline-hidden focus:border-amber-500"
+                className="px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-slate-300 focus:outline-hidden focus:border-amber-500"
               >
                 <option value="tous">Tous les statuts</option>
-                <option value="actif">Actif</option>
+                <option value="actif">Actif uniquement</option>
                 <option value="essai">En essai</option>
                 <option value="suspendu">Suspendu</option>
               </select>
@@ -294,7 +393,7 @@ export function SuperAdminDashboardClient() {
               <select
                 value={filterPlan}
                 onChange={(e) => setFilterPlan(e.target.value)}
-                className="px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white focus:outline-hidden focus:border-amber-500"
+                className="px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-slate-300 focus:outline-hidden focus:border-amber-500"
               >
                 <option value="tous">Toutes les formules</option>
                 <option value="auberge">Auberge / Campement (15k)</option>
@@ -322,10 +421,20 @@ export function SuperAdminDashboardClient() {
                   {filteredHotels.map((h) => (
                     <tr key={h.id} className="hover:bg-slate-800/40 transition-colors">
                       <td className="px-5 py-4">
-                        <div className="font-bold text-white text-sm">{h.nom}</div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold text-white text-sm">{h.nom}</span>
+                          {(h.source === 'supabase' || h.email) && (
+                            <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                              Inscrit en ligne
+                            </span>
+                          )}
+                        </div>
                         <div className="text-[11px] text-slate-400 flex items-center gap-1 mt-0.5">
                           <MapPin className="w-3 h-3 text-amber-400" />
                           <span>{h.ville}</span>
+                          {h.email && (
+                            <span className="text-slate-500 font-mono ml-2">• {h.email}</span>
+                          )}
                         </div>
                       </td>
 
@@ -369,7 +478,7 @@ export function SuperAdminDashboardClient() {
                         {h.statut === 'essai' && (
                           <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
                             <Clock className="w-3 h-3 text-amber-400" />
-                            Essai 7j
+                            Essai
                           </span>
                         )}
                         {h.statut === 'suspendu' && (
@@ -380,39 +489,38 @@ export function SuperAdminDashboardClient() {
                         )}
                       </td>
 
-                      <td className="px-5 py-4 font-mono text-slate-400 text-xs">
+                      <td className="px-5 py-4 font-mono text-slate-400 text-[11px]">
                         {h.expireLe}
                       </td>
 
                       <td className="px-5 py-4 text-right">
-                        <div className="flex items-center justify-end gap-2">
+                        <div className="inline-flex items-center gap-1.5">
                           <button
-                            type="button"
-                            onClick={() => togglePlan(h.id)}
-                            title="Basculer formule Auberge (15k) / Hôtel (20k)"
-                            className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-[11px] font-semibold border border-slate-700 transition-colors"
-                          >
-                            Changer Plan
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => prolongerAbonnement(h.id)}
-                            title="Prolonger la licence d'1 an"
-                            className="px-2.5 py-1 rounded-lg bg-emerald-950/60 hover:bg-emerald-900 text-emerald-300 text-[11px] font-semibold border border-emerald-800/60 transition-colors"
-                          >
-                            +1 An
-                          </button>
-                          <button
-                            type="button"
                             onClick={() => toggleStatut(h.id)}
-                            title={h.statut === 'actif' ? 'Suspendre' : 'Activer'}
-                            className={`p-1.5 rounded-lg border transition-colors ${
+                            title={h.statut === 'actif' ? 'Suspendre la structure' : 'Activer'}
+                            className={`p-1.5 rounded-lg border text-xs transition-colors cursor-pointer ${
                               h.statut === 'actif'
-                                ? 'bg-slate-800 hover:bg-rose-950 text-slate-400 hover:text-rose-300 border-slate-700'
-                                : 'bg-emerald-950 text-emerald-300 border-emerald-800'
+                                ? 'bg-slate-800 hover:bg-rose-500/20 text-slate-300 hover:text-rose-300 border-slate-700'
+                                : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30 hover:bg-emerald-500/30'
                             }`}
                           >
                             {h.statut === 'actif' ? <Lock className="w-3.5 h-3.5" /> : <Unlock className="w-3.5 h-3.5" />}
+                          </button>
+
+                          <button
+                            onClick={() => togglePlan(h.id)}
+                            title="Basculer formule (Auberge / Hôtel)"
+                            className="px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] font-semibold border border-slate-700 cursor-pointer"
+                          >
+                            Plan
+                          </button>
+
+                          <button
+                            onClick={() => prolongerAbonnement(h.id)}
+                            title="Prolonger d'un an"
+                            className="px-2 py-1 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 text-[11px] font-semibold border border-amber-500/30 cursor-pointer"
+                          >
+                            +1 An
                           </button>
                         </div>
                       </td>
@@ -425,62 +533,24 @@ export function SuperAdminDashboardClient() {
         </div>
       )}
 
-      {/* ── ONGLET 2 : PARAMÉTRAGE PASSERELLES (MAKETOU & CHARIOW) ── */}
+      {/* ── ONGLET 2 : PASSERELLES ── */}
       {activeTab === 'passerelles' && <ParametragePasserelles />}
 
-      {/* ── ONGLET 3 : KPIS & REVENUS ── */}
-      {activeTab === 'kpis' && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="p-5 rounded-2xl bg-slate-900 border border-slate-800">
-            <span className="text-xs uppercase font-semibold text-slate-400 block mb-1">
-              Établissements Actifs
-            </span>
-            <div className="text-3xl font-black text-amber-400">{etablissements.length}</div>
-            <div className="text-[11px] text-slate-500 mt-1">Hôtels, auberges & campements</div>
-          </div>
-          <div className="p-5 rounded-2xl bg-slate-900 border border-slate-800">
-            <span className="text-xs uppercase font-semibold text-slate-400 block mb-1">
-              Chambres sous gestion
-            </span>
-            <div className="text-3xl font-black text-white">227</div>
-            <div className="text-[11px] text-slate-500 mt-1">Capacité lits totale</div>
-          </div>
-          <div className="p-5 rounded-2xl bg-slate-900 border border-slate-800">
-            <span className="text-xs uppercase font-semibold text-slate-400 block mb-1">
-              MRR Abonnements
-            </span>
-            <div className="text-3xl font-black text-emerald-400">90 000 F</div>
-            <div className="text-[11px] text-slate-500 mt-1">Revenu récurrent mensuel</div>
-          </div>
-          <div className="p-5 rounded-2xl bg-slate-900 border border-slate-800">
-            <span className="text-xs uppercase font-semibold text-slate-400 block mb-1">
-              Volume Mobile Money (Maketou)
-            </span>
-            <div className="text-3xl font-black text-sky-400">98.4%</div>
-            <div className="text-[11px] text-slate-500 mt-1">Wave & Orange Money</div>
-          </div>
-        </div>
-      )}
-
-      {/* ── MODAL : CRÉER UN NOUVEL ÉTABLISSEMENT ── */}
+      {/* MODAL CRÉATION ÉTABLISSEMENT */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 max-w-xl w-full relative max-h-[90vh] overflow-y-auto">
-            <button
-              onClick={() => setIsModalOpen(false)}
-              className="absolute top-5 right-5 p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white"
-            >
-              <X className="w-4 h-4" />
-            </button>
-
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
-                <Hotel className="w-5 h-5" />
-              </div>
+        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="w-full max-w-lg rounded-3xl bg-slate-900 border border-slate-800 p-6 sm:p-8 space-y-6 shadow-2xl">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-4">
               <div>
                 <h3 className="text-lg font-bold text-white">Créer un Nouvel Établissement</h3>
                 <p className="text-xs text-slate-400">Ajout d&apos;un hôtel ou d&apos;une auberge sur le réseau D-HOTEL</p>
               </div>
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="p-1 rounded-lg text-slate-400 hover:text-white"
+              >
+                <X className="w-5 h-5" />
+              </button>
             </div>
 
             <form onSubmit={handleCreateHotel} className="space-y-4">
@@ -582,19 +652,47 @@ export function SuperAdminDashboardClient() {
                 </div>
               </div>
 
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-300 mb-1">
+                    E-mail de connexion
+                  </label>
+                  <input
+                    type="email"
+                    placeholder="directeur@hotel.sn"
+                    value={newEmail}
+                    onChange={(e) => setNewEmail(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white focus:outline-hidden focus:border-amber-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-300 mb-1">
+                    Mot de passe initial
+                  </label>
+                  <input
+                    type="text"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white focus:outline-hidden focus:border-amber-500 font-mono"
+                  />
+                </div>
+              </div>
+
               <div className="pt-4 flex items-center justify-end gap-3 border-t border-slate-800">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold"
+                  className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold cursor-pointer"
                 >
                   Annuler
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs uppercase tracking-wider shadow-lg shadow-amber-500/20"
+                  disabled={isSubmitting}
+                  className="px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs uppercase tracking-wider shadow-lg shadow-amber-500/20 flex items-center gap-2 cursor-pointer disabled:opacity-50"
                 >
-                  Créer l&apos;Établissement
+                  {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+                  <span>Créer l&apos;Établissement</span>
                 </button>
               </div>
             </form>

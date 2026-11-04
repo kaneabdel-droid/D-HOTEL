@@ -44,6 +44,16 @@ export async function signupHotelAction(formData: FormData) {
 
   const userId = authData.user?.id;
 
+  // Auto-confirmation immédiate de l'email via le client admin
+  if (userId) {
+    try {
+      const admin = createAdminClient();
+      await admin.auth.admin.updateUserById(userId, { email_confirm: true });
+    } catch (err) {
+      console.warn("Auto-confirmation email non bloquante:", err);
+    }
+  }
+
   // Création dans public.hotels et public.utilisateurs via admin client
   try {
     const admin = createAdminClient();
@@ -79,9 +89,16 @@ export async function signupHotelAction(formData: FormData) {
     console.warn("Erreur non bloquante création tables hotel/utilisateur:", err);
   }
 
-  if (authData.session) {
-    redirect("/dashboard");
-  } else {
-    redirect("/login?message=Votre établissement a été créé avec succès ! Connectez-vous pour configurer vos chambres.");
+  // Connexion automatique immédiate pour ouvrir la session sans étape manuelle
+  try {
+    await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+  } catch (err) {
+    console.warn("Connexion automatique post-inscription:", err);
   }
+
+  // Redirection directe vers le tableau de bord
+  redirect("/dashboard");
 }
