@@ -21,7 +21,7 @@ import { formatXOF } from "@/lib/utils";
 import { MOIS_FR } from "@/lib/rh";
 
 interface DeclarationOrganisme {
-  organisme: "IPRES" | "CSS" | "DGI_IR" | "DGI_CFCE" | "DGI_TRIMF" | "VRS_PRESTATAIRES";
+  organisme: "IPRES" | "CSS" | "DGI_IR" | "DGI_CFCE" | "DGI_TRIMF" | "BRS_PRESTATAIRES";
   nomComplet: string;
   destinataire: string;
   echeance: string;
@@ -101,8 +101,8 @@ export default function CotisationsFiscalitePage() {
       referenceBordereau: "DGI-CFCE-2026-02",
     },
     {
-      organisme: "VRS_PRESTATAIRES",
-      nomComplet: "Retenue VRS Prestataires Extérieurs (BNC 5% sur prestations)",
+      organisme: "BRS_PRESTATAIRES",
+      nomComplet: "Retenue BRS Prestataires Extérieurs (BNC 5% sur prestations)",
       destinataire: "Direction Générale des Impôts et Domaines (DGI)",
       echeance: "15 Mars 2026",
       assietteBrute: 750000,
@@ -110,7 +110,7 @@ export default function CotisationsFiscalitePage() {
       partPatronale: 0,
       totalAPayer: 37500,
       statut: "a_declarer",
-      referenceBordereau: "DGI-VRS-BNC-2026-02",
+      referenceBordereau: "DGI-BRS-BNC-2026-02",
     },
   ]);
 
@@ -119,7 +119,7 @@ export default function CotisationsFiscalitePage() {
     .filter((d) => d.organisme === "IPRES" || d.organisme === "CSS")
     .reduce((acc, d) => acc + d.totalAPayer, 0);
   const totalImpotsFiscauxDgi = declarations
-    .filter((d) => d.organisme.startsWith("DGI") || d.organisme.startsWith("VRS"))
+    .filter((d) => d.organisme.startsWith("DGI") || d.organisme.startsWith("BRS"))
     .reduce((acc, d) => acc + d.totalAPayer, 0);
 
   function marquerCommeRegle(organisme: string) {
@@ -144,7 +144,7 @@ export default function CotisationsFiscalitePage() {
             </span>
           </div>
           <p className="text-sm text-muted-foreground mt-1">
-            Tableau de bord des bordereaux IPRES, CSS, retenues à la source IR/TRIMF, CFCE 3% et VRS sur prestataires extérieurs.
+            Tableau de bord des bordereaux IPRES, CSS, retenues à la source IR/TRIMF, CFCE 3% et BRS sur prestataires extérieurs.
           </p>
         </div>
 
@@ -204,7 +204,7 @@ export default function CotisationsFiscalitePage() {
 
         <div className="rounded-xl border border-border bg-card p-4 shadow-xs">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-muted-foreground">Pôle Fiscal DGI (IR + TRIMF + CFCE + VRS)</span>
+            <span className="text-xs font-medium text-muted-foreground">Pôle Fiscal DGI (IR + TRIMF + CFCE + BRS)</span>
             <Landmark className="h-4 w-4 text-blue-500" />
           </div>
           <p className="text-2xl font-bold text-foreground mt-2">{formatXOF(totalImpotsFiscauxDgi)}</p>
@@ -219,7 +219,7 @@ export default function CotisationsFiscalitePage() {
           Calendrier des Échéances Légales au Sénégal
         </div>
         <p className="mt-1">
-          • <strong>15 du mois M+1</strong> : Dépôt obligatoire de la déclaration des Retenues sur Salaires (IR, TRIMF, CFCE 3%, VRS 5%) auprès du Centre des Services Fiscaux (DGI).
+          • <strong>15 du mois M+1</strong> : Dépôt obligatoire de la déclaration des Retenues sur Salaires (IR, TRIMF, CFCE 3%, BRS 5%) auprès du Centre des Services Fiscaux (DGI).
           <br />
           • <strong>15 du mois M+1</strong> : Télépaiement des cotisations d'assurance vieillesse (IPRES) et prestations familiales / accidents du travail (CSS).
         </p>

@@ -426,7 +426,7 @@ export default function SalariesPage() {
             <ShieldCheck className="h-4 w-4 text-amber-500" />
           </div>
           <p className="text-2xl font-bold text-foreground mt-2">{totalPrestataires}</p>
-          <p className="text-xs text-amber-600 mt-1">Retenue VRS 5%</p>
+          <p className="text-xs text-amber-600 mt-1">Retenue BRS 5%</p>
         </div>
 
         <div className="rounded-xl border border-border bg-card p-4 shadow-xs">

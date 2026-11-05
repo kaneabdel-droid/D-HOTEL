@@ -665,17 +665,17 @@ export function genererCalculBulletin(
 
   // CAS PRESTATAIRE BNC
   if (collab.statut === "prestataire") {
-    const tauxVrs = pays === "MR" ? 5 : pays === "MA" ? 10 : pays === "NG" ? 5 : 5;
-    const retenueVrs = Math.round((brutImposable * tauxVrs) / 100);
+    const tauxBrs = pays === "MR" ? 5 : pays === "MA" ? 10 : pays === "NG" ? 5 : 5;
+    const retenueBrs = Math.round((brutImposable * tauxBrs) / 100);
     lignes.push({
-      libelle: `Retenue à la source prestation extérieure (VRS ${tauxVrs}%)`,
+      libelle: `Retenue à la source prestation extérieure (BRS ${tauxBrs}%)`,
       type: "retenue_salariale",
       base: brutImposable,
-      taux: tauxVrs,
-      montantSalarial: retenueVrs,
+      taux: tauxBrs,
+      montantSalarial: retenueBrs,
       compteComptable: modele.comptesCles.etatImpots,
     });
-    const netPrest = salaireBrutTotal - retenueVrs - acomptesMois;
+    const netPrest = salaireBrutTotal - retenueBrs - acomptesMois;
     return {
       collaborateurId: collab.id,
       matricule: collab.matricule,
@@ -704,7 +704,7 @@ export function genererCalculBulletin(
       salaireBrutTotal,
       brutImposable,
       retenuesAbsences: 0,
-      totalRetenuesSalariales: retenueVrs + acomptesMois,
+      totalRetenuesSalariales: retenueBrs + acomptesMois,
       netAPayer: netPrest,
       totalChargesPatronales: 0,
       coutTotalEmployeur: salaireBrutTotal,
