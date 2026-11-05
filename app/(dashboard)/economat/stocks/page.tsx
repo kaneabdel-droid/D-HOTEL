@@ -120,13 +120,12 @@ export default function StocksEconomatPage() {
         return {
           ...art,
           stockActuel: Math.max(0, art.stockActuel + delta),
-          dernierMouvement: `${
-            typeMouvement === "entree"
+          dernierMouvement: `${typeMouvement === "entree"
               ? "Entrée"
               : typeMouvement === "sortie"
-              ? "Sortie"
-              : "Perte/Casse"
-          } ${quantiteMvt} ${art.unite} (${motifMvt})`,
+                ? "Sortie"
+                : "Perte/Casse"
+            } ${quantiteMvt} ${art.unite} (${motifMvt})`,
         };
       })
     );
@@ -267,9 +266,8 @@ export default function StocksEconomatPage() {
                     </td>
                     <td className="px-4 py-3 text-center">
                       <span
-                        className={`font-black text-sm ${
-                          alerte ? "text-rose-600" : "text-foreground"
-                        }`}
+                        className={`font-black text-sm ${alerte ? "text-rose-600" : "text-foreground"
+                          }`}
                       >
                         {art.stockActuel} {art.unite}
                       </span>
@@ -336,33 +334,30 @@ export default function StocksEconomatPage() {
                     <button
                       type="button"
                       onClick={() => setTypeMouvement("sortie")}
-                      className={`py-2 text-xs font-bold rounded-xl border transition ${
-                        typeMouvement === "sortie"
+                      className={`py-2 text-xs font-bold rounded-xl border transition ${typeMouvement === "sortie"
                           ? "bg-[var(--primary)] text-white border-[var(--primary)] shadow-xs"
                           : "bg-background border-surface-border text-foreground-muted hover:text-foreground"
-                      }`}
+                        }`}
                     >
                       Sortie Cuisine
                     </button>
                     <button
                       type="button"
                       onClick={() => setTypeMouvement("entree")}
-                      className={`py-2 text-xs font-bold rounded-xl border transition ${
-                        typeMouvement === "entree"
+                      className={`py-2 text-xs font-bold rounded-xl border transition ${typeMouvement === "entree"
                           ? "bg-emerald-600 text-white border-emerald-600 shadow-xs"
                           : "bg-background border-surface-border text-foreground-muted hover:text-foreground"
-                      }`}
+                        }`}
                     >
                       Entrée Achat
                     </button>
                     <button
                       type="button"
                       onClick={() => setTypeMouvement("perte")}
-                      className={`py-2 text-xs font-bold rounded-xl border transition ${
-                        typeMouvement === "perte"
+                      className={`py-2 text-xs font-bold rounded-xl border transition ${typeMouvement === "perte"
                           ? "bg-rose-600 text-white border-rose-600 shadow-xs"
                           : "bg-background border-surface-border text-foreground-muted hover:text-foreground"
-                      }`}
+                        }`}
                     >
                       Perte / Casse
                     </button>

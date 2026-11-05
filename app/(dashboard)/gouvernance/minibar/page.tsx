@@ -242,12 +242,12 @@ export default function MinibarLingeriePage() {
       typeMvtLingerie === "retour_blanchisserie"
         ? "Retour de blanchisserie (linge propre)"
         : typeMvtLingerie === "envoi_blanchisserie"
-        ? "Départ vers blanchisserie (linge sale)"
-        : typeMvtLingerie === "dotation_chambres"
-        ? "Dotation en chambres"
-        : typeMvtLingerie === "entree_neuf"
-        ? "Réception linge neuf"
-        : "Mise au rebut / Perte";
+          ? "Départ vers blanchisserie (linge sale)"
+          : typeMvtLingerie === "dotation_chambres"
+            ? "Dotation en chambres"
+            : typeMvtLingerie === "entree_neuf"
+              ? "Réception linge neuf"
+              : "Mise au rebut / Perte";
 
     setSuccesMsg(
       `Mouvement enregistré : ${libelle} sur "${modalMouvementLingerie.article}" (${qte} pièces).`
@@ -294,22 +294,20 @@ export default function MinibarLingeriePage() {
       <div className="flex border-b border-surface-border gap-6">
         <button
           onClick={() => setOnglet("minibar")}
-          className={`pb-3 text-sm font-semibold flex items-center gap-2 border-b-2 transition ${
-            onglet === "minibar"
+          className={`pb-3 text-sm font-semibold flex items-center gap-2 border-b-2 transition ${onglet === "minibar"
               ? "border-[var(--primary)] text-[var(--primary)]"
               : "border-transparent text-foreground-muted hover:text-foreground"
-          }`}
+            }`}
         >
           <Wine className="w-4 h-4" />
           Consommations Minibar Imputées ({consommations.length})
         </button>
         <button
           onClick={() => setOnglet("lingerie")}
-          className={`pb-3 text-sm font-semibold flex items-center gap-2 border-b-2 transition ${
-            onglet === "lingerie"
+          className={`pb-3 text-sm font-semibold flex items-center gap-2 border-b-2 transition ${onglet === "lingerie"
               ? "border-[var(--primary)] text-[var(--primary)]"
               : "border-transparent text-foreground-muted hover:text-foreground"
-          }`}
+            }`}
         >
           <Shirt className="w-4 h-4" />
           Lingerie & Blanchisserie ({stockLingerie.length} articles)
@@ -424,9 +422,8 @@ export default function MinibarLingeriePage() {
                         Stock Propre
                       </span>
                       <span
-                        className={`text-base font-bold ${
-                          estAlerte ? "text-rose-600" : "text-emerald-600"
-                        }`}
+                        className={`text-base font-bold ${estAlerte ? "text-rose-600" : "text-emerald-600"
+                          }`}
                       >
                         {item.stockPropre}
                       </span>
@@ -552,11 +549,10 @@ export default function MinibarLingeriePage() {
                           key={n}
                           type="button"
                           onClick={() => setQuantiteSaisie(n)}
-                          className={`px-2.5 py-1.5 rounded-lg border text-xs font-bold transition ${
-                            quantiteSaisie === n
+                          className={`px-2.5 py-1.5 rounded-lg border text-xs font-bold transition ${quantiteSaisie === n
                               ? "bg-[var(--primary)] text-white border-[var(--primary)]"
                               : "bg-surface-muted text-foreground-muted border-surface-border hover:text-foreground"
-                          }`}
+                            }`}
                         >
                           +{n}
                         </button>
@@ -664,11 +660,10 @@ export default function MinibarLingeriePage() {
                         setTypeMvtLingerie("retour_blanchisserie");
                         setMotifMvtLingerie("Réception linge propre lavé & repassé");
                       }}
-                      className={`p-2.5 rounded-xl border text-left flex items-start gap-2 transition ${
-                        typeMvtLingerie === "retour_blanchisserie"
+                      className={`p-2.5 rounded-xl border text-left flex items-start gap-2 transition ${typeMvtLingerie === "retour_blanchisserie"
                           ? "bg-emerald-500/15 border-emerald-500 text-foreground ring-1 ring-emerald-500"
                           : "bg-surface-muted/60 border-surface-border text-foreground-muted hover:text-foreground"
-                      }`}
+                        }`}
                     >
                       <ArrowDownLeft className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
                       <div>
@@ -683,11 +678,10 @@ export default function MinibarLingeriePage() {
                         setTypeMvtLingerie("envoi_blanchisserie");
                         setMotifMvtLingerie("Ramassage chambres & départ lavage");
                       }}
-                      className={`p-2.5 rounded-xl border text-left flex items-start gap-2 transition ${
-                        typeMvtLingerie === "envoi_blanchisserie"
+                      className={`p-2.5 rounded-xl border text-left flex items-start gap-2 transition ${typeMvtLingerie === "envoi_blanchisserie"
                           ? "bg-amber-500/15 border-amber-500 text-foreground ring-1 ring-amber-500"
                           : "bg-surface-muted/60 border-surface-border text-foreground-muted hover:text-foreground"
-                      }`}
+                        }`}
                     >
                       <RefreshCw className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
                       <div>
@@ -702,11 +696,10 @@ export default function MinibarLingeriePage() {
                         setTypeMvtLingerie("dotation_chambres");
                         setMotifMvtLingerie("Mise en place recouche / départ client");
                       }}
-                      className={`p-2.5 rounded-xl border text-left flex items-start gap-2 transition ${
-                        typeMvtLingerie === "dotation_chambres"
+                      className={`p-2.5 rounded-xl border text-left flex items-start gap-2 transition ${typeMvtLingerie === "dotation_chambres"
                           ? "bg-blue-500/15 border-blue-500 text-foreground ring-1 ring-blue-500"
                           : "bg-surface-muted/60 border-surface-border text-foreground-muted hover:text-foreground"
-                      }`}
+                        }`}
                     >
                       <ArrowUpRight className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
                       <div>
@@ -721,11 +714,10 @@ export default function MinibarLingeriePage() {
                         setTypeMvtLingerie("entree_neuf");
                         setMotifMvtLingerie("Livraison économat / réapprovisionnement");
                       }}
-                      className={`p-2.5 rounded-xl border text-left flex items-start gap-2 transition ${
-                        typeMvtLingerie === "entree_neuf"
+                      className={`p-2.5 rounded-xl border text-left flex items-start gap-2 transition ${typeMvtLingerie === "entree_neuf"
                           ? "bg-indigo-500/15 border-indigo-500 text-foreground ring-1 ring-indigo-500"
                           : "bg-surface-muted/60 border-surface-border text-foreground-muted hover:text-foreground"
-                      }`}
+                        }`}
                     >
                       <PackageCheck className="w-4 h-4 text-indigo-600 shrink-0 mt-0.5" />
                       <div>
@@ -740,11 +732,10 @@ export default function MinibarLingeriePage() {
                         setTypeMvtLingerie("rebut_perte");
                         setMotifMvtLingerie("Tache indélébile ou déchirure irréparable");
                       }}
-                      className={`p-2.5 rounded-xl border text-left flex items-start gap-2 sm:col-span-2 transition ${
-                        typeMvtLingerie === "rebut_perte"
+                      className={`p-2.5 rounded-xl border text-left flex items-start gap-2 sm:col-span-2 transition ${typeMvtLingerie === "rebut_perte"
                           ? "bg-rose-500/15 border-rose-500 text-foreground ring-1 ring-rose-500"
                           : "bg-surface-muted/60 border-surface-border text-foreground-muted hover:text-foreground"
-                      }`}
+                        }`}
                     >
                       <Trash2 className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
                       <div>
@@ -776,11 +767,10 @@ export default function MinibarLingeriePage() {
                           key={n}
                           type="button"
                           onClick={() => setQuantiteMvtLingerie(n)}
-                          className={`px-2 py-1.5 rounded-lg border text-xs font-bold transition ${
-                            quantiteMvtLingerie === n
+                          className={`px-2 py-1.5 rounded-lg border text-xs font-bold transition ${quantiteMvtLingerie === n
                               ? "bg-[var(--primary)] text-white border-[var(--primary)]"
                               : "bg-surface-muted text-foreground-muted border-surface-border hover:text-foreground"
-                          }`}
+                            }`}
                         >
                           {n}
                         </button>
