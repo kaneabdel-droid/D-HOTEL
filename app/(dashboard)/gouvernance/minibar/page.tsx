@@ -15,6 +15,10 @@ import {
   PackageCheck,
   RefreshCw,
   AlertTriangle,
+  X,
+  ArrowDownLeft,
+  ArrowUpRight,
+  Trash2,
 } from "lucide-react";
 import { formatXOF } from "@/lib/utils";
 
@@ -44,6 +48,13 @@ export default function MinibarLingeriePage() {
   const [onglet, setOnglet] = useState<"minibar" | "lingerie">("minibar");
   const [recherche, setRecherche] = useState("");
   const [modalSaisieMinibar, setModalSaisieMinibar] = useState(false);
+  const [modalMouvementLingerie, setModalMouvementLingerie] = useState<ArticleLingerie | null>(null);
+  const [typeMvtLingerie, setTypeMvtLingerie] = useState<
+    "retour_blanchisserie" | "envoi_blanchisserie" | "dotation_chambres" | "entree_neuf" | "rebut_perte"
+  >("retour_blanchisserie");
+  const [quantiteMvtLingerie, setQuantiteMvtLingerie] = useState(10);
+  const [motifMvtLingerie, setMotifMvtLingerie] = useState("Réception linge lavé & repassé");
+  const [agentMvtLingerie, setAgentMvtLingerie] = useState("Fatou Ndiaye (Gouvernante)");
   const [succesMsg, setSuccesMsg] = useState<string | null>(null);
 
   // Formulaire saisie
@@ -188,6 +199,61 @@ export default function MinibarLingeriePage() {
       )}).`
     );
     setTimeout(() => setSuccesMsg(null), 4000);
+  };
+
+  const handleValiderMouvementLingerie = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!modalMouvementLingerie) return;
+
+    const qte = Math.max(1, Number(quantiteMvtLingerie) || 1);
+
+    setStockLingerie((prev) =>
+      prev.map((item) => {
+        if (item.id !== modalMouvementLingerie.id) return item;
+        let newPropre = item.stockPropre;
+        let newChambres = item.stockChambres;
+        let newBlanchisserie = item.enBlanchisserie;
+
+        if (typeMvtLingerie === "retour_blanchisserie") {
+          newBlanchisserie = Math.max(0, item.enBlanchisserie - qte);
+          newPropre = item.stockPropre + qte;
+        } else if (typeMvtLingerie === "envoi_blanchisserie") {
+          newBlanchisserie = item.enBlanchisserie + qte;
+          newChambres = Math.max(0, item.stockChambres - qte);
+        } else if (typeMvtLingerie === "dotation_chambres") {
+          newPropre = Math.max(0, item.stockPropre - qte);
+          newChambres = item.stockChambres + qte;
+        } else if (typeMvtLingerie === "entree_neuf") {
+          newPropre = item.stockPropre + qte;
+        } else if (typeMvtLingerie === "rebut_perte") {
+          newPropre = Math.max(0, item.stockPropre - qte);
+        }
+
+        return {
+          ...item,
+          stockPropre: newPropre,
+          stockChambres: newChambres,
+          enBlanchisserie: newBlanchisserie,
+        };
+      })
+    );
+
+    const libelle =
+      typeMvtLingerie === "retour_blanchisserie"
+        ? "Retour de blanchisserie (linge propre)"
+        : typeMvtLingerie === "envoi_blanchisserie"
+        ? "Départ vers blanchisserie (linge sale)"
+        : typeMvtLingerie === "dotation_chambres"
+        ? "Dotation en chambres"
+        : typeMvtLingerie === "entree_neuf"
+        ? "Réception linge neuf"
+        : "Mise au rebut / Perte";
+
+    setSuccesMsg(
+      `Mouvement enregistré : ${libelle} sur "${modalMouvementLingerie.article}" (${qte} pièces).`
+    );
+    setModalMouvementLingerie(null);
+    setTimeout(() => setSuccesMsg(null), 4500);
   };
 
   return (
@@ -387,7 +453,16 @@ export default function MinibarLingeriePage() {
 
                   <div className="pt-1 flex items-center justify-between text-xs text-foreground-muted">
                     <span>Seuil de sécurité : {item.seuilAlerte}</span>
-                    <button className="text-[var(--primary)] font-semibold hover:underline">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setModalMouvementLingerie(item);
+                        setTypeMvtLingerie("retour_blanchisserie");
+                        setQuantiteMvtLingerie(Math.min(item.enBlanchisserie || 10, 10) || 5);
+                        setMotifMvtLingerie("Réception linge propre lavé & repassé");
+                      }}
+                      className="text-[var(--primary)] font-semibold hover:underline inline-flex items-center gap-1 cursor-pointer transition-colors"
+                    >
                       Mouvement ➔
                     </button>
                   </div>
@@ -400,77 +475,362 @@ export default function MinibarLingeriePage() {
 
       {/* MODAL SAISIE MINIBAR */}
       {modalSaisieMinibar && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-surface rounded-2xl border border-surface-border shadow-2xl max-w-md w-full p-6 space-y-4 animate-scale-up">
-            <h3 className="text-lg font-bold">Pointer une boisson minibar</h3>
-            <form onSubmit={handleAjoutConso} className="space-y-4">
-              <div>
-                <label className="text-xs font-semibold text-foreground-muted block mb-1">
-                  Chambre concernée
-                </label>
-                <select
-                  value={chambreSaisie}
-                  onChange={(e) => setChambreSaisie(e.target.value)}
-                  className="w-full px-3 py-2 text-sm rounded-lg bg-surface border border-surface-border focus:outline-none"
-                >
-                  <option value="101">Chambre 101 (M. Ibrahima Diop)</option>
-                  <option value="102">Chambre 102 (Mme Awa Sarr)</option>
-                  <option value="201">Suite Junior 201 (M. Amadou Tidiane Ba)</option>
-                  <option value="B12">Bungalow Plage 12 (Mme Sophie Martin)</option>
-                </select>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-3 sm:p-4 overflow-y-auto">
+          <div className="bg-surface text-foreground rounded-2xl border border-surface-border shadow-2xl max-w-md w-full max-h-[92vh] sm:max-h-[88vh] flex flex-col overflow-hidden animate-scale-up">
+            {/* En-tête fixe */}
+            <div className="p-4 sm:p-5 border-b border-surface-border flex items-center justify-between shrink-0 bg-surface">
+              <div className="flex items-center gap-2.5">
+                <div className="p-2 rounded-xl bg-[var(--primary)]/10 text-[var(--primary)]">
+                  <Wine className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-foreground">Pointer une boisson minibar</h3>
+                  <p className="text-xs text-foreground-muted">Imputation directe sur le folio de chambre</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setModalSaisieMinibar(false)}
+                className="p-1.5 rounded-lg text-foreground-muted hover:text-foreground hover:bg-surface-muted transition"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Corps défilable */}
+            <form onSubmit={handleAjoutConso} className="flex flex-col flex-1 overflow-hidden">
+              <div className="p-4 sm:p-5 overflow-y-auto flex-1 space-y-4 text-xs">
+                <div>
+                  <label className="text-xs font-semibold text-foreground block mb-1.5">
+                    Chambre concernée <span className="text-danger">*</span>
+                  </label>
+                  <select
+                    value={chambreSaisie}
+                    onChange={(e) => setChambreSaisie(e.target.value)}
+                    className="w-full px-3 py-2.5 text-xs sm:text-sm rounded-xl bg-background text-foreground border border-surface-border focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                  >
+                    <option value="101">Chambre 101 (M. Ibrahima Diop)</option>
+                    <option value="102">Chambre 102 (Mme Awa Sarr)</option>
+                    <option value="201">Suite Junior 201 (M. Amadou Tidiane Ba)</option>
+                    <option value="B12">Bungalow Plage 12 (Mme Sophie Martin)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-xs font-semibold text-foreground block mb-1.5">
+                    Article consommé <span className="text-danger">*</span>
+                  </label>
+                  <select
+                    value={articleSaisi}
+                    onChange={(e) => setArticleSaisi(e.target.value)}
+                    className="w-full px-3 py-2.5 text-xs sm:text-sm rounded-xl bg-background text-foreground border border-surface-border focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                  >
+                    {Object.entries(tarifsArticles).map(([nom, prix]) => (
+                      <option key={nom} value={nom}>
+                        {nom} — {formatXOF(prix)}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-xs font-semibold text-foreground block mb-1.5">
+                    Quantité consommée <span className="text-danger">*</span>
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="number"
+                      min="1"
+                      max="10"
+                      value={quantiteSaisie}
+                      onChange={(e) => setQuantiteSaisie(Number(e.target.value))}
+                      className="w-full px-3 py-2.5 text-xs sm:text-sm rounded-xl bg-background text-foreground border border-surface-border focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                    />
+                    <div className="flex items-center gap-1 shrink-0">
+                      {[1, 2, 4].map((n) => (
+                        <button
+                          key={n}
+                          type="button"
+                          onClick={() => setQuantiteSaisie(n)}
+                          className={`px-2.5 py-1.5 rounded-lg border text-xs font-bold transition ${
+                            quantiteSaisie === n
+                              ? "bg-[var(--primary)] text-white border-[var(--primary)]"
+                              : "bg-surface-muted text-foreground-muted border-surface-border hover:text-foreground"
+                          }`}
+                        >
+                          +{n}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="p-3.5 rounded-xl bg-surface-muted/60 border border-surface-border text-xs flex justify-between items-center">
+                  <span className="text-foreground-muted font-medium">Total à imputer sur le folio :</span>
+                  <span className="font-bold text-sm text-[var(--primary)]">
+                    {formatXOF((tarifsArticles[articleSaisi] || 2500) * quantiteSaisie)}
+                  </span>
+                </div>
               </div>
 
-              <div>
-                <label className="text-xs font-semibold text-foreground-muted block mb-1">
-                  Article consommé
-                </label>
-                <select
-                  value={articleSaisi}
-                  onChange={(e) => setArticleSaisi(e.target.value)}
-                  className="w-full px-3 py-2 text-sm rounded-lg bg-surface border border-surface-border focus:outline-none"
-                >
-                  {Object.entries(tarifsArticles).map(([nom, prix]) => (
-                    <option key={nom} value={nom}>
-                      {nom} — {formatXOF(prix)}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="text-xs font-semibold text-foreground-muted block mb-1">
-                  Quantité consommée
-                </label>
-                <input
-                  type="number"
-                  min="1"
-                  max="10"
-                  value={quantiteSaisie}
-                  onChange={(e) => setQuantiteSaisie(Number(e.target.value))}
-                  className="w-full px-3 py-2 text-sm rounded-lg bg-surface border border-surface-border focus:outline-none"
-                />
-              </div>
-
-              <div className="p-3 rounded-lg bg-surface-muted/60 text-xs flex justify-between items-center">
-                <span className="text-foreground-muted">Total à imputer sur le folio :</span>
-                <span className="font-bold text-sm text-[var(--primary)]">
-                  {formatXOF((tarifsArticles[articleSaisi] || 2500) * quantiteSaisie)}
-                </span>
-              </div>
-
-              <div className="flex items-center justify-end gap-3 pt-3">
+              {/* Pied fixe */}
+              <div className="p-4 sm:p-5 border-t border-surface-border shrink-0 flex items-center justify-end gap-3 bg-surface">
                 <button
                   type="button"
                   onClick={() => setModalSaisieMinibar(false)}
-                  className="px-4 py-2 text-sm font-medium rounded-lg text-foreground-muted hover:bg-surface-muted"
+                  className="px-4 py-2 text-xs sm:text-sm font-semibold rounded-xl text-foreground-muted hover:text-foreground hover:bg-surface-muted transition"
                 >
                   Annuler
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 text-sm font-bold rounded-lg bg-[var(--primary)] text-[var(--primary-foreground)] shadow-sm hover:opacity-95"
+                  className="px-5 py-2.5 text-xs sm:text-sm font-bold rounded-xl bg-[var(--primary)] text-[var(--primary-foreground)] shadow-sm hover:opacity-95 transition"
                 >
                   Valider & Imputer
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL MOUVEMENT LINGERIE */}
+      {modalMouvementLingerie && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-3 sm:p-4 overflow-y-auto">
+          <div className="bg-surface text-foreground rounded-2xl border border-surface-border shadow-2xl max-w-lg w-full max-h-[92vh] sm:max-h-[88vh] flex flex-col overflow-hidden animate-scale-up">
+            {/* En-tête fixe */}
+            <div className="p-4 sm:p-5 border-b border-surface-border flex items-center justify-between shrink-0 bg-surface">
+              <div className="flex items-center gap-2.5">
+                <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-500">
+                  <Shirt className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-foreground">
+                    Mouvement Lingerie
+                  </h3>
+                  <p className="text-xs text-foreground-muted font-medium">
+                    {modalMouvementLingerie.article}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setModalMouvementLingerie(null)}
+                className="p-1.5 rounded-lg text-foreground-muted hover:text-foreground hover:bg-surface-muted transition"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Corps défilable */}
+            <form onSubmit={handleValiderMouvementLingerie} className="flex flex-col flex-1 overflow-hidden">
+              <div className="p-4 sm:p-5 overflow-y-auto flex-1 space-y-4 text-xs">
+                {/* Récapitulatif des stocks actuels */}
+                <div className="p-3 bg-background rounded-xl border border-surface-border space-y-2">
+                  <span className="text-[11px] font-bold text-foreground-muted uppercase tracking-wider block">
+                    Situation actuelle du stock
+                  </span>
+                  <div className="grid grid-cols-3 gap-2 text-center">
+                    <div className="p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
+                      <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold block">Propre Réserve</span>
+                      <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400">
+                        {modalMouvementLingerie.stockPropre}
+                      </span>
+                    </div>
+                    <div className="p-2 rounded-lg bg-blue-500/10 border border-blue-500/20">
+                      <span className="text-[10px] text-blue-600 dark:text-blue-400 font-semibold block">En Chambres</span>
+                      <span className="text-sm font-bold text-blue-600 dark:text-blue-400">
+                        {modalMouvementLingerie.stockChambres}
+                      </span>
+                    </div>
+                    <div className="p-2 rounded-lg bg-amber-500/10 border border-amber-500/20">
+                      <span className="text-[10px] text-amber-600 dark:text-amber-400 font-semibold block">Blanchisserie</span>
+                      <span className="text-sm font-bold text-amber-600 dark:text-amber-400">
+                        {modalMouvementLingerie.enBlanchisserie}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Type de mouvement */}
+                <div>
+                  <label className="text-xs font-semibold text-foreground block mb-2">
+                    Type d&apos;opération <span className="text-danger">*</span>
+                  </label>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setTypeMvtLingerie("retour_blanchisserie");
+                        setMotifMvtLingerie("Réception linge propre lavé & repassé");
+                      }}
+                      className={`p-2.5 rounded-xl border text-left flex items-start gap-2 transition ${
+                        typeMvtLingerie === "retour_blanchisserie"
+                          ? "bg-emerald-500/15 border-emerald-500 text-foreground ring-1 ring-emerald-500"
+                          : "bg-surface-muted/60 border-surface-border text-foreground-muted hover:text-foreground"
+                      }`}
+                    >
+                      <ArrowDownLeft className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                      <div>
+                        <span className="font-bold text-xs block text-foreground">Retour Blanchisserie</span>
+                        <span className="text-[11px] text-foreground-muted">Propre réintégré au stock</span>
+                      </div>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setTypeMvtLingerie("envoi_blanchisserie");
+                        setMotifMvtLingerie("Ramassage chambres & départ lavage");
+                      }}
+                      className={`p-2.5 rounded-xl border text-left flex items-start gap-2 transition ${
+                        typeMvtLingerie === "envoi_blanchisserie"
+                          ? "bg-amber-500/15 border-amber-500 text-foreground ring-1 ring-amber-500"
+                          : "bg-surface-muted/60 border-surface-border text-foreground-muted hover:text-foreground"
+                      }`}
+                    >
+                      <RefreshCw className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                      <div>
+                        <span className="font-bold text-xs block text-foreground">Envoi Blanchisserie</span>
+                        <span className="text-[11px] text-foreground-muted">Linge sale vers lavage</span>
+                      </div>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setTypeMvtLingerie("dotation_chambres");
+                        setMotifMvtLingerie("Mise en place recouche / départ client");
+                      }}
+                      className={`p-2.5 rounded-xl border text-left flex items-start gap-2 transition ${
+                        typeMvtLingerie === "dotation_chambres"
+                          ? "bg-blue-500/15 border-blue-500 text-foreground ring-1 ring-blue-500"
+                          : "bg-surface-muted/60 border-surface-border text-foreground-muted hover:text-foreground"
+                      }`}
+                    >
+                      <ArrowUpRight className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
+                      <div>
+                        <span className="font-bold text-xs block text-foreground">Dotation Chambres</span>
+                        <span className="text-[11px] text-foreground-muted">Du stock propre aux lits</span>
+                      </div>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setTypeMvtLingerie("entree_neuf");
+                        setMotifMvtLingerie("Livraison économat / réapprovisionnement");
+                      }}
+                      className={`p-2.5 rounded-xl border text-left flex items-start gap-2 transition ${
+                        typeMvtLingerie === "entree_neuf"
+                          ? "bg-indigo-500/15 border-indigo-500 text-foreground ring-1 ring-indigo-500"
+                          : "bg-surface-muted/60 border-surface-border text-foreground-muted hover:text-foreground"
+                      }`}
+                    >
+                      <PackageCheck className="w-4 h-4 text-indigo-600 shrink-0 mt-0.5" />
+                      <div>
+                        <span className="font-bold text-xs block text-foreground">Entrée Linge Neuf</span>
+                        <span className="text-[11px] text-foreground-muted">Achat ou renouvellement</span>
+                      </div>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setTypeMvtLingerie("rebut_perte");
+                        setMotifMvtLingerie("Tache indélébile ou déchirure irréparable");
+                      }}
+                      className={`p-2.5 rounded-xl border text-left flex items-start gap-2 sm:col-span-2 transition ${
+                        typeMvtLingerie === "rebut_perte"
+                          ? "bg-rose-500/15 border-rose-500 text-foreground ring-1 ring-rose-500"
+                          : "bg-surface-muted/60 border-surface-border text-foreground-muted hover:text-foreground"
+                      }`}
+                    >
+                      <Trash2 className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+                      <div>
+                        <span className="font-bold text-xs block text-foreground">Mise au Rebut / Déclassement</span>
+                        <span className="text-[11px] text-foreground-muted">Sortie définitive pour casse, déchirure ou perte</span>
+                      </div>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Quantité */}
+                <div>
+                  <label className="text-xs font-semibold text-foreground block mb-1.5">
+                    Quantité de pièces <span className="text-danger">*</span>
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="number"
+                      min="1"
+                      max="500"
+                      required
+                      value={quantiteMvtLingerie}
+                      onChange={(e) => setQuantiteMvtLingerie(Math.max(1, Number(e.target.value)))}
+                      className="w-full px-3 py-2.5 text-xs sm:text-sm rounded-xl bg-background text-foreground border border-surface-border focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                    />
+                    <div className="flex items-center gap-1 shrink-0">
+                      {[5, 10, 20, 50].map((n) => (
+                        <button
+                          key={n}
+                          type="button"
+                          onClick={() => setQuantiteMvtLingerie(n)}
+                          className={`px-2 py-1.5 rounded-lg border text-xs font-bold transition ${
+                            quantiteMvtLingerie === n
+                              ? "bg-[var(--primary)] text-white border-[var(--primary)]"
+                              : "bg-surface-muted text-foreground-muted border-surface-border hover:text-foreground"
+                          }`}
+                        >
+                          {n}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Motif / Commentaire */}
+                <div>
+                  <label className="text-xs font-semibold text-foreground block mb-1.5">
+                    Motif & Précisions
+                  </label>
+                  <input
+                    type="text"
+                    value={motifMvtLingerie}
+                    onChange={(e) => setMotifMvtLingerie(e.target.value)}
+                    placeholder="Ex: Retour pressing Dakar, Ramassage 1er étage..."
+                    className="w-full px-3 py-2.5 text-xs sm:text-sm rounded-xl bg-background text-foreground border border-surface-border focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                  />
+                </div>
+
+                {/* Agent responsable */}
+                <div>
+                  <label className="text-xs font-semibold text-foreground block mb-1.5">
+                    Gouvernante / Agent responsable
+                  </label>
+                  <input
+                    type="text"
+                    value={agentMvtLingerie}
+                    onChange={(e) => setAgentMvtLingerie(e.target.value)}
+                    className="w-full px-3 py-2.5 text-xs sm:text-sm rounded-xl bg-background text-foreground border border-surface-border focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                  />
+                </div>
+              </div>
+
+              {/* Pied fixe */}
+              <div className="p-4 sm:p-5 border-t border-surface-border shrink-0 flex items-center justify-end gap-3 bg-surface">
+                <button
+                  type="button"
+                  onClick={() => setModalMouvementLingerie(null)}
+                  className="px-4 py-2 text-xs sm:text-sm font-semibold rounded-xl text-foreground-muted hover:text-foreground hover:bg-surface-muted transition"
+                >
+                  Annuler
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2.5 text-xs sm:text-sm font-bold rounded-xl bg-[var(--primary)] text-[var(--primary-foreground)] shadow-sm hover:opacity-95 transition"
+                >
+                  Enregistrer le Mouvement
                 </button>
               </div>
             </form>

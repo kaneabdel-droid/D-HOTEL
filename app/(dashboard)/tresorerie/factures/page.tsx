@@ -17,6 +17,7 @@ import {
   Smartphone,
   Split,
   Layers,
+  X,
 } from "lucide-react";
 import { formatXOF } from "@/lib/utils";
 import { genererFactureFolioPdf } from "@/lib/pdf/facture-pdf";
@@ -273,151 +274,159 @@ export default function FacturesFoliosPage() {
 
       {/* MODAL FACTURE OFFICIELLE A4 NORMALISÉE */}
       {factureSelectionnee && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto">
-          <div className="bg-surface rounded-2xl border border-surface-border shadow-2xl max-w-2xl w-full p-6 space-y-6 my-8 animate-scale-up">
-            {/* En-tête officiel */}
-            <div className="border-b border-surface-border pb-4 flex items-start justify-between">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-3 sm:p-4 overflow-y-auto">
+          <div className="bg-surface text-foreground rounded-2xl border border-surface-border shadow-2xl max-w-2xl w-full max-h-[92vh] sm:max-h-[88vh] flex flex-col overflow-hidden animate-scale-up">
+            {/* En-tête fixe */}
+            <div className="p-4 sm:p-5 border-b border-surface-border flex items-start justify-between shrink-0 bg-surface">
               <div>
-                <h3 className="text-xl font-black text-foreground">
+                <h3 className="text-lg font-black text-foreground">
                   HÔTEL TERANGA PALACE 5★
                 </h3>
-                <p className="text-xs text-foreground-muted">
-                  SARL au capital de 100 000 000 FCFA • NINEA: 009845213 2V9 • RCCM: SN.DKR.2024.B.1245
-                </p>
-                <p className="text-xs text-foreground-muted">
-                  Route des Almadies, Dakar • Tél : +221 33 800 00 00 • hotel@dembasolution.com
+                <p className="text-[11px] text-foreground-muted">
+                  SARL au capital de 100 000 000 FCFA • NINEA: 009845213 2V9
                 </p>
               </div>
 
-              <div className="text-right">
-                <span className="text-xs font-bold uppercase tracking-wider text-foreground-muted">
-                  FACTURE DÉFINITIVE
-                </span>
-                <p className="text-base font-black font-mono text-[var(--accent)] mt-0.5">
-                  {factureSelectionnee.numeroFacture}
-                </p>
-                <p className="text-xs text-foreground-muted">
-                  Date : 24 Octobre 2026
-                </p>
-              </div>
-            </div>
-
-            {/* Cadre Client & Séjour */}
-            <div className="grid grid-cols-2 gap-4 text-xs">
-              <div className="p-3 rounded-xl bg-surface-muted/50 border border-surface-border">
-                <span className="font-bold text-foreground block mb-1">
-                  Facturé à :
-                </span>
-                <p className="text-sm font-black text-foreground">
-                  {factureSelectionnee.client}
-                </p>
-                <p className="text-foreground-muted">Client Résident</p>
-                <p className="text-foreground-muted">Mode de paiement : {factureSelectionnee.modeReglement}</p>
-              </div>
-
-              <div className="p-3 rounded-xl bg-surface-muted/50 border border-surface-border">
-                <span className="font-bold text-foreground block mb-1">
-                  Détails du Séjour :
-                </span>
-                <p className="font-bold text-foreground">
-                  {factureSelectionnee.chambre}
-                </p>
-                <p className="text-foreground-muted">
-                  Période : {factureSelectionnee.dates}
-                </p>
-                <p className="text-foreground-muted">
-                  Durée : {factureSelectionnee.nuits} nuitées
-                </p>
-              </div>
-            </div>
-
-            {/* Lignes de dépenses détaillées */}
-            <div className="border border-surface-border rounded-xl overflow-hidden">
-              <table className="w-full text-left text-xs">
-                <thead className="bg-surface-muted/70 text-foreground font-bold border-b border-surface-border">
-                  <tr>
-                    <th className="px-3 py-2.5">Désignation des Prestations</th>
-                    <th className="px-3 py-2.5">Poste</th>
-                    <th className="px-3 py-2.5 text-center">Qté</th>
-                    <th className="px-3 py-2.5 text-right">P.U. TTC</th>
-                    <th className="px-3 py-2.5 text-right">Total TTC</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-surface-border">
-                  {factureSelectionnee.lignes.map((l, i) => (
-                    <tr key={i}>
-                      <td className="px-3 py-2 font-medium text-foreground">
-                        {l.designation}
-                      </td>
-                      <td className="px-3 py-2 text-foreground-muted">
-                        {l.categorie}
-                      </td>
-                      <td className="px-3 py-2 text-center font-bold">
-                        {l.quantite}
-                      </td>
-                      <td className="px-3 py-2 text-right text-foreground-muted">
-                        {formatXOF(l.pu)}
-                      </td>
-                      <td className="px-3 py-2 text-right font-bold text-foreground">
-                        {formatXOF(l.total)}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            {/* Totaux & Règlements */}
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-xs pt-2">
               <div className="flex items-center gap-3">
-                <div className="w-16 h-16 border border-surface-border rounded-lg p-1 bg-white flex items-center justify-center">
-                  <QrCode className="w-14 h-14 text-black" />
-                </div>
-                <div className="text-[11px] text-foreground-muted">
-                  <span className="font-bold text-foreground block">
-                    Facture Certifiée Conforme
+                <div className="text-right">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-foreground-muted block">
+                    FACTURE DÉFINITIVE
                   </span>
-                  <span>Code QR de vérification fiscale</span>
-                  <br />
-                  <span>Maketou Ref: MK-TX-89210</span>
+                  <p className="text-sm font-black font-mono text-[var(--accent)]">
+                    {factureSelectionnee.numeroFacture}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setFactureSelectionnee(null)}
+                  className="p-1.5 rounded-lg text-foreground-muted hover:text-foreground hover:bg-surface-muted transition"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Corps défilable */}
+            <div className="p-4 sm:p-5 overflow-y-auto flex-1 space-y-4 text-xs">
+              {/* Cadre Client & Séjour */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                <div className="p-3 rounded-xl bg-background border border-surface-border">
+                  <span className="font-bold text-foreground block mb-1">
+                    Facturé à :
+                  </span>
+                  <p className="text-sm font-black text-foreground">
+                    {factureSelectionnee.client}
+                  </p>
+                  <p className="text-foreground-muted">Client Résident</p>
+                  <p className="text-foreground-muted">Mode de paiement : {factureSelectionnee.modeReglement}</p>
+                </div>
+
+                <div className="p-3 rounded-xl bg-background border border-surface-border">
+                  <span className="font-bold text-foreground block mb-1">
+                    Détails du Séjour :
+                  </span>
+                  <p className="font-bold text-foreground">
+                    {factureSelectionnee.chambre}
+                  </p>
+                  <p className="text-foreground-muted">
+                    Période : {factureSelectionnee.dates}
+                  </p>
+                  <p className="text-foreground-muted">
+                    Durée : {factureSelectionnee.nuits} nuitées
+                  </p>
                 </div>
               </div>
 
-              <div className="w-full sm:w-64 space-y-1.5 p-3 rounded-xl bg-surface-muted/60 border border-surface-border">
-                <div className="flex justify-between">
-                  <span className="text-foreground-muted">Total Prestations HT :</span>
-                  <span className="font-bold">{formatXOF(Math.round(factureSelectionnee.totalTTC / 1.18))}</span>
+              {/* Lignes de dépenses détaillées */}
+              <div className="border border-surface-border rounded-xl overflow-hidden">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-surface-muted/70 text-foreground font-bold border-b border-surface-border">
+                    <tr>
+                      <th className="px-3 py-2.5">Désignation des Prestations</th>
+                      <th className="px-3 py-2.5">Poste</th>
+                      <th className="px-3 py-2.5 text-center">Qté</th>
+                      <th className="px-3 py-2.5 text-right">P.U. TTC</th>
+                      <th className="px-3 py-2.5 text-right">Total TTC</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-surface-border">
+                    {factureSelectionnee.lignes.map((l, i) => (
+                      <tr key={i}>
+                        <td className="px-3 py-2 font-medium text-foreground">
+                          {l.designation}
+                        </td>
+                        <td className="px-3 py-2 text-foreground-muted">
+                          {l.categorie}
+                        </td>
+                        <td className="px-3 py-2 text-center font-bold">
+                          {l.quantite}
+                        </td>
+                        <td className="px-3 py-2 text-right text-foreground-muted">
+                          {formatXOF(l.pu)}
+                        </td>
+                        <td className="px-3 py-2 text-right font-bold text-foreground">
+                          {formatXOF(l.total)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Totaux & Règlements */}
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-xs pt-1">
+                <div className="flex items-center gap-3">
+                  <div className="w-16 h-16 border border-surface-border rounded-lg p-1 bg-white flex items-center justify-center shrink-0">
+                    <QrCode className="w-14 h-14 text-black" />
+                  </div>
+                  <div className="text-[11px] text-foreground-muted">
+                    <span className="font-bold text-foreground block">
+                      Facture Certifiée Conforme
+                    </span>
+                    <span>Code QR de vérification fiscale</span>
+                    <br />
+                    <span>Maketou Ref: MK-TX-89210</span>
+                  </div>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-foreground-muted">TVA (18%) :</span>
-                  <span className="font-bold">{formatXOF(Math.round(factureSelectionnee.totalTTC - factureSelectionnee.totalTTC / 1.18))}</span>
-                </div>
-                <div className="flex justify-between border-t border-surface-border pt-1">
-                  <span className="font-black text-sm text-foreground">TOTAL TTC :</span>
-                  <span className="font-black text-sm text-foreground">{formatXOF(factureSelectionnee.totalTTC)}</span>
-                </div>
-                <div className="flex justify-between text-emerald-600 font-bold">
-                  <span>Règlements reçus :</span>
-                  <span>-{formatXOF(factureSelectionnee.totalRegle)}</span>
-                </div>
-                <div className="flex justify-between border-t border-surface-border pt-1">
-                  <span className="font-black text-foreground">SOLDE DÛ :</span>
-                  <span className="font-black text-base text-[var(--primary)]">
-                    {formatXOF(factureSelectionnee.soldeDu)}
-                  </span>
+
+                <div className="w-full sm:w-64 space-y-1.5 p-3 rounded-xl bg-background border border-surface-border">
+                  <div className="flex justify-between">
+                    <span className="text-foreground-muted">Total Prestations HT :</span>
+                    <span className="font-bold">{formatXOF(Math.round(factureSelectionnee.totalTTC / 1.18))}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-foreground-muted">TVA (18%) :</span>
+                    <span className="font-bold">{formatXOF(Math.round(factureSelectionnee.totalTTC - factureSelectionnee.totalTTC / 1.18))}</span>
+                  </div>
+                  <div className="flex justify-between border-t border-surface-border pt-1">
+                    <span className="font-black text-sm text-foreground">TOTAL TTC :</span>
+                    <span className="font-black text-sm text-foreground">{formatXOF(factureSelectionnee.totalTTC)}</span>
+                  </div>
+                  <div className="flex justify-between text-emerald-600 dark:text-emerald-400 font-bold">
+                    <span>Règlements reçus :</span>
+                    <span>-{formatXOF(factureSelectionnee.totalRegle)}</span>
+                  </div>
+                  <div className="flex justify-between border-t border-surface-border pt-1">
+                    <span className="font-black text-foreground">SOLDE DÛ :</span>
+                    <span className="font-black text-base text-[var(--primary)]">
+                      {formatXOF(factureSelectionnee.soldeDu)}
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* Actions */}
-            <div className="flex items-center justify-end gap-3 pt-3 border-t border-surface-border">
+            {/* Actions fixes en bas */}
+            <div className="p-4 sm:p-5 border-t border-surface-border shrink-0 flex items-center justify-end gap-3 bg-surface">
               <button
+                type="button"
                 onClick={() => setFactureSelectionnee(null)}
-                className="px-4 py-2 text-sm font-medium rounded-lg text-foreground-muted hover:bg-surface-muted"
+                className="px-4 py-2 text-xs sm:text-sm font-semibold rounded-xl text-foreground-muted hover:text-foreground hover:bg-surface-muted transition"
               >
                 Fermer
               </button>
               <button
+                type="button"
                 onClick={async () => {
                   await genererFactureFolioPdf({
                     numeroFacture: factureSelectionnee.numeroFacture,
@@ -438,7 +447,7 @@ export default function FacturesFoliosPage() {
                   setSuccesMsg(`Facture officielle ${factureSelectionnee.numeroFacture} téléchargée avec succès (Format PDF A4 haute définition).`);
                   setTimeout(() => setSuccesMsg(null), 4000);
                 }}
-                className="px-4 py-2 text-sm font-bold rounded-lg bg-[var(--primary)] text-[var(--primary-foreground)] shadow-sm hover:opacity-95 flex items-center gap-2"
+                className="px-5 py-2.5 text-xs sm:text-sm font-bold rounded-xl bg-[var(--primary)] text-[var(--primary-foreground)] shadow-sm hover:opacity-95 flex items-center gap-2 transition"
               >
                 <Printer className="w-4 h-4" />
                 Télécharger la Facture A4 (PDF)

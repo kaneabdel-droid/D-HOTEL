@@ -15,6 +15,7 @@ import {
   Smartphone,
   Layers,
   Sparkles,
+  X,
 } from "lucide-react";
 import { formatXOF } from "@/lib/utils";
 
@@ -421,43 +422,43 @@ export default function TouchPosPage() {
 
       {/* ── MODALE IMPUTER SUR LA NOTE DE CHAMBRE ── */}
       {modalChambre && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-          <div className="w-full max-w-sm bg-[var(--surface)] border border-[var(--surface-border)] rounded-2xl shadow-2xl p-5 space-y-4">
-            <div className="flex items-center justify-between pb-2 border-b border-[var(--surface-border)]">
-              <h3 className="font-bold text-sm text-[var(--foreground)] flex items-center gap-2">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm overflow-y-auto">
+          <div className="w-full max-w-sm bg-surface text-foreground border border-surface-border rounded-2xl shadow-2xl max-h-[92vh] sm:max-h-[88vh] flex flex-col overflow-hidden animate-scale-up">
+            <div className="flex items-center justify-between p-4 sm:p-5 border-b border-surface-border shrink-0 bg-surface">
+              <h3 className="font-bold text-sm text-foreground flex items-center gap-2">
                 <Hotel className="w-4 h-4 text-[#D4AF37]" />
                 <span>Transfert sur Note de Chambre</span>
               </h3>
               <button
                 type="button"
                 onClick={() => setModalChambre(false)}
-                className="text-sm text-[var(--foreground-muted)] hover:text-white"
+                className="p-1.5 rounded-lg text-foreground-muted hover:text-foreground hover:bg-surface-muted transition"
               >
-                ✕
+                <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="space-y-3 text-xs">
+            <div className="p-4 sm:p-5 overflow-y-auto flex-1 space-y-3.5 text-xs">
               <div>
-                <label className="block font-semibold mb-1">Numéro de Chambre</label>
+                <label className="block font-semibold text-foreground mb-1.5">Numéro de Chambre <span className="text-danger">*</span></label>
                 <input
                   type="text"
                   value={chambreSaisie}
                   onChange={(e) => setChambreSaisie(e.target.value)}
-                  className="w-full p-2.5 rounded-lg border border-[var(--surface-border)] bg-[var(--surface-muted)] text-base font-bold text-[var(--foreground)]"
+                  className="w-full px-3 py-2 text-base font-bold rounded-xl border border-surface-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
                   placeholder="Ex: 201"
                 />
               </div>
 
               {/* Fiche client reconnue */}
-              <div className="p-3 rounded-xl bg-[var(--surface-muted)] border border-[var(--surface-border)] space-y-1">
+              <div className="p-3.5 rounded-xl bg-background border border-surface-border space-y-1.5">
                 <div className="flex items-center justify-between">
-                  <span className="font-bold text-[var(--foreground)]">M. Ibrahima Diallo</span>
-                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-[#10B981]/20 text-[#10B981]">
+                  <span className="font-bold text-foreground">M. Ibrahima Diallo</span>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
                     Client Vérifié
                   </span>
                 </div>
-                <p className="text-[11px] text-[var(--foreground-muted)]">
+                <p className="text-[11px] text-foreground-muted">
                   Suite Junior 201 • Départ le 27 Octobre
                 </p>
                 <p className="text-[11px] font-semibold text-[#D4AF37]">
@@ -466,28 +467,28 @@ export default function TouchPosPage() {
               </div>
 
               {/* Pavé de signature sur tablette */}
-              <div className="border border-dashed border-[var(--surface-border)] rounded-xl p-3 text-center bg-[var(--surface-muted)]">
-                <p className="text-[10px] text-[var(--foreground-muted)] mb-1">
+              <div className="border border-dashed border-surface-border rounded-xl p-3 text-center bg-background">
+                <p className="text-[10px] text-foreground-muted mb-1">
                   Signature du client sur l&apos;écran :
                 </p>
-                <div className="h-16 flex items-center justify-center text-xs italic text-[var(--foreground-muted)] opacity-60">
+                <div className="h-16 flex items-center justify-center text-xs italic text-foreground-muted opacity-60">
                   [ Espace signature tactile ]
                 </div>
               </div>
             </div>
 
-            <div className="flex items-center gap-2 pt-2">
+            <div className="p-4 sm:p-5 border-t border-surface-border shrink-0 flex items-center gap-2 bg-surface">
               <button
                 type="button"
                 onClick={handleImputerChambre}
-                className="flex-1 py-2.5 rounded-lg bg-[var(--primary)] hover:bg-[var(--primary-hover)] text-white font-bold text-xs shadow-xs"
+                className="flex-1 py-2.5 rounded-xl bg-[var(--primary)] hover:opacity-95 text-white font-bold text-xs shadow-xs transition"
               >
                 Valider le Transfert
               </button>
               <button
                 type="button"
                 onClick={() => setModalChambre(false)}
-                className="px-3 py-2.5 rounded-lg border border-[var(--surface-border)] text-xs text-[var(--foreground)]"
+                className="px-4 py-2.5 rounded-xl border border-surface-border text-xs text-foreground font-semibold hover:bg-surface-muted transition"
               >
                 Annuler
               </button>

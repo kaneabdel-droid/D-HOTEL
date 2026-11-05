@@ -17,6 +17,7 @@ import {
   Tv,
   Coins,
   Check,
+  X,
 } from "lucide-react";
 import { formatXOF } from "@/lib/utils";
 
@@ -329,9 +330,19 @@ export default function SallesEvenementsPage() {
 
       {/* MODAL NOUVEAU DEVIS */}
       {modalNouveauDevis && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-surface rounded-2xl border border-surface-border shadow-2xl max-w-md w-full p-6 space-y-4 animate-scale-up">
-            <h3 className="text-lg font-bold">Établir un devis séminaire</h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-3 sm:p-4 overflow-y-auto">
+          <div className="bg-surface text-foreground rounded-2xl border border-surface-border shadow-2xl max-w-md w-full max-h-[92vh] sm:max-h-[88vh] flex flex-col overflow-hidden animate-scale-up">
+            <div className="p-4 sm:p-5 border-b border-surface-border flex items-center justify-between shrink-0 bg-surface">
+              <h3 className="text-base font-bold text-foreground">Établir un devis séminaire</h3>
+              <button
+                type="button"
+                onClick={() => setModalNouveauDevis(false)}
+                className="p-1.5 rounded-lg text-foreground-muted hover:text-foreground hover:bg-surface-muted transition"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
             <form
               onSubmit={(e) => {
                 e.preventDefault();
@@ -339,90 +350,92 @@ export default function SallesEvenementsPage() {
                 setSuccesMsg("Devis séminaire créé avec succès.");
                 setTimeout(() => setSuccesMsg(null), 3000);
               }}
-              className="space-y-3 text-xs"
+              className="flex flex-col flex-1 overflow-hidden"
             >
-              <div>
-                <label className="font-semibold text-foreground-muted block mb-1">
-                  Intitulé de l'événement *
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="ex: Séminaire Cadres Supérieurs"
-                  className="w-full px-3 py-2 text-sm rounded-lg bg-surface border border-surface-border"
-                />
-              </div>
-
-              <div>
-                <label className="font-semibold text-foreground-muted block mb-1">
-                  Entreprise / Client organisateur *
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="ex: TotalEnergies Sénégal"
-                  className="w-full px-3 py-2 text-sm rounded-lg bg-surface border border-surface-border"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
+              <div className="p-4 sm:p-5 overflow-y-auto flex-1 space-y-3.5 text-xs">
                 <div>
-                  <label className="font-semibold text-foreground-muted block mb-1">
-                    Espace sélectionné
-                  </label>
-                  <select className="w-full px-3 py-2 text-sm rounded-lg bg-surface border border-surface-border">
-                    <option value="Salle Baobab">Salle Baobab</option>
-                    <option value="Salon VIP Saloum">Salon VIP Saloum</option>
-                    <option value="Esplanade Océane">Esplanade Océane</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="font-semibold text-foreground-muted block mb-1">
-                    Disposition
-                  </label>
-                  <select className="w-full px-3 py-2 text-sm rounded-lg bg-surface border border-surface-border">
-                    <option value="Théâtre">Théâtre</option>
-                    <option value="Disposition en U">Disposition en U</option>
-                    <option value="Classe">Classe</option>
-                    <option value="Banquet">Banquet</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="font-semibold text-foreground-muted block mb-1">
-                    Nombre de participants
+                  <label className="font-semibold text-foreground block mb-1.5">
+                    Intitulé de l&apos;événement <span className="text-danger">*</span>
                   </label>
                   <input
-                    type="number"
-                    defaultValue={30}
-                    className="w-full px-3 py-2 text-sm rounded-lg bg-surface border border-surface-border"
+                    type="text"
+                    required
+                    placeholder="ex: Séminaire Cadres Supérieurs"
+                    className="w-full px-3 py-2 text-xs sm:text-sm rounded-xl bg-background text-foreground placeholder:text-foreground-muted/60 border border-surface-border focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
                   />
                 </div>
+
                 <div>
-                  <label className="font-semibold text-foreground-muted block mb-1">
-                    Montant total TTC (FCFA)
+                  <label className="font-semibold text-foreground block mb-1.5">
+                    Entreprise / Client organisateur <span className="text-danger">*</span>
                   </label>
                   <input
-                    type="number"
-                    defaultValue={1500000}
-                    className="w-full px-3 py-2 text-sm rounded-lg bg-surface border border-surface-border"
+                    type="text"
+                    required
+                    placeholder="ex: TotalEnergies Sénégal"
+                    className="w-full px-3 py-2 text-xs sm:text-sm rounded-xl bg-background text-foreground placeholder:text-foreground-muted/60 border border-surface-border focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
                   />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="font-semibold text-foreground block mb-1.5">
+                      Espace sélectionné
+                    </label>
+                    <select className="w-full px-2.5 py-2 text-xs sm:text-sm rounded-xl bg-background text-foreground border border-surface-border focus:outline-none focus:ring-2 focus:ring-[var(--primary)]">
+                      <option value="Salle Baobab">Salle Baobab</option>
+                      <option value="Salon VIP Saloum">Salon VIP Saloum</option>
+                      <option value="Esplanade Océane">Esplanade Océane</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="font-semibold text-foreground block mb-1.5">
+                      Disposition
+                    </label>
+                    <select className="w-full px-2.5 py-2 text-xs sm:text-sm rounded-xl bg-background text-foreground border border-surface-border focus:outline-none focus:ring-2 focus:ring-[var(--primary)]">
+                      <option value="Théâtre">Théâtre</option>
+                      <option value="Disposition en U">Disposition en U</option>
+                      <option value="Classe">Classe</option>
+                      <option value="Banquet">Banquet</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="font-semibold text-foreground block mb-1.5">
+                      Nombre de participants
+                    </label>
+                    <input
+                      type="number"
+                      defaultValue={30}
+                      className="w-full px-3 py-2 text-xs sm:text-sm rounded-xl bg-background text-foreground border border-surface-border focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                    />
+                  </div>
+                  <div>
+                    <label className="font-semibold text-foreground block mb-1.5">
+                      Montant total TTC (FCFA)
+                    </label>
+                    <input
+                      type="number"
+                      defaultValue={1500000}
+                      className="w-full px-3 py-2 text-xs sm:text-sm rounded-xl bg-background text-foreground border border-surface-border focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                    />
+                  </div>
                 </div>
               </div>
 
-              <div className="flex items-center justify-end gap-3 pt-3">
+              <div className="p-4 sm:p-5 border-t border-surface-border shrink-0 flex items-center justify-end gap-3 bg-surface">
                 <button
                   type="button"
                   onClick={() => setModalNouveauDevis(false)}
-                  className="px-4 py-2 text-sm font-medium rounded-lg text-foreground-muted hover:bg-surface-muted"
+                  className="px-4 py-2 text-xs sm:text-sm font-semibold rounded-xl text-foreground-muted hover:text-foreground hover:bg-surface-muted transition"
                 >
                   Annuler
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 text-sm font-bold rounded-lg bg-[var(--primary)] text-[var(--primary-foreground)] shadow-sm"
+                  className="px-5 py-2.5 text-xs sm:text-sm font-bold rounded-xl bg-[var(--primary)] text-[var(--primary-foreground)] shadow-sm hover:opacity-95 transition"
                 >
                   Générer le Devis
                 </button>

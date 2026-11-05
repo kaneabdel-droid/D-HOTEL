@@ -597,16 +597,16 @@ export default function SalariesPage() {
 
       {/* Modal Fiche Collaborateur */}
       {collabSelectionne && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
-          <div className="w-full max-w-2xl rounded-xl border border-border bg-card p-6 shadow-xl max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between pb-4 border-b border-border">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-3 sm:p-4 overflow-y-auto">
+          <div className="w-full max-w-2xl rounded-2xl border border-border bg-card text-foreground shadow-2xl max-h-[92vh] sm:max-h-[88vh] flex flex-col overflow-hidden animate-scale-up">
+            <div className="flex items-center justify-between p-4 sm:p-5 border-b border-border shrink-0 bg-card">
               <div className="flex items-center gap-3">
                 <div className="h-10 w-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold">
                   {collabSelectionne.prenom[0]}
                   {collabSelectionne.nom[0]}
                 </div>
                 <div>
-                  <h2 className="text-lg font-bold text-foreground">
+                  <h2 className="text-base sm:text-lg font-bold text-foreground">
                     {collabSelectionne.prenom} {collabSelectionne.nom}
                   </h2>
                   <p className="text-xs text-muted-foreground">
@@ -616,13 +616,14 @@ export default function SalariesPage() {
               </div>
               <button
                 onClick={() => setCollabSelectionne(null)}
-                className="rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+                className="rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition"
               >
                 <X className="h-5 w-5" />
               </button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 text-sm">
+            <div className="p-4 sm:p-5 overflow-y-auto flex-1">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
               <div className="rounded-lg bg-muted/30 p-3 space-y-2 border border-border">
                 <h3 className="font-semibold text-foreground text-xs uppercase tracking-wider text-muted-foreground">
                   Informations Générales
@@ -711,12 +712,13 @@ export default function SalariesPage() {
                   )}
                 </p>
               </div>
+              </div>
             </div>
 
-            <div className="mt-6 flex justify-end gap-2">
+            <div className="p-4 sm:p-5 border-t border-border shrink-0 flex justify-end bg-card">
               <button
                 onClick={() => setCollabSelectionne(null)}
-                className="rounded-lg border border-border bg-background px-4 py-2 text-sm font-medium text-foreground hover:bg-muted"
+                className="rounded-xl border border-border bg-background px-4 py-2 text-xs sm:text-sm font-semibold text-foreground hover:bg-muted transition"
               >
                 Fermer
               </button>
@@ -727,26 +729,27 @@ export default function SalariesPage() {
 
       {/* Modal Ajout Collaborateur */}
       {modalOuvert && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
-          <div className="w-full max-w-3xl rounded-xl border border-border bg-card p-6 shadow-xl max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between pb-4 border-b border-border">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-3 sm:p-4 overflow-y-auto">
+          <div className="w-full max-w-3xl rounded-2xl border border-border bg-card text-foreground shadow-2xl max-h-[92vh] sm:max-h-[88vh] flex flex-col overflow-hidden animate-scale-up">
+            <div className="flex items-center justify-between p-4 sm:p-5 border-b border-border shrink-0 bg-card">
               <div>
-                <h2 className="text-lg font-bold text-foreground">Ajouter un Collaborateur ou Prestataire</h2>
+                <h2 className="text-base sm:text-lg font-bold text-foreground">Ajouter un Collaborateur ou Prestataire</h2>
                 <p className="text-xs text-muted-foreground">
-                  Enregistrement d'un salarié ou d'un intervenant externe dans le système RH de D-HOTEL.
+                  Enregistrement d&apos;un salarié ou d&apos;un intervenant externe dans le système RH de D-HOTEL.
                 </p>
               </div>
               <button
                 onClick={() => setModalOuvert(false)}
-                className="rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+                className="rounded-lg p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition"
               >
                 <X className="h-5 w-5" />
               </button>
             </div>
 
-            <form onSubmit={handleEnregistrerCollaborateur} className="space-y-4 mt-4">
-              {/* Type & Statut */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <form onSubmit={handleEnregistrerCollaborateur} className="flex flex-col flex-1 overflow-hidden">
+              <div className="p-4 sm:p-5 overflow-y-auto flex-1 space-y-4">
+                {/* Type & Statut */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
                   <label className="text-xs font-semibold text-foreground">Statut RH *</label>
                   <select
@@ -1069,18 +1072,20 @@ export default function SalariesPage() {
                 </div>
               </div>
 
-              {/* Boutons actions */}
-              <div className="mt-6 flex justify-end gap-3 pt-3 border-t border-border">
+              </div>
+
+              {/* Boutons actions fixes en bas */}
+              <div className="p-4 sm:p-5 border-t border-border shrink-0 flex items-center justify-end gap-3 bg-card">
                 <button
                   type="button"
                   onClick={() => setModalOuvert(false)}
-                  className="rounded-lg border border-border bg-background px-4 py-2.5 text-sm font-semibold text-foreground hover:bg-muted"
+                  className="rounded-xl border border-border bg-background px-4 py-2.5 text-xs sm:text-sm font-semibold text-foreground hover:bg-muted transition"
                 >
                   Annuler
                 </button>
                 <button
                   type="submit"
-                  className="rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition shadow-sm"
+                  className="rounded-xl bg-primary px-5 py-2.5 text-xs sm:text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition shadow-sm"
                 >
                   Enregistrer le collaborateur
                 </button>

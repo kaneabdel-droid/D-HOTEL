@@ -17,6 +17,7 @@ import {
   ShieldCheck,
   Building,
   UserCheck,
+  X,
 } from "lucide-react";
 import { formatXOF } from "@/lib/utils";
 
@@ -313,105 +314,116 @@ export default function CaissesTresoreriePage() {
 
       {/* MODAL CLÔTURE AVEUGLE : SAISIE DES COUPURES */}
       {modalClotureAveugle && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto">
-          <div className="bg-surface rounded-2xl border border-surface-border shadow-2xl max-w-lg w-full p-6 space-y-4 my-8 animate-scale-up">
-            <div className="border-b border-surface-border pb-3">
-              <span className="text-xs text-foreground-muted uppercase font-bold tracking-wider">
-                Contrôle de Caisse
-              </span>
-              <h3 className="text-lg font-bold text-foreground mt-0.5">
-                Clôture Aveugle : {modalClotureAveugle.nomCaisse}
-              </h3>
-              <p className="text-xs text-foreground-muted mt-0.5">
-                Caissier : <strong>{modalClotureAveugle.caissier}</strong> • Comptabilisez chaque billet et pièce dans le tiroir-caisse.
-              </p>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-3 sm:p-4 overflow-y-auto">
+          <div className="bg-surface text-foreground rounded-2xl border border-surface-border shadow-2xl max-w-lg w-full max-h-[92vh] sm:max-h-[88vh] flex flex-col overflow-hidden animate-scale-up">
+            <div className="p-4 sm:p-5 border-b border-surface-border flex items-start justify-between shrink-0 bg-surface">
+              <div>
+                <span className="text-[10px] text-foreground-muted uppercase font-bold tracking-wider block">
+                  Contrôle de Caisse
+                </span>
+                <h3 className="text-base sm:text-lg font-bold text-foreground mt-0.5">
+                  Clôture Aveugle : {modalClotureAveugle.nomCaisse}
+                </h3>
+                <p className="text-xs text-foreground-muted mt-0.5">
+                  Caissier : <strong>{modalClotureAveugle.caissier}</strong> • Comptabilisez chaque billet et pièce dans le tiroir-caisse.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setModalClotureAveugle(null)}
+                className="p-1.5 rounded-lg text-foreground-muted hover:text-foreground hover:bg-surface-muted transition"
+              >
+                <X className="w-5 h-5" />
+              </button>
             </div>
 
-            <form onSubmit={handleValiderClotureAveugle} className="space-y-4">
-              <div>
-                <h4 className="text-xs font-bold text-foreground-muted uppercase mb-2">
-                  Billets de Banque (FCFA)
-                </h4>
-                <div className="grid grid-cols-2 gap-2 text-xs">
-                  {[
-                    { key: "b10000", libelle: "10 000 FCFA", val: 10000 },
-                    { key: "b5000", libelle: "5 000 FCFA", val: 5000 },
-                    { key: "b2000", libelle: "2 000 FCFA", val: 2000 },
-                    { key: "b1000", libelle: "1 000 FCFA", val: 1000 },
-                    { key: "b500", libelle: "500 FCFA", val: 500 },
-                  ].map((b) => (
-                    <div key={b.key} className="flex items-center justify-between p-2 rounded-lg bg-surface-muted/50 border border-surface-border">
-                      <span className="font-semibold text-foreground">{b.libelle}</span>
-                      <input
-                        type="number"
-                        min="0"
-                        value={coupures[b.key] || ""}
-                        placeholder="0"
-                        onChange={(e) =>
-                          setCoupures({ ...coupures, [b.key]: Number(e.target.value) })
-                        }
-                        className="w-16 px-2 py-1 text-center font-bold text-xs rounded bg-surface border border-surface-border"
-                      />
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <h4 className="text-xs font-bold text-foreground-muted uppercase mb-2">
-                  Pièces de Monnaie (FCFA)
-                </h4>
-                <div className="grid grid-cols-2 gap-2 text-xs">
-                  {[
-                    { key: "p500", libelle: "Pièce 500 F", val: 500 },
-                    { key: "p250", libelle: "Pièce 250 F", val: 250 },
-                    { key: "p200", libelle: "Pièce 200 F", val: 200 },
-                    { key: "p100", libelle: "Pièce 100 F", val: 100 },
-                    { key: "p50", libelle: "Pièce 50 F", val: 50 },
-                  ].map((p) => (
-                    <div key={p.key} className="flex items-center justify-between p-2 rounded-lg bg-surface-muted/50 border border-surface-border">
-                      <span className="font-semibold text-foreground">{p.libelle}</span>
-                      <input
-                        type="number"
-                        min="0"
-                        value={coupures[p.key] || ""}
-                        placeholder="0"
-                        onChange={(e) =>
-                          setCoupures({ ...coupures, [p.key]: Number(e.target.value) })
-                        }
-                        className="w-16 px-2 py-1 text-center font-bold text-xs rounded bg-surface border border-surface-border"
-                      />
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Total Compté en direct (sans montrer le théorique) */}
-              <div className="p-4 rounded-xl bg-surface-muted/80 border border-surface-border flex items-center justify-between">
+            <form onSubmit={handleValiderClotureAveugle} className="flex flex-col flex-1 overflow-hidden">
+              <div className="p-4 sm:p-5 overflow-y-auto flex-1 space-y-4">
                 <div>
-                  <span className="text-xs text-foreground-muted block font-medium">
-                    Total physique compté par le caissier :
-                  </span>
-                  <span className="text-lg font-black text-foreground">
-                    {formatXOF(totalPhysiqueCalcule)}
+                  <h4 className="text-xs font-bold text-foreground-muted uppercase mb-2">
+                    Billets de Banque (FCFA)
+                  </h4>
+                  <div className="grid grid-cols-2 gap-2 text-xs">
+                    {[
+                      { key: "b10000", libelle: "10 000 FCFA", val: 10000 },
+                      { key: "b5000", libelle: "5 000 FCFA", val: 5000 },
+                      { key: "b2000", libelle: "2 000 FCFA", val: 2000 },
+                      { key: "b1000", libelle: "1 000 FCFA", val: 1000 },
+                      { key: "b500", libelle: "500 FCFA", val: 500 },
+                    ].map((b) => (
+                      <div key={b.key} className="flex items-center justify-between p-2.5 rounded-xl bg-background border border-surface-border">
+                        <span className="font-semibold text-foreground">{b.libelle}</span>
+                        <input
+                          type="number"
+                          min="0"
+                          value={coupures[b.key] || ""}
+                          placeholder="0"
+                          onChange={(e) =>
+                            setCoupures({ ...coupures, [b.key]: Number(e.target.value) })
+                          }
+                          className="w-16 px-2 py-1 text-center font-bold text-xs rounded-lg bg-surface border border-surface-border text-foreground focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <h4 className="text-xs font-bold text-foreground-muted uppercase mb-2">
+                    Pièces de Monnaie (FCFA)
+                  </h4>
+                  <div className="grid grid-cols-2 gap-2 text-xs">
+                    {[
+                      { key: "p500", libelle: "Pièce 500 F", val: 500 },
+                      { key: "p250", libelle: "Pièce 250 F", val: 250 },
+                      { key: "p200", libelle: "Pièce 200 F", val: 200 },
+                      { key: "p100", libelle: "Pièce 100 F", val: 100 },
+                      { key: "p50", libelle: "Pièce 50 F", val: 50 },
+                    ].map((p) => (
+                      <div key={p.key} className="flex items-center justify-between p-2.5 rounded-xl bg-background border border-surface-border">
+                        <span className="font-semibold text-foreground">{p.libelle}</span>
+                        <input
+                          type="number"
+                          min="0"
+                          value={coupures[p.key] || ""}
+                          placeholder="0"
+                          onChange={(e) =>
+                            setCoupures({ ...coupures, [p.key]: Number(e.target.value) })
+                          }
+                          className="w-16 px-2 py-1 text-center font-bold text-xs rounded-lg bg-surface border border-surface-border text-foreground focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Total Compté en direct (sans montrer le théorique) */}
+                <div className="p-4 rounded-xl bg-background border border-surface-border flex items-center justify-between">
+                  <div>
+                    <span className="text-xs text-foreground-muted block font-medium">
+                      Total physique compté par le caissier :
+                    </span>
+                    <span className="text-lg font-black text-foreground">
+                      {formatXOF(totalPhysiqueCalcule)}
+                    </span>
+                  </div>
+                  <span className="text-[11px] font-mono text-foreground-muted">
+                    [Théorique masqué 🔒]
                   </span>
                 </div>
-                <span className="text-[11px] font-mono text-foreground-muted">
-                  [Théorique masqué 🔒]
-                </span>
               </div>
 
-              <div className="flex items-center justify-end gap-3 pt-2">
+              <div className="p-4 sm:p-5 border-t border-surface-border shrink-0 flex items-center justify-end gap-3 bg-surface">
                 <button
                   type="button"
                   onClick={() => setModalClotureAveugle(null)}
-                  className="px-4 py-2 text-sm font-medium rounded-lg text-foreground-muted hover:bg-surface-muted"
+                  className="px-4 py-2 text-xs sm:text-sm font-semibold rounded-xl text-foreground-muted hover:text-foreground hover:bg-surface-muted transition"
                 >
                   Annuler
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 text-sm font-bold rounded-lg bg-[var(--primary)] text-[var(--primary-foreground)] shadow-sm hover:opacity-95"
+                  className="px-5 py-2.5 text-xs sm:text-sm font-bold rounded-xl bg-[var(--primary)] text-[var(--primary-foreground)] shadow-sm hover:opacity-95 transition"
                 >
                   Valider la Clôture & Comparer
                 </button>
@@ -423,51 +435,60 @@ export default function CaissesTresoreriePage() {
 
       {/* MODAL RAPPORT OFFICIEL DE CLÔTURE */}
       {rapportCloture && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-surface rounded-2xl border border-surface-border shadow-2xl max-w-md w-full p-6 space-y-4 animate-scale-up">
-            <div className="border-b border-surface-border pb-3 text-center">
-              <span className="text-xs font-bold uppercase tracking-widest text-foreground-muted">
-                HÔTEL TERANGA PALACE 5★
-              </span>
-              <h3 className="text-lg font-black text-foreground mt-1">
-                TICKET DE CLÔTURE DE CAISSE
-              </h3>
-              <p className="text-xs text-foreground-muted">
-                {rapportCloture.nomCaisse} • {rapportCloture.dateCloture}
-              </p>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-3 sm:p-4 overflow-y-auto">
+          <div className="bg-surface text-foreground rounded-2xl border border-surface-border shadow-2xl max-w-md w-full max-h-[92vh] sm:max-h-[88vh] flex flex-col overflow-hidden animate-scale-up">
+            <div className="p-4 sm:p-5 border-b border-surface-border flex items-start justify-between shrink-0 bg-surface">
+              <div className="text-center w-full">
+                <span className="text-[10px] font-bold uppercase tracking-widest text-foreground-muted block">
+                  HÔTEL TERANGA PALACE 5★
+                </span>
+                <h3 className="text-base sm:text-lg font-black text-foreground mt-0.5">
+                  TICKET DE CLÔTURE DE CAISSE
+                </h3>
+                <p className="text-xs text-foreground-muted">
+                  {rapportCloture.nomCaisse} • {rapportCloture.dateCloture}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setRapportCloture(null)}
+                className="p-1.5 rounded-lg text-foreground-muted hover:text-foreground hover:bg-surface-muted transition shrink-0 -mr-1"
+              >
+                <X className="w-5 h-5" />
+              </button>
             </div>
 
-            <div className="space-y-2 text-xs">
-              <div className="flex justify-between py-1 border-b border-surface-border/50">
+            <div className="p-4 sm:p-5 overflow-y-auto flex-1 space-y-2 text-xs">
+              <div className="flex justify-between py-1.5 border-b border-surface-border/50">
                 <span className="text-foreground-muted">Opérateur de caisse :</span>
                 <span className="font-bold text-foreground">{rapportCloture.caissier}</span>
               </div>
-              <div className="flex justify-between py-1 border-b border-surface-border/50">
+              <div className="flex justify-between py-1.5 border-b border-surface-border/50">
                 <span className="text-foreground-muted">Fond de caisse initial :</span>
                 <span className="font-bold text-foreground">{formatXOF(rapportCloture.fondDeCaisseOuverture)}</span>
               </div>
-              <div className="flex justify-between py-1 border-b border-surface-border/50">
+              <div className="flex justify-between py-1.5 border-b border-surface-border/50">
                 <span className="text-foreground-muted">Encaissements théoriques :</span>
                 <span className="font-bold text-foreground">{formatXOF(rapportCloture.totalEncaissementsTheorique)}</span>
               </div>
-              <div className="flex justify-between py-1 border-b border-surface-border/50">
+              <div className="flex justify-between py-1.5 border-b border-surface-border/50">
                 <span className="text-foreground-muted">Solde théorique attendu :</span>
                 <span className="font-bold text-foreground">{formatXOF(rapportCloture.theoriqueAttendu)}</span>
               </div>
-              <div className="flex justify-between py-1.5 border-b border-surface-border/50 bg-surface-muted/50 px-2 rounded">
+              <div className="flex justify-between py-2 border-b border-surface-border/50 bg-background px-3 rounded-xl">
                 <span className="font-bold text-foreground">Comptage physique réel :</span>
                 <span className="font-black text-sm text-foreground">{formatXOF(rapportCloture.comptageReelPhysique)}</span>
               </div>
 
-              <div className="flex justify-between py-2 items-center">
+              <div className="flex justify-between py-2 items-center px-1">
                 <span className="font-bold text-sm text-foreground">Écart de caisse :</span>
                 <span
                   className={`text-base font-black ${
                     rapportCloture.difference === 0
-                      ? "text-emerald-600"
+                      ? "text-emerald-600 dark:text-emerald-400"
                       : rapportCloture.difference > 0
-                      ? "text-blue-600"
-                      : "text-rose-600"
+                      ? "text-blue-600 dark:text-blue-400"
+                      : "text-rose-600 dark:text-rose-400"
                   }`}
                 >
                   {rapportCloture.difference === 0
@@ -477,27 +498,27 @@ export default function CaissesTresoreriePage() {
                     : `${formatXOF(rapportCloture.difference)} (Manquant)`}
                 </span>
               </div>
-            </div>
 
-            <div className="pt-2 border-t border-surface-border grid grid-cols-2 gap-4 text-center text-[10px] text-foreground-muted">
-              <div>
-                <p>Signature Caissier :</p>
-                <div className="h-10 mt-1 border border-dashed border-surface-border rounded flex items-center justify-center font-mono">
-                  [Signé]
+              <div className="pt-3 border-t border-surface-border grid grid-cols-2 gap-4 text-center text-[10px] text-foreground-muted">
+                <div>
+                  <p>Signature Caissier :</p>
+                  <div className="h-10 mt-1 border border-dashed border-surface-border rounded-xl flex items-center justify-center font-mono">
+                    [Signé]
+                  </div>
+                </div>
+                <div>
+                  <p>Visa Contrôleur Trésorerie :</p>
+                  <div className="h-10 mt-1 border border-dashed border-surface-border rounded-xl flex items-center justify-center font-mono text-emerald-600 dark:text-emerald-400">
+                    [Validé]
+                  </div>
                 </div>
               </div>
-              <div>
-                <p>Visa Contrôleur Trésorerie :</p>
-                <div className="h-10 mt-1 border border-dashed border-surface-border rounded flex items-center justify-center font-mono text-emerald-600">
-                  [Validé]
-                </div>
-              </div>
             </div>
 
-            <div className="flex items-center justify-end gap-3 pt-2">
+            <div className="p-4 sm:p-5 border-t border-surface-border shrink-0 bg-surface">
               <button
                 onClick={() => setRapportCloture(null)}
-                className="w-full py-2 text-xs font-bold rounded-lg bg-[var(--primary)] text-[var(--primary-foreground)] shadow-sm"
+                className="w-full py-2.5 text-xs sm:text-sm font-bold rounded-xl bg-[var(--primary)] text-[var(--primary-foreground)] shadow-sm hover:opacity-95 transition"
               >
                 Fermer le Rapport
               </button>

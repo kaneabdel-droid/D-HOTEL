@@ -339,11 +339,10 @@ export function SuperAdminDashboardClient({
       <div className="flex items-center gap-2 border-b border-slate-800 pb-px">
         <button
           onClick={() => setActiveTab('etablissements')}
-          className={`px-4 py-2.5 rounded-t-xl font-bold text-xs flex items-center gap-2 transition-all cursor-pointer ${
-            activeTab === 'etablissements'
+          className={`px-4 py-2.5 rounded-t-xl font-bold text-xs flex items-center gap-2 transition-all cursor-pointer ${activeTab === 'etablissements'
               ? 'bg-slate-900 text-amber-400 border-t border-x border-slate-800'
               : 'text-slate-400 hover:text-white'
-          }`}
+            }`}
         >
           <Hotel className="w-4 h-4" />
           <span>Établissements & Licences ({totalHotels})</span>
@@ -351,11 +350,10 @@ export function SuperAdminDashboardClient({
 
         <button
           onClick={() => setActiveTab('passerelles')}
-          className={`px-4 py-2.5 rounded-t-xl font-bold text-xs flex items-center gap-2 transition-all cursor-pointer ${
-            activeTab === 'passerelles'
+          className={`px-4 py-2.5 rounded-t-xl font-bold text-xs flex items-center gap-2 transition-all cursor-pointer ${activeTab === 'passerelles'
               ? 'bg-slate-900 text-amber-400 border-t border-x border-slate-800'
               : 'text-slate-400 hover:text-white'
-          }`}
+            }`}
         >
           <Zap className="w-4 h-4" />
           <span>Paramétrage Maketou & Chariow</span>
@@ -441,11 +439,10 @@ export function SuperAdminDashboardClient({
                       <td className="px-5 py-4">
                         <div className="flex items-center gap-2">
                           <span
-                            className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                              h.plan === 'hotel'
+                            className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${h.plan === 'hotel'
                                 ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
                                 : 'bg-sky-500/20 text-sky-300 border border-sky-500/30'
-                            }`}
+                              }`}
                           >
                             {h.plan === 'hotel' ? 'Hôtel / Résidence' : 'Auberge / Camp.'}
                           </span>
@@ -498,11 +495,10 @@ export function SuperAdminDashboardClient({
                           <button
                             onClick={() => toggleStatut(h.id)}
                             title={h.statut === 'actif' ? 'Suspendre la structure' : 'Activer'}
-                            className={`p-1.5 rounded-lg border text-xs transition-colors cursor-pointer ${
-                              h.statut === 'actif'
+                            className={`p-1.5 rounded-lg border text-xs transition-colors cursor-pointer ${h.statut === 'actif'
                                 ? 'bg-slate-800 hover:bg-rose-500/20 text-slate-300 hover:text-rose-300 border-slate-700'
                                 : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30 hover:bg-emerald-500/30'
-                            }`}
+                              }`}
                           >
                             {h.statut === 'actif' ? <Lock className="w-3.5 h-3.5" /> : <Unlock className="w-3.5 h-3.5" />}
                           </button>

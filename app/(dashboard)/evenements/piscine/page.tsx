@@ -17,6 +17,7 @@ import {
   CreditCard,
   Banknote,
   AlertTriangle,
+  X,
 } from "lucide-react";
 import { formatXOF } from "@/lib/utils";
 
@@ -296,99 +297,111 @@ export default function PiscineDayPassPage() {
 
       {/* MODAL ÉMISSION PASS */}
       {modalEmission && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-surface rounded-2xl border border-surface-border shadow-2xl max-w-md w-full p-6 space-y-4 animate-scale-up">
-            <h3 className="text-lg font-bold">Émettre un Day-Pass Piscine</h3>
-            <form onSubmit={handleEmisePass} className="space-y-3 text-xs">
-              <div>
-                <label className="font-semibold text-foreground-muted block mb-1">
-                  Nom du visiteur / Famille *
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="ex: M. Abdoulaye Seck"
-                  value={nomClient}
-                  onChange={(e) => setNomClient(e.target.value)}
-                  className="w-full px-3 py-2 text-sm rounded-lg bg-surface border border-surface-border"
-                />
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-3 sm:p-4 overflow-y-auto">
+          <div className="bg-surface text-foreground rounded-2xl border border-surface-border shadow-2xl max-w-md w-full max-h-[92vh] sm:max-h-[88vh] flex flex-col overflow-hidden animate-scale-up">
+            <div className="p-4 sm:p-5 border-b border-surface-border flex items-center justify-between shrink-0 bg-surface">
+              <h3 className="text-base font-bold text-foreground">Émettre un Day-Pass Piscine</h3>
+              <button
+                type="button"
+                onClick={() => setModalEmission(false)}
+                className="p-1.5 rounded-lg text-foreground-muted hover:text-foreground hover:bg-surface-muted transition"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleEmisePass} className="flex flex-col flex-1 overflow-hidden">
+              <div className="p-4 sm:p-5 overflow-y-auto flex-1 space-y-3.5 text-xs">
+                <div>
+                  <label className="font-semibold text-foreground block mb-1.5">
+                    Nom du visiteur / Famille <span className="text-danger">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="ex: M. Abdoulaye Seck"
+                    value={nomClient}
+                    onChange={(e) => setNomClient(e.target.value)}
+                    className="w-full px-3 py-2 text-xs sm:text-sm rounded-xl bg-background text-foreground placeholder:text-foreground-muted/60 border border-surface-border focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                  />
+                </div>
+
+                <div>
+                  <label className="font-semibold text-foreground block mb-1.5">
+                    Téléphone (pour envoi reçu WhatsApp)
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="+221 77 000 00 00"
+                    value={telClient}
+                    onChange={(e) => setTelClient(e.target.value)}
+                    className="w-full px-3 py-2 text-xs sm:text-sm rounded-xl bg-background text-foreground placeholder:text-foreground-muted/60 border border-surface-border focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                  />
+                </div>
+
+                <div>
+                  <label className="font-semibold text-foreground block mb-1.5">
+                    Formule d&apos;accès <span className="text-danger">*</span>
+                  </label>
+                  <select
+                    value={typePass}
+                    onChange={(e) => setTypePass(e.target.value as any)}
+                    className="w-full px-3 py-2 text-xs sm:text-sm rounded-xl bg-background text-foreground border border-surface-border focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                  >
+                    <option value="Pass Adulte">Pass Adulte — 15 000 FCFA</option>
+                    <option value="Pass Enfant (-12 ans)">Pass Enfant (-12 ans) — 8 000 FCFA</option>
+                    <option value="Day-Pass + Buffet Déjeuner">Day-Pass + Buffet Déjeuner — 28 000 FCFA</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="font-semibold text-foreground block mb-1.5">
+                    Moyen d&apos;encaissement direct <span className="text-danger">*</span>
+                  </label>
+                  <select
+                    value={modePaiement}
+                    onChange={(e) => setModePaiement(e.target.value as any)}
+                    className="w-full px-3 py-2 text-xs sm:text-sm rounded-xl bg-background text-foreground border border-surface-border focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                  >
+                    <option value="Wave Mobile Money">Wave Mobile Money</option>
+                    <option value="Orange Money">Orange Money</option>
+                    <option value="Espèces">Espèces</option>
+                    <option value="Carte Bancaire">Carte Bancaire</option>
+                  </select>
+                </div>
+
+                <div className="flex items-center gap-2 pt-1">
+                  <input
+                    type="checkbox"
+                    id="serviette"
+                    checked={avecServiette}
+                    onChange={(e) => setAvecServiette(e.target.checked)}
+                    className="rounded text-[var(--primary)]"
+                  />
+                  <label htmlFor="serviette" className="text-foreground font-medium text-xs">
+                    Remise d&apos;une serviette de bain (Caution incluse)
+                  </label>
+                </div>
+
+                <div className="p-3.5 rounded-xl bg-background border border-surface-border flex items-center justify-between text-xs">
+                  <span className="text-foreground-muted font-medium">Montant à encaisser :</span>
+                  <span className="font-bold text-base text-[var(--primary)]">
+                    {formatXOF(tarifs[typePass])}
+                  </span>
+                </div>
               </div>
 
-              <div>
-                <label className="font-semibold text-foreground-muted block mb-1">
-                  Téléphone (pour envoi reçu WhatsApp)
-                </label>
-                <input
-                  type="text"
-                  placeholder="+221 77 000 00 00"
-                  value={telClient}
-                  onChange={(e) => setTelClient(e.target.value)}
-                  className="w-full px-3 py-2 text-sm rounded-lg bg-surface border border-surface-border"
-                />
-              </div>
-
-              <div>
-                <label className="font-semibold text-foreground-muted block mb-1">
-                  Formule d'accès
-                </label>
-                <select
-                  value={typePass}
-                  onChange={(e) => setTypePass(e.target.value as any)}
-                  className="w-full px-3 py-2 text-sm rounded-lg bg-surface border border-surface-border"
-                >
-                  <option value="Pass Adulte">Pass Adulte — 15 000 FCFA</option>
-                  <option value="Pass Enfant (-12 ans)">Pass Enfant (-12 ans) — 8 000 FCFA</option>
-                  <option value="Day-Pass + Buffet Déjeuner">Day-Pass + Buffet Déjeuner — 28 000 FCFA</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="font-semibold text-foreground-muted block mb-1">
-                  Moyen d'encaissement direct
-                </label>
-                <select
-                  value={modePaiement}
-                  onChange={(e) => setModePaiement(e.target.value as any)}
-                  className="w-full px-3 py-2 text-sm rounded-lg bg-surface border border-surface-border"
-                >
-                  <option value="Wave Mobile Money">Wave Mobile Money</option>
-                  <option value="Orange Money">Orange Money</option>
-                  <option value="Espèces">Espèces</option>
-                  <option value="Carte Bancaire">Carte Bancaire</option>
-                </select>
-              </div>
-
-              <div className="flex items-center gap-2 pt-1">
-                <input
-                  type="checkbox"
-                  id="serviette"
-                  checked={avecServiette}
-                  onChange={(e) => setAvecServiette(e.target.checked)}
-                  className="rounded text-[var(--primary)]"
-                />
-                <label htmlFor="serviette" className="text-foreground font-medium">
-                  Remise d'une serviette de bain (Caution incluse)
-                </label>
-              </div>
-
-              <div className="p-3 rounded-lg bg-surface-muted/60 flex items-center justify-between text-xs">
-                <span className="text-foreground-muted">Montant à encaisser :</span>
-                <span className="font-bold text-base text-[var(--primary)]">
-                  {formatXOF(tarifs[typePass])}
-                </span>
-              </div>
-
-              <div className="flex items-center justify-end gap-3 pt-3">
+              <div className="p-4 sm:p-5 border-t border-surface-border shrink-0 flex items-center justify-end gap-3 bg-surface">
                 <button
                   type="button"
                   onClick={() => setModalEmission(false)}
-                  className="px-4 py-2 text-sm font-medium rounded-lg text-foreground-muted hover:bg-surface-muted"
+                  className="px-4 py-2 text-xs sm:text-sm font-semibold rounded-xl text-foreground-muted hover:text-foreground hover:bg-surface-muted transition"
                 >
                   Annuler
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 text-sm font-bold rounded-lg bg-[var(--primary)] text-[var(--primary-foreground)] shadow-sm hover:opacity-95"
+                  className="px-5 py-2.5 text-xs sm:text-sm font-bold rounded-xl bg-[var(--primary)] text-[var(--primary-foreground)] shadow-sm hover:opacity-95 transition"
                 >
                   Encaisser & Émettre le Billet
                 </button>
@@ -400,39 +413,53 @@ export default function PiscineDayPassPage() {
 
       {/* MODAL QR CODE DU PASS */}
       {passSelectionne && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-surface rounded-2xl border border-surface-border shadow-2xl max-w-sm w-full p-6 text-center space-y-4 animate-scale-up">
-            <span className="text-xs uppercase font-bold text-foreground-muted tracking-widest block">
-              Hôtel Teranga Palace 5★
-            </span>
-            <h3 className="text-lg font-black text-foreground">
-              DAY-PASS PISCINE
-            </h3>
-            <p className="text-xs font-mono text-[var(--accent)]">
-              {passSelectionne.codePass}
-            </p>
-
-            {/* Simu QR Code visuel propre */}
-            <div className="w-44 h-44 mx-auto border-2 border-surface-border rounded-2xl p-4 flex flex-col items-center justify-center bg-white shadow-inner">
-              <QrCode className="w-32 h-32 text-gray-900" />
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-3 sm:p-4 overflow-y-auto">
+          <div className="bg-surface text-foreground rounded-2xl border border-surface-border shadow-2xl max-w-sm w-full max-h-[92vh] sm:max-h-[88vh] flex flex-col overflow-hidden animate-scale-up">
+            <div className="p-4 sm:p-5 border-b border-surface-border flex items-center justify-between shrink-0 bg-surface">
+              <span className="text-[11px] uppercase font-bold text-foreground-muted tracking-widest block">
+                Hôtel Teranga Palace 5★
+              </span>
+              <button
+                type="button"
+                onClick={() => setPassSelectionne(null)}
+                className="p-1.5 rounded-lg text-foreground-muted hover:text-foreground hover:bg-surface-muted transition"
+              >
+                <X className="w-5 h-5" />
+              </button>
             </div>
 
-            <div className="text-xs text-foreground-muted space-y-1">
-              <p className="font-bold text-foreground text-sm">
-                {passSelectionne.nomVisiteur}
+            <div className="p-5 overflow-y-auto flex-1 text-center space-y-4">
+              <h3 className="text-lg font-black text-foreground">
+                DAY-PASS PISCINE
+              </h3>
+              <p className="text-xs font-mono text-[var(--accent)]">
+                {passSelectionne.codePass}
               </p>
-              <p>{passSelectionne.typePass}</p>
-              <p className="text-emerald-600 font-bold">
-                ✓ Réglé via {passSelectionne.moyenPaiement} ({formatXOF(passSelectionne.prix)})
-              </p>
+
+              {/* Simu QR Code visuel propre */}
+              <div className="w-44 h-44 mx-auto border-2 border-surface-border rounded-2xl p-4 flex flex-col items-center justify-center bg-white shadow-inner">
+                <QrCode className="w-32 h-32 text-gray-900" />
+              </div>
+
+              <div className="text-xs text-foreground-muted space-y-1">
+                <p className="font-bold text-foreground text-sm">
+                  {passSelectionne.nomVisiteur}
+                </p>
+                <p>{passSelectionne.typePass}</p>
+                <p className="text-emerald-600 font-bold">
+                  ✓ Réglé via {passSelectionne.moyenPaiement} ({formatXOF(passSelectionne.prix)})
+                </p>
+              </div>
             </div>
 
-            <button
-              onClick={() => setPassSelectionne(null)}
-              className="w-full py-2 text-sm font-bold rounded-lg bg-surface-muted text-foreground hover:bg-surface-border"
-            >
-              Fermer
-            </button>
+            <div className="p-4 sm:p-5 border-t border-surface-border shrink-0 bg-surface">
+              <button
+                onClick={() => setPassSelectionne(null)}
+                className="w-full py-2.5 text-xs sm:text-sm font-bold rounded-xl bg-surface-muted text-foreground hover:bg-surface-border transition"
+              >
+                Fermer
+              </button>
+            </div>
           </div>
         </div>
       )}

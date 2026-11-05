@@ -17,6 +17,7 @@ import {
   Smartphone,
   CreditCard,
   Ban,
+  X,
 } from "lucide-react";
 import { formatXOF } from "@/lib/utils";
 
@@ -342,141 +343,143 @@ export default function ReservationsPage() {
 
       {/* ── MODALE NOUVELLE RÉSERVATION ── */}
       {modalCreation && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-          <div className="w-full max-w-lg bg-[var(--surface)] border border-[var(--surface-border)] rounded-2xl shadow-2xl p-6 space-y-4 animate-in fade-in zoom-in-95">
-            <div className="flex items-center justify-between pb-3 border-b border-[var(--surface-border)]">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm overflow-y-auto">
+          <div className="w-full max-w-lg bg-surface text-foreground border border-surface-border rounded-2xl shadow-2xl max-h-[92vh] sm:max-h-[88vh] flex flex-col overflow-hidden animate-scale-up">
+            <div className="p-4 sm:p-5 border-b border-surface-border flex items-center justify-between shrink-0 bg-surface">
               <div>
-                <h3 className="text-base font-bold text-[var(--foreground)] flex items-center gap-2">
+                <h3 className="text-base font-bold text-foreground flex items-center gap-2">
                   <Hotel className="w-5 h-5 text-[#D4AF37]" />
                   <span>Enregistrer une Nouvelle Réservation</span>
                 </h3>
-                <p className="text-[11px] text-[var(--foreground-muted)]">
+                <p className="text-xs text-foreground-muted">
                   Chambre réservée avec verrou anti-collision immédiat
                 </p>
               </div>
               <button
                 type="button"
                 onClick={() => setModalCreation(false)}
-                className="text-sm text-[var(--foreground-muted)] hover:text-[var(--foreground)]"
+                className="p-1.5 rounded-lg text-foreground-muted hover:text-foreground hover:bg-surface-muted transition"
               >
-                ✕
+                <X className="w-5 h-5" />
               </button>
             </div>
 
-            <form onSubmit={handleCreerReservation} className="space-y-3 text-xs">
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block font-semibold mb-1">Nom Complet du Client</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="Ex: M. Oumar Ba"
-                    value={nouveauClient}
-                    onChange={(e) => setNouveauClient(e.target.value)}
-                    className="w-full p-2 rounded-lg border border-[var(--surface-border)] bg-[var(--surface-muted)] text-[var(--foreground)] text-xs"
-                  />
+            <form onSubmit={handleCreerReservation} className="flex flex-col flex-1 overflow-hidden">
+              <div className="p-4 sm:p-5 overflow-y-auto flex-1 space-y-3.5 text-xs">
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block font-semibold text-foreground mb-1">Nom Complet du Client <span className="text-danger">*</span></label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="Ex: M. Oumar Ba"
+                      value={nouveauClient}
+                      onChange={(e) => setNouveauClient(e.target.value)}
+                      className="w-full px-3 py-2 text-xs sm:text-sm rounded-xl bg-background text-foreground placeholder:text-foreground-muted/60 border border-surface-border focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-semibold text-foreground mb-1">Téléphone (WhatsApp) <span className="text-danger">*</span></label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="+221 77 000 00 00"
+                      value={nouveauTel}
+                      onChange={(e) => setNouveauTel(e.target.value)}
+                      className="w-full px-3 py-2 text-xs sm:text-sm rounded-xl bg-background text-foreground placeholder:text-foreground-muted/60 border border-surface-border focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                    />
+                  </div>
                 </div>
-                <div>
-                  <label className="block font-semibold mb-1">Téléphone (WhatsApp)</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="+221 77 000 00 00"
-                    value={nouveauTel}
-                    onChange={(e) => setNouveauTel(e.target.value)}
-                    className="w-full p-2 rounded-lg border border-[var(--surface-border)] bg-[var(--surface-muted)] text-[var(--foreground)] text-xs"
-                  />
+
+                <div className="grid grid-cols-3 gap-3">
+                  <div>
+                    <label className="block font-semibold text-foreground mb-1">Chambre</label>
+                    <select
+                      value={nouvelleChambre}
+                      onChange={(e) => setNouvelleChambre(e.target.value)}
+                      className="w-full px-2.5 py-2 text-xs sm:text-sm rounded-xl bg-background text-foreground border border-surface-border focus:outline-none focus:ring-2 focus:ring-[var(--primary)] font-semibold"
+                    >
+                      <option value="101">101 - Standard (45 000)</option>
+                      <option value="102">102 - Standard (45 000)</option>
+                      <option value="103">103 - Deluxe (65 000)</option>
+                      <option value="201">201 - Suite Junior (95 000)</option>
+                      <option value="B01">Villa 1 - Bungalow (180 000)</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block font-semibold text-foreground mb-1">Date d&apos;Arrivée <span className="text-danger">*</span></label>
+                    <input
+                      type="date"
+                      required
+                      value={nouvelleArrivee}
+                      onChange={(e) => setNouvelleArrivee(e.target.value)}
+                      className="w-full px-3 py-2 text-xs sm:text-sm rounded-xl bg-background text-foreground border border-surface-border focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-semibold text-foreground mb-1">Date de Départ <span className="text-danger">*</span></label>
+                    <input
+                      type="date"
+                      required
+                      value={nouveauDepart}
+                      onChange={(e) => setNouveauDepart(e.target.value)}
+                      className="w-full px-3 py-2 text-xs sm:text-sm rounded-xl bg-background text-foreground border border-surface-border focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block font-semibold text-foreground mb-1">Formule / Régime</label>
+                    <select
+                      value={nouveauRegime}
+                      onChange={(e) => setNouveauRegime(e.target.value)}
+                      className="w-full px-2.5 py-2 text-xs sm:text-sm rounded-xl bg-background text-foreground border border-surface-border focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                    >
+                      <option value="RO">Logement Seul (RO)</option>
+                      <option value="BB">Petit-Déjeuner Inclus (BB)</option>
+                      <option value="HB">Demi-Pension (HB)</option>
+                      <option value="FB">Pension Complète (FB)</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block font-semibold text-foreground mb-1">Acompte à Exiger (FCFA)</label>
+                    <input
+                      type="number"
+                      value={nouvelAcompte}
+                      onChange={(e) => setNouvelAcompte(e.target.value)}
+                      className="w-full px-3 py-2 text-xs sm:text-sm rounded-xl bg-background text-emerald-600 dark:text-emerald-400 font-bold border border-surface-border focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                    />
+                  </div>
+                </div>
+
+                {/* Option d'envoi du lien Maketou */}
+                <div className="p-3.5 rounded-xl bg-background border border-surface-border flex items-center justify-between">
+                  <div>
+                    <p className="font-bold text-foreground">
+                      Générer un Lien de Paiement Maketou
+                    </p>
+                    <p className="text-[11px] text-foreground-muted">
+                      Permet au client de payer son acompte par Wave / Orange Money / Carte
+                    </p>
+                  </div>
+                  <Smartphone className="w-5 h-5 text-[#3B82F6] shrink-0" />
                 </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-3">
-                <div>
-                  <label className="block font-semibold mb-1">Chambre</label>
-                  <select
-                    value={nouvelleChambre}
-                    onChange={(e) => setNouvelleChambre(e.target.value)}
-                    className="w-full p-2 rounded-lg border border-[var(--surface-border)] bg-[var(--surface-muted)] text-[var(--foreground)] text-xs font-semibold"
-                  >
-                    <option value="101">101 - Standard (45 000)</option>
-                    <option value="102">102 - Standard (45 000)</option>
-                    <option value="103">103 - Deluxe (65 000)</option>
-                    <option value="201">201 - Suite Junior (95 000)</option>
-                    <option value="B01">Villa 1 - Bungalow (180 000)</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block font-semibold mb-1">Date d&apos;Arrivée</label>
-                  <input
-                    type="date"
-                    required
-                    value={nouvelleArrivee}
-                    onChange={(e) => setNouvelleArrivee(e.target.value)}
-                    className="w-full p-2 rounded-lg border border-[var(--surface-border)] bg-[var(--surface-muted)] text-[var(--foreground)] text-xs"
-                  />
-                </div>
-                <div>
-                  <label className="block font-semibold mb-1">Date de Départ</label>
-                  <input
-                    type="date"
-                    required
-                    value={nouveauDepart}
-                    onChange={(e) => setNouveauDepart(e.target.value)}
-                    className="w-full p-2 rounded-lg border border-[var(--surface-border)] bg-[var(--surface-muted)] text-[var(--foreground)] text-xs"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block font-semibold mb-1">Formule / Régime</label>
-                  <select
-                    value={nouveauRegime}
-                    onChange={(e) => setNouveauRegime(e.target.value)}
-                    className="w-full p-2 rounded-lg border border-[var(--surface-border)] bg-[var(--surface-muted)] text-[var(--foreground)] text-xs"
-                  >
-                    <option value="RO">Logement Seul (RO)</option>
-                    <option value="BB">Petit-Déjeuner Inclus (BB)</option>
-                    <option value="HB">Demi-Pension (HB)</option>
-                    <option value="FB">Pension Complète (FB)</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block font-semibold mb-1">Acompte à Exiger (FCFA)</label>
-                  <input
-                    type="number"
-                    value={nouvelAcompte}
-                    onChange={(e) => setNouvelAcompte(e.target.value)}
-                    className="w-full p-2 rounded-lg border border-[var(--surface-border)] bg-[var(--surface-muted)] text-[var(--foreground)] text-xs font-bold text-[#10B981]"
-                  />
-                </div>
-              </div>
-
-              {/* Option d'envoi du lien Maketou */}
-              <div className="p-3 rounded-xl bg-[var(--surface-muted)] border border-[var(--surface-border)] flex items-center justify-between">
-                <div>
-                  <p className="font-bold text-[var(--foreground)]">
-                    Générer un Lien de Paiement Maketou
-                  </p>
-                  <p className="text-[10px] text-[var(--foreground-muted)]">
-                    Permet au client de payer son acompte par Wave / Orange Money / Carte
-                  </p>
-                </div>
-                <Smartphone className="w-5 h-5 text-[#3B82F6]" />
-              </div>
-
-              <div className="flex items-center gap-2 pt-3">
-                <button
-                  type="submit"
-                  className="flex-1 py-2.5 rounded-lg bg-[var(--primary)] hover:bg-[var(--primary-hover)] text-white font-bold text-xs shadow-xs"
-                >
-                  Confirmer la Réservation
-                </button>
+              <div className="p-4 sm:p-5 border-t border-surface-border shrink-0 flex items-center justify-end gap-3 bg-surface">
                 <button
                   type="button"
                   onClick={() => setModalCreation(false)}
-                  className="px-4 py-2.5 rounded-lg border border-[var(--surface-border)] text-xs text-[var(--foreground)]"
+                  className="px-4 py-2 text-xs sm:text-sm font-semibold rounded-xl text-foreground-muted hover:text-foreground hover:bg-surface-muted transition"
                 >
                   Annuler
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2.5 text-xs sm:text-sm font-bold rounded-xl bg-[var(--primary)] hover:opacity-95 text-white shadow-xs transition"
+                >
+                  Confirmer la Réservation
                 </button>
               </div>
             </form>

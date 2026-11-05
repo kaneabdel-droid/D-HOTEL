@@ -16,6 +16,7 @@ import {
   Percent,
   Eye,
   Info,
+  X,
 } from "lucide-react";
 import { formatXOF } from "@/lib/utils";
 
@@ -382,9 +383,19 @@ export default function CartesMenusPage() {
 
       {/* MODAL NOUVEAU PLAT */}
       {modalNouveauPlat && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-surface rounded-2xl border border-surface-border shadow-2xl max-w-md w-full p-6 space-y-4 animate-scale-up">
-            <h3 className="text-lg font-bold">Ajouter un plat au menu</h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-3 sm:p-4 overflow-y-auto">
+          <div className="bg-surface text-foreground rounded-2xl border border-surface-border shadow-2xl max-w-md w-full max-h-[92vh] sm:max-h-[88vh] flex flex-col overflow-hidden animate-scale-up">
+            <div className="p-4 sm:p-5 border-b border-surface-border flex items-center justify-between shrink-0 bg-surface">
+              <h3 className="text-base font-bold text-foreground">Ajouter un plat au menu</h3>
+              <button
+                type="button"
+                onClick={() => setModalNouveauPlat(false)}
+                className="p-1.5 rounded-lg text-foreground-muted hover:text-foreground hover:bg-surface-muted transition"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
             <form
               onSubmit={(e) => {
                 e.preventDefault();
@@ -392,79 +403,81 @@ export default function CartesMenusPage() {
                 setSuccesMsg("Nouveau plat ajouté à la carte.");
                 setTimeout(() => setSuccesMsg(null), 3000);
               }}
-              className="space-y-3 text-xs"
+              className="flex flex-col flex-1 overflow-hidden"
             >
-              <div>
-                <label className="font-semibold text-foreground-muted block mb-1">
-                  Nom du plat / cocktail *
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="ex: Pavé de Thiof braisé aux herbes"
-                  className="w-full px-3 py-2 text-sm rounded-lg bg-surface border border-surface-border"
-                />
-              </div>
-
-              <div>
-                <label className="font-semibold text-foreground-muted block mb-1">
-                  Catégorie
-                </label>
-                <select className="w-full px-3 py-2 text-sm rounded-lg bg-surface border border-surface-border">
-                  <option value="Plats Signature">Plats Signature</option>
-                  <option value="Entrées">Entrées</option>
-                  <option value="Grillades & Poissons">Grillades & Poissons</option>
-                  <option value="Desserts">Desserts</option>
-                  <option value="Cocktails Bar">Cocktails Bar</option>
-                </select>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
+              <div className="p-4 sm:p-5 overflow-y-auto flex-1 space-y-3.5 text-xs">
                 <div>
-                  <label className="font-semibold text-foreground-muted block mb-1">
-                    Prix de vente TTC (FCFA) *
+                  <label className="font-semibold text-foreground block mb-1.5">
+                    Nom du plat / cocktail <span className="text-danger">*</span>
                   </label>
                   <input
-                    type="number"
+                    type="text"
                     required
-                    placeholder="15000"
-                    className="w-full px-3 py-2 text-sm rounded-lg bg-surface border border-surface-border"
+                    placeholder="ex: Pavé de Thiof braisé aux herbes"
+                    className="w-full px-3 py-2 text-xs sm:text-sm rounded-xl bg-background text-foreground placeholder:text-foreground-muted/60 border border-surface-border focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
                   />
                 </div>
+
                 <div>
-                  <label className="font-semibold text-foreground-muted block mb-1">
-                    Coût matière estimé (FCFA)
+                  <label className="font-semibold text-foreground block mb-1.5">
+                    Catégorie
                   </label>
-                  <input
-                    type="number"
-                    placeholder="4000"
-                    className="w-full px-3 py-2 text-sm rounded-lg bg-surface border border-surface-border"
+                  <select className="w-full px-2.5 py-2 text-xs sm:text-sm rounded-xl bg-background text-foreground border border-surface-border focus:outline-none focus:ring-2 focus:ring-[var(--primary)]">
+                    <option value="Plats Signature">Plats Signature</option>
+                    <option value="Entrées">Entrées</option>
+                    <option value="Grillades & Poissons">Grillades & Poissons</option>
+                    <option value="Desserts">Desserts</option>
+                    <option value="Cocktails Bar">Cocktails Bar</option>
+                  </select>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="font-semibold text-foreground block mb-1.5">
+                      Prix de vente TTC (FCFA) <span className="text-danger">*</span>
+                    </label>
+                    <input
+                      type="number"
+                      required
+                      placeholder="15000"
+                      className="w-full px-3 py-2 text-xs sm:text-sm rounded-xl bg-background text-foreground border border-surface-border focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                    />
+                  </div>
+                  <div>
+                    <label className="font-semibold text-foreground block mb-1.5">
+                      Coût matière estimé (FCFA)
+                    </label>
+                    <input
+                      type="number"
+                      placeholder="4000"
+                      className="w-full px-3 py-2 text-xs sm:text-sm rounded-xl bg-background text-foreground border border-surface-border focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="font-semibold text-foreground block mb-1.5">
+                    Description / Ingrédients clés
+                  </label>
+                  <textarea
+                    rows={2}
+                    placeholder="Garniture, assaisonnement, allergènes éventuels..."
+                    className="w-full px-3 py-2 text-xs sm:text-sm rounded-xl bg-background text-foreground placeholder:text-foreground-muted/60 border border-surface-border focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
                   />
                 </div>
               </div>
 
-              <div>
-                <label className="font-semibold text-foreground-muted block mb-1">
-                  Description / Ingrédients clés
-                </label>
-                <textarea
-                  rows={2}
-                  placeholder="Garniture, assaisonnement, allergènes éventuels..."
-                  className="w-full px-3 py-2 text-sm rounded-lg bg-surface border border-surface-border"
-                />
-              </div>
-
-              <div className="flex items-center justify-end gap-3 pt-3">
+              <div className="p-4 sm:p-5 border-t border-surface-border shrink-0 flex items-center justify-end gap-3 bg-surface">
                 <button
                   type="button"
                   onClick={() => setModalNouveauPlat(false)}
-                  className="px-4 py-2 text-sm font-medium rounded-lg text-foreground-muted hover:bg-surface-muted"
+                  className="px-4 py-2 text-xs sm:text-sm font-semibold rounded-xl text-foreground-muted hover:text-foreground hover:bg-surface-muted transition"
                 >
                   Annuler
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 text-sm font-bold rounded-lg bg-[var(--primary)] text-[var(--primary-foreground)] shadow-sm"
+                  className="px-5 py-2.5 text-xs sm:text-sm font-bold rounded-xl bg-[var(--primary)] text-[var(--primary-foreground)] shadow-sm hover:opacity-95 transition"
                 >
                   Créer la Recette
                 </button>

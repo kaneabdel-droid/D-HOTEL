@@ -18,6 +18,7 @@ import {
   Tv,
   KeyRound,
   Check,
+  X,
 } from "lucide-react";
 
 interface IncidentMaintenance {
@@ -349,109 +350,121 @@ export default function MaintenancePage() {
 
       {/* MODAL NOUVEAU TICKET */}
       {modalNouveauTicket && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-surface rounded-2xl border border-surface-border shadow-2xl max-w-md w-full p-6 space-y-4 animate-scale-up">
-            <h3 className="text-lg font-bold">Signaler une panne technique</h3>
-            <form onSubmit={handleCreerTicket} className="space-y-4">
-              <div>
-                <label className="text-xs font-semibold text-foreground-muted block mb-1">
-                  Chambre ou Zone de l'Hôtel *
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="ex: Chambre 204, Terrasse Piscine, Cuisine..."
-                  value={nouvelEmplacement}
-                  onChange={(e) => setNouvelEmplacement(e.target.value)}
-                  className="w-full px-3 py-2 text-sm rounded-lg bg-surface border border-surface-border focus:outline-none"
-                />
-              </div>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-3 sm:p-4 overflow-y-auto">
+          <div className="bg-surface text-foreground rounded-2xl border border-surface-border shadow-2xl max-w-md w-full max-h-[92vh] sm:max-h-[88vh] flex flex-col overflow-hidden animate-scale-up">
+            <div className="p-4 sm:p-5 border-b border-surface-border flex items-center justify-between shrink-0 bg-surface">
+              <h3 className="text-base font-bold text-foreground">Signaler une panne technique</h3>
+              <button
+                type="button"
+                onClick={() => setModalNouveauTicket(false)}
+                className="p-1.5 rounded-lg text-foreground-muted hover:text-foreground hover:bg-surface-muted transition"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
 
-              <div className="grid grid-cols-2 gap-3">
+            <form onSubmit={handleCreerTicket} className="flex flex-col flex-1 overflow-hidden">
+              <div className="p-4 sm:p-5 overflow-y-auto flex-1 space-y-3.5 text-xs">
                 <div>
-                  <label className="text-xs font-semibold text-foreground-muted block mb-1">
-                    Corps de métier
+                  <label className="text-xs font-semibold text-foreground block mb-1.5">
+                    Chambre ou Zone de l&apos;Hôtel <span className="text-danger">*</span>
                   </label>
-                  <select
-                    value={nouveauType}
-                    onChange={(e) => setNouveauType(e.target.value as any)}
-                    className="w-full px-3 py-2 text-sm rounded-lg bg-surface border border-surface-border focus:outline-none"
-                  >
-                    <option value="Climatisation">Climatisation</option>
-                    <option value="Plomberie">Plomberie</option>
-                    <option value="Électricité">Électricité</option>
-                    <option value="Serrure / Clé">Serrure / Clé</option>
-                    <option value="TV / Réseau">TV / Réseau</option>
-                    <option value="Mobilier">Mobilier</option>
-                  </select>
+                  <input
+                    type="text"
+                    required
+                    placeholder="ex: Chambre 204, Terrasse Piscine, Cuisine..."
+                    value={nouvelEmplacement}
+                    onChange={(e) => setNouvelEmplacement(e.target.value)}
+                    className="w-full px-3 py-2 text-xs sm:text-sm rounded-xl bg-background text-foreground placeholder:text-foreground-muted/60 border border-surface-border focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                  />
                 </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-xs font-semibold text-foreground block mb-1.5">
+                      Corps de métier
+                    </label>
+                    <select
+                      value={nouveauType}
+                      onChange={(e) => setNouveauType(e.target.value as any)}
+                      className="w-full px-2.5 py-2 text-xs sm:text-sm rounded-xl bg-background text-foreground border border-surface-border focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                    >
+                      <option value="Climatisation">Climatisation</option>
+                      <option value="Plomberie">Plomberie</option>
+                      <option value="Électricité">Électricité</option>
+                      <option value="Serrure / Clé">Serrure / Clé</option>
+                      <option value="TV / Réseau">TV / Réseau</option>
+                      <option value="Mobilier">Mobilier</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-foreground block mb-1.5">
+                      Urgence
+                    </label>
+                    <select
+                      value={nouvelleUrgence}
+                      onChange={(e) => setNouvelleUrgence(e.target.value as any)}
+                      className="w-full px-2.5 py-2 text-xs sm:text-sm rounded-xl bg-background text-foreground border border-surface-border focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                    >
+                      <option value="critique">Critique (Bloquant)</option>
+                      <option value="modere">Modéré</option>
+                      <option value="faible">Faible</option>
+                    </select>
+                  </div>
+                </div>
+
                 <div>
-                  <label className="text-xs font-semibold text-foreground-muted block mb-1">
-                    Urgence
+                  <label className="text-xs font-semibold text-foreground block mb-1.5">
+                    Intitulé du problème <span className="text-danger">*</span>
                   </label>
-                  <select
-                    value={nouvelleUrgence}
-                    onChange={(e) => setNouvelleUrgence(e.target.value as any)}
-                    className="w-full px-3 py-2 text-sm rounded-lg bg-surface border border-surface-border focus:outline-none"
-                  >
-                    <option value="critique">Critique (Bloquant)</option>
-                    <option value="modere">Modéré</option>
-                    <option value="faible">Faible</option>
-                  </select>
+                  <input
+                    type="text"
+                    required
+                    placeholder="ex: Fuite d'eau, clim qui souffle tiède..."
+                    value={nouveauTitre}
+                    onChange={(e) => setNouveauTitre(e.target.value)}
+                    className="w-full px-3 py-2 text-xs sm:text-sm rounded-xl bg-background text-foreground placeholder:text-foreground-muted/60 border border-surface-border focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs font-semibold text-foreground block mb-1.5">
+                    Description détaillée
+                  </label>
+                  <textarea
+                    rows={3}
+                    placeholder="Préciser l'emplacement exact et les symptômes..."
+                    value={nouvelleDescription}
+                    onChange={(e) => setNouvelleDescription(e.target.value)}
+                    className="w-full px-3 py-2 text-xs sm:text-sm rounded-xl bg-background text-foreground placeholder:text-foreground-muted/60 border border-surface-border focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                  />
+                </div>
+
+                <div className="flex items-center gap-2 pt-1">
+                  <input
+                    type="checkbox"
+                    id="impactHs"
+                    checked={impactHorsService}
+                    onChange={(e) => setImpactHorsService(e.target.checked)}
+                    className="rounded text-[var(--primary)]"
+                  />
+                  <label htmlFor="impactHs" className="text-xs text-foreground font-medium">
+                    Mettre la chambre automatiquement en &quot;Hors Service&quot; sur le Rack
+                  </label>
                 </div>
               </div>
 
-              <div>
-                <label className="text-xs font-semibold text-foreground-muted block mb-1">
-                  Intitulé du problème *
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="ex: Fuite d'eau, clim qui souffle tiède..."
-                  value={nouveauTitre}
-                  onChange={(e) => setNouveauTitre(e.target.value)}
-                  className="w-full px-3 py-2 text-sm rounded-lg bg-surface border border-surface-border focus:outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="text-xs font-semibold text-foreground-muted block mb-1">
-                  Description détaillée
-                </label>
-                <textarea
-                  rows={3}
-                  placeholder="Préciser l'emplacement exact et les symptômes..."
-                  value={nouvelleDescription}
-                  onChange={(e) => setNouvelleDescription(e.target.value)}
-                  className="w-full px-3 py-2 text-sm rounded-lg bg-surface border border-surface-border focus:outline-none"
-                />
-              </div>
-
-              <div className="flex items-center gap-2 pt-1">
-                <input
-                  type="checkbox"
-                  id="impactHs"
-                  checked={impactHorsService}
-                  onChange={(e) => setImpactHorsService(e.target.checked)}
-                  className="rounded text-[var(--primary)]"
-                />
-                <label htmlFor="impactHs" className="text-xs text-foreground font-medium">
-                  Mettre la chambre automatiquement en "Hors Service" sur le Rack
-                </label>
-              </div>
-
-              <div className="flex items-center justify-end gap-3 pt-3">
+              <div className="p-4 sm:p-5 border-t border-surface-border shrink-0 flex items-center justify-end gap-3 bg-surface">
                 <button
                   type="button"
                   onClick={() => setModalNouveauTicket(false)}
-                  className="px-4 py-2 text-sm font-medium rounded-lg text-foreground-muted hover:bg-surface-muted"
+                  className="px-4 py-2 text-xs sm:text-sm font-semibold rounded-xl text-foreground-muted hover:text-foreground hover:bg-surface-muted transition"
                 >
                   Annuler
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 text-sm font-bold rounded-lg bg-[var(--primary)] text-[var(--primary-foreground)] shadow-sm hover:opacity-95"
+                  className="px-5 py-2.5 text-xs sm:text-sm font-bold rounded-xl bg-[var(--primary)] text-[var(--primary-foreground)] shadow-sm hover:opacity-95 transition"
                 >
                   Transmettre au Technicien
                 </button>

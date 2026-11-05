@@ -14,6 +14,7 @@ import {
   Coins,
   Warehouse,
   Check,
+  X,
 } from "lucide-react";
 import { formatXOF } from "@/lib/utils";
 
@@ -250,9 +251,19 @@ export default function AchatsFournisseursPage() {
 
       {/* MODAL NOUVELLE COMMANDE */}
       {modalCommande && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-surface rounded-2xl border border-surface-border shadow-2xl max-w-md w-full p-6 space-y-4 animate-scale-up">
-            <h3 className="text-lg font-bold">Créer un bon de commande fournisseur</h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-3 sm:p-4 overflow-y-auto">
+          <div className="bg-surface text-foreground rounded-2xl border border-surface-border shadow-2xl max-w-md w-full max-h-[92vh] sm:max-h-[88vh] flex flex-col overflow-hidden animate-scale-up">
+            <div className="p-4 sm:p-5 border-b border-surface-border flex items-center justify-between shrink-0 bg-surface">
+              <h3 className="text-base font-bold text-foreground">Créer un bon de commande fournisseur</h3>
+              <button
+                type="button"
+                onClick={() => setModalCommande(false)}
+                className="p-1.5 rounded-lg text-foreground-muted hover:text-foreground hover:bg-surface-muted transition"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
             <form
               onSubmit={(e) => {
                 e.preventDefault();
@@ -260,53 +271,55 @@ export default function AchatsFournisseursPage() {
                 setSuccesMsg("Bon de commande généré et transmis au fournisseur.");
                 setTimeout(() => setSuccesMsg(null), 3000);
               }}
-              className="space-y-3 text-xs"
+              className="flex flex-col flex-1 overflow-hidden"
             >
-              <div>
-                <label className="font-semibold text-foreground-muted block mb-1">
-                  Fournisseur agréé *
-                </label>
-                <select className="w-full px-3 py-2 text-sm rounded-lg bg-surface border border-surface-border">
-                  <option value="Marée Dakar">Marée Dakar & Poissonnerie Royale</option>
-                  <option value="Boucherie Sahélienne">Boucherie Sahélienne & Élevage</option>
-                  <option value="Caves & Vignobles">Caves & Vignobles d'Afrique</option>
-                  <option value="Maraîchers des Niayes">Maraîchers des Niayes (Légumes frais)</option>
-                </select>
+              <div className="p-4 sm:p-5 overflow-y-auto flex-1 space-y-3.5 text-xs">
+                <div>
+                  <label className="font-semibold text-foreground block mb-1.5">
+                    Fournisseur agréé <span className="text-danger">*</span>
+                  </label>
+                  <select className="w-full px-3 py-2 text-xs sm:text-sm rounded-xl bg-background text-foreground border border-surface-border focus:outline-none focus:ring-2 focus:ring-[var(--primary)]">
+                    <option value="Marée Dakar">Marée Dakar & Poissonnerie Royale</option>
+                    <option value="Boucherie Sahélienne">Boucherie Sahélienne & Élevage</option>
+                    <option value="Caves & Vignobles">Caves & Vignobles d&apos;Afrique</option>
+                    <option value="Maraîchers des Niayes">Maraîchers des Niayes (Légumes frais)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="font-semibold text-foreground block mb-1.5">
+                    Date de livraison souhaitée <span className="text-danger">*</span>
+                  </label>
+                  <input
+                    type="date"
+                    defaultValue="2026-10-26"
+                    className="w-full px-3 py-2 text-xs sm:text-sm rounded-xl bg-background text-foreground border border-surface-border focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                  />
+                </div>
+
+                <div>
+                  <label className="font-semibold text-foreground block mb-1.5">
+                    Articles et quantités prévues
+                  </label>
+                  <textarea
+                    rows={3}
+                    placeholder="ex: 20kg Thiof frais, 10kg Lotte, 5kg Crevettes géantes..."
+                    className="w-full px-3 py-2 text-xs sm:text-sm rounded-xl bg-background text-foreground placeholder:text-foreground-muted/60 border border-surface-border focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                  />
+                </div>
               </div>
 
-              <div>
-                <label className="font-semibold text-foreground-muted block mb-1">
-                  Date de livraison souhaitée *
-                </label>
-                <input
-                  type="date"
-                  defaultValue="2026-10-26"
-                  className="w-full px-3 py-2 text-sm rounded-lg bg-surface border border-surface-border"
-                />
-              </div>
-
-              <div>
-                <label className="font-semibold text-foreground-muted block mb-1">
-                  Articles et quantités prévues
-                </label>
-                <textarea
-                  rows={3}
-                  placeholder="ex: 20kg Thiof frais, 10kg Lotte, 5kg Crevettes géantes..."
-                  className="w-full px-3 py-2 text-sm rounded-lg bg-surface border border-surface-border"
-                />
-              </div>
-
-              <div className="flex items-center justify-end gap-3 pt-3">
+              <div className="p-4 sm:p-5 border-t border-surface-border shrink-0 flex items-center justify-end gap-3 bg-surface">
                 <button
                   type="button"
                   onClick={() => setModalCommande(false)}
-                  className="px-4 py-2 text-sm font-medium rounded-lg text-foreground-muted hover:bg-surface-muted"
+                  className="px-4 py-2 text-xs sm:text-sm font-semibold rounded-xl text-foreground-muted hover:text-foreground hover:bg-surface-muted transition"
                 >
                   Annuler
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 text-sm font-bold rounded-lg bg-[var(--primary)] text-[var(--primary-foreground)] shadow-sm hover:opacity-95"
+                  className="px-5 py-2.5 text-xs sm:text-sm font-bold rounded-xl bg-[var(--primary)] text-[var(--primary-foreground)] shadow-sm hover:opacity-95 transition"
                 >
                   Émettre le Bon de Commande
                 </button>

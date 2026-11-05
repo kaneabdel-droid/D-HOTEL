@@ -15,6 +15,7 @@ import {
   Music,
   Flame,
   Check,
+  X,
 } from "lucide-react";
 import { formatXOF } from "@/lib/utils";
 
@@ -228,66 +229,79 @@ export default function SpectaclesSoireesPage() {
 
       {/* MODAL RÉSERVATION SPECTACLE */}
       {modalReservation && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-surface rounded-2xl border border-surface-border shadow-2xl max-w-md w-full p-6 space-y-4 animate-scale-up">
-            <h3 className="text-lg font-bold">
-              Réserver : {modalReservation.titre}
-            </h3>
-            <p className="text-xs text-foreground-muted">
-              {modalReservation.date} • {modalReservation.lieu}
-            </p>
-
-            <form onSubmit={handleReserver} className="space-y-3 text-xs">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-3 sm:p-4 overflow-y-auto">
+          <div className="bg-surface text-foreground rounded-2xl border border-surface-border shadow-2xl max-w-md w-full max-h-[92vh] sm:max-h-[88vh] flex flex-col overflow-hidden animate-scale-up">
+            <div className="p-4 sm:p-5 border-b border-surface-border flex items-start justify-between shrink-0 bg-surface">
               <div>
-                <label className="font-semibold text-foreground-muted block mb-1">
-                  Chambre du client résident
-                </label>
-                <select
-                  value={chambreClient}
-                  onChange={(e) => setChambreClient(e.target.value)}
-                  className="w-full px-3 py-2 text-sm rounded-lg bg-surface border border-surface-border"
-                >
-                  <option value="101">Chambre 101 (M. Ibrahima Diop)</option>
-                  <option value="102">Chambre 102 (Mme Awa Sarr)</option>
-                  <option value="201">Suite Junior 201 (M. Amadou Tidiane Ba)</option>
-                  <option value="B12">Bungalow Plage 12 (Mme Sophie Martin)</option>
-                </select>
+                <h3 className="text-base font-bold text-foreground">
+                  Réserver : {modalReservation.titre}
+                </h3>
+                <p className="text-xs text-foreground-muted">
+                  {modalReservation.date} • {modalReservation.lieu}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setModalReservation(null)}
+                className="p-1.5 rounded-lg text-foreground-muted hover:text-foreground hover:bg-surface-muted transition"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleReserver} className="flex flex-col flex-1 overflow-hidden">
+              <div className="p-4 sm:p-5 overflow-y-auto flex-1 space-y-3.5 text-xs">
+                <div>
+                  <label className="font-semibold text-foreground block mb-1.5">
+                    Chambre du client résident <span className="text-danger">*</span>
+                  </label>
+                  <select
+                    value={chambreClient}
+                    onChange={(e) => setChambreClient(e.target.value)}
+                    className="w-full px-3 py-2 text-xs sm:text-sm rounded-xl bg-background text-foreground border border-surface-border focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                  >
+                    <option value="101">Chambre 101 (M. Ibrahima Diop)</option>
+                    <option value="102">Chambre 102 (Mme Awa Sarr)</option>
+                    <option value="201">Suite Junior 201 (M. Amadou Tidiane Ba)</option>
+                    <option value="B12">Bungalow Plage 12 (Mme Sophie Martin)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="font-semibold text-foreground block mb-1.5">
+                    Nombre de couverts / places <span className="text-danger">*</span>
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    max="10"
+                    value={nbPlaces}
+                    onChange={(e) => setNbPlaces(Number(e.target.value))}
+                    className="w-full px-3 py-2 text-xs sm:text-sm rounded-xl bg-background text-foreground border border-surface-border focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                  />
+                </div>
+
+                <div className="p-3.5 rounded-xl bg-background border border-surface-border flex items-center justify-between text-xs">
+                  <span className="text-foreground-muted font-medium">Montant à imputer sur folio :</span>
+                  <span className="font-bold text-sm text-[var(--primary)]">
+                    {modalReservation.residentGratuit
+                      ? "Offert (Résident)"
+                      : formatXOF(modalReservation.tarifExterne * nbPlaces)}
+                  </span>
+                </div>
               </div>
 
-              <div>
-                <label className="font-semibold text-foreground-muted block mb-1">
-                  Nombre de couverts / places
-                </label>
-                <input
-                  type="number"
-                  min="1"
-                  max="10"
-                  value={nbPlaces}
-                  onChange={(e) => setNbPlaces(Number(e.target.value))}
-                  className="w-full px-3 py-2 text-sm rounded-lg bg-surface border border-surface-border"
-                />
-              </div>
-
-              <div className="p-3 rounded-lg bg-surface-muted/60 flex items-center justify-between text-xs">
-                <span className="text-foreground-muted">Montant à imputer sur folio :</span>
-                <span className="font-bold text-sm text-[var(--primary)]">
-                  {modalReservation.residentGratuit
-                    ? "Offert (Résident)"
-                    : formatXOF(modalReservation.tarifExterne * nbPlaces)}
-                </span>
-              </div>
-
-              <div className="flex items-center justify-end gap-3 pt-3">
+              <div className="p-4 sm:p-5 border-t border-surface-border shrink-0 flex items-center justify-end gap-3 bg-surface">
                 <button
                   type="button"
                   onClick={() => setModalReservation(null)}
-                  className="px-4 py-2 text-sm font-medium rounded-lg text-foreground-muted hover:bg-surface-muted"
+                  className="px-4 py-2 text-xs sm:text-sm font-semibold rounded-xl text-foreground-muted hover:text-foreground hover:bg-surface-muted transition"
                 >
                   Annuler
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 text-sm font-bold rounded-lg bg-[var(--primary)] text-[var(--primary-foreground)] shadow-sm hover:opacity-95"
+                  className="px-5 py-2.5 text-xs sm:text-sm font-bold rounded-xl bg-[var(--primary)] text-[var(--primary-foreground)] shadow-sm hover:opacity-95 transition"
                 >
                   Confirmer la Réservation
                 </button>

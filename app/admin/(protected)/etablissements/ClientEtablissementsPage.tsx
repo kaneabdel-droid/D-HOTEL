@@ -284,22 +284,23 @@ export function ClientEtablissementsPage({
 
       {/* Modal Création */}
       {modalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full p-6 sm:p-8 space-y-6 shadow-2xl">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+          <div className="bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full max-h-[92vh] sm:max-h-[88vh] flex flex-col overflow-hidden shadow-2xl animate-scale-up">
+            <div className="flex items-center justify-between border-b border-slate-800 p-4 sm:p-6 shrink-0 bg-slate-900">
               <div>
-                <h3 className="text-lg font-bold text-white">Ajouter un Établissement Hôtelier</h3>
+                <h3 className="text-base sm:text-lg font-bold text-white">Ajouter un Établissement Hôtelier</h3>
                 <p className="text-xs text-slate-400">Renseignez les coordonnées de la structure</p>
               </div>
               <button
                 onClick={() => setModalOpen(false)}
-                className="p-1 rounded-lg text-slate-400 hover:text-white"
+                className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <form onSubmit={handleCreate} className="space-y-4 text-xs">
+            <form onSubmit={handleCreate} className="flex flex-col flex-1 overflow-hidden">
+              <div className="p-4 sm:p-6 overflow-y-auto flex-1 space-y-4 text-xs">
               <div>
                 <label className="block font-semibold text-slate-300 mb-1">
                   Nom de l&apos;Établissement *
@@ -423,7 +424,9 @@ export function ClientEtablissementsPage({
                 </div>
               </div>
 
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-800">
+              </div>
+
+              <div className="flex items-center justify-end gap-3 p-4 sm:p-6 border-t border-slate-800 shrink-0 bg-slate-900">
                 <button
                   type="button"
                   onClick={() => setModalOpen(false)}

@@ -15,6 +15,7 @@ import {
   Sparkles,
   Warehouse,
   Boxes,
+  X,
 } from "lucide-react";
 import { formatXOF } from "@/lib/utils";
 
@@ -305,95 +306,109 @@ export default function StocksEconomatPage() {
 
       {/* MODAL MOUVEMENT DE STOCK */}
       {modalMouvement && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-surface rounded-2xl border border-surface-border shadow-2xl max-w-md w-full p-6 space-y-4 animate-scale-up">
-            <h3 className="text-lg font-bold">
-              Mouvement : {modalMouvement.nom}
-            </h3>
-            <p className="text-xs text-foreground-muted">
-              Stock actuel : <strong>{modalMouvement.stockActuel} {modalMouvement.unite}</strong> ({modalMouvement.depot})
-            </p>
-
-            <form onSubmit={handleValiderMouvement} className="space-y-3 text-xs">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-3 sm:p-4 overflow-y-auto">
+          <div className="bg-surface text-foreground rounded-2xl border border-surface-border shadow-2xl max-w-md w-full max-h-[92vh] sm:max-h-[88vh] flex flex-col overflow-hidden animate-scale-up">
+            <div className="p-4 sm:p-5 border-b border-surface-border flex items-start justify-between shrink-0 bg-surface">
               <div>
-                <label className="font-semibold text-foreground-muted block mb-1">
-                  Nature du mouvement
-                </label>
-                <div className="grid grid-cols-3 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setTypeMouvement("sortie")}
-                    className={`py-2 text-xs font-bold rounded-lg border transition ${
-                      typeMouvement === "sortie"
-                        ? "bg-[var(--primary)] text-white border-[var(--primary)]"
-                        : "bg-surface border-surface-border text-foreground-muted"
-                    }`}
-                  >
-                    Sortie Cuisine
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setTypeMouvement("entree")}
-                    className={`py-2 text-xs font-bold rounded-lg border transition ${
-                      typeMouvement === "entree"
-                        ? "bg-emerald-600 text-white border-emerald-600"
-                        : "bg-surface border-surface-border text-foreground-muted"
-                    }`}
-                  >
-                    Entrée Achat
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setTypeMouvement("perte")}
-                    className={`py-2 text-xs font-bold rounded-lg border transition ${
-                      typeMouvement === "perte"
-                        ? "bg-rose-600 text-white border-rose-600"
-                        : "bg-surface border-surface-border text-foreground-muted"
-                    }`}
-                  >
-                    Perte / Casse
-                  </button>
+                <h3 className="text-base font-bold text-foreground">
+                  Mouvement : {modalMouvement.nom}
+                </h3>
+                <p className="text-xs text-foreground-muted">
+                  Stock actuel : <strong>{modalMouvement.stockActuel} {modalMouvement.unite}</strong> ({modalMouvement.depot})
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setModalMouvement(null)}
+                className="p-1.5 rounded-lg text-foreground-muted hover:text-foreground hover:bg-surface-muted transition"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleValiderMouvement} className="flex flex-col flex-1 overflow-hidden">
+              <div className="p-4 sm:p-5 overflow-y-auto flex-1 space-y-4 text-xs">
+                <div>
+                  <label className="font-semibold text-foreground block mb-1.5">
+                    Nature du mouvement <span className="text-danger">*</span>
+                  </label>
+                  <div className="grid grid-cols-3 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setTypeMouvement("sortie")}
+                      className={`py-2 text-xs font-bold rounded-xl border transition ${
+                        typeMouvement === "sortie"
+                          ? "bg-[var(--primary)] text-white border-[var(--primary)] shadow-xs"
+                          : "bg-background border-surface-border text-foreground-muted hover:text-foreground"
+                      }`}
+                    >
+                      Sortie Cuisine
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setTypeMouvement("entree")}
+                      className={`py-2 text-xs font-bold rounded-xl border transition ${
+                        typeMouvement === "entree"
+                          ? "bg-emerald-600 text-white border-emerald-600 shadow-xs"
+                          : "bg-background border-surface-border text-foreground-muted hover:text-foreground"
+                      }`}
+                    >
+                      Entrée Achat
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setTypeMouvement("perte")}
+                      className={`py-2 text-xs font-bold rounded-xl border transition ${
+                        typeMouvement === "perte"
+                          ? "bg-rose-600 text-white border-rose-600 shadow-xs"
+                          : "bg-background border-surface-border text-foreground-muted hover:text-foreground"
+                      }`}
+                    >
+                      Perte / Casse
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="font-semibold text-foreground block mb-1.5">
+                    Quantité ({modalMouvement.unite}) <span className="text-danger">*</span>
+                  </label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    min="0.1"
+                    required
+                    value={quantiteMvt}
+                    onChange={(e) => setQuantiteMvt(Number(e.target.value))}
+                    className="w-full px-3 py-2 text-xs sm:text-sm rounded-xl bg-background text-foreground border border-surface-border focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                  />
+                </div>
+
+                <div>
+                  <label className="font-semibold text-foreground block mb-1.5">
+                    Motif / Destination
+                  </label>
+                  <input
+                    type="text"
+                    value={motifMvt}
+                    onChange={(e) => setMotifMvt(e.target.value)}
+                    placeholder="ex: Service dîner restaurant, Casse transport..."
+                    className="w-full px-3 py-2 text-xs sm:text-sm rounded-xl bg-background text-foreground placeholder:text-foreground-muted/60 border border-surface-border focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                  />
                 </div>
               </div>
 
-              <div>
-                <label className="font-semibold text-foreground-muted block mb-1">
-                  Quantité ({modalMouvement.unite}) *
-                </label>
-                <input
-                  type="number"
-                  step="0.1"
-                  min="0.1"
-                  required
-                  value={quantiteMvt}
-                  onChange={(e) => setQuantiteMvt(Number(e.target.value))}
-                  className="w-full px-3 py-2 text-sm rounded-lg bg-surface border border-surface-border"
-                />
-              </div>
-
-              <div>
-                <label className="font-semibold text-foreground-muted block mb-1">
-                  Motif / Destination
-                </label>
-                <input
-                  type="text"
-                  value={motifMvt}
-                  onChange={(e) => setMotifMvt(e.target.value)}
-                  className="w-full px-3 py-2 text-sm rounded-lg bg-surface border border-surface-border"
-                />
-              </div>
-
-              <div className="flex items-center justify-end gap-3 pt-3">
+              <div className="p-4 sm:p-5 border-t border-surface-border shrink-0 flex items-center justify-end gap-3 bg-surface">
                 <button
                   type="button"
                   onClick={() => setModalMouvement(null)}
-                  className="px-4 py-2 text-sm font-medium rounded-lg text-foreground-muted hover:bg-surface-muted"
+                  className="px-4 py-2 text-xs sm:text-sm font-semibold rounded-xl text-foreground-muted hover:text-foreground hover:bg-surface-muted transition"
                 >
                   Annuler
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 text-sm font-bold rounded-lg bg-[var(--primary)] text-[var(--primary-foreground)] shadow-sm hover:opacity-95"
+                  className="px-5 py-2.5 text-xs sm:text-sm font-bold rounded-xl bg-[var(--primary)] text-[var(--primary-foreground)] shadow-sm hover:opacity-95 transition"
                 >
                   Valider le Mouvement
                 </button>

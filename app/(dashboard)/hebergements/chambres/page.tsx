@@ -21,6 +21,7 @@ import {
   Wind,
   Coffee,
   Waves,
+  X,
 } from "lucide-react";
 import { formatXOF } from "@/lib/utils";
 
@@ -573,77 +574,89 @@ export default function ChambresPage() {
 
       {/* MODAL AJOUT CHAMBRE */}
       {modalAjoutChambre && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-surface rounded-2xl border border-surface-border shadow-2xl max-w-md w-full p-6 space-y-4 animate-scale-up">
-            <h3 className="text-lg font-bold">Ajouter une nouvelle chambre</h3>
-            <form onSubmit={handleAjoutChambre} className="space-y-4">
-              <div>
-                <label className="text-xs font-semibold text-foreground-muted block mb-1">
-                  Numéro ou Nom de la Chambre / Villa *
-                </label>
-                <input
-                  type="text"
-                  placeholder="ex: 104, Suite 302, Villa 5"
-                  required
-                  value={nouveauNumero}
-                  onChange={(e) => setNouveauNumero(e.target.value)}
-                  className="w-full px-3 py-2 text-sm rounded-lg bg-surface border border-surface-border focus:outline-none"
-                />
-              </div>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-3 sm:p-4 overflow-y-auto">
+          <div className="bg-surface text-foreground rounded-2xl border border-surface-border shadow-2xl max-w-md w-full max-h-[92vh] sm:max-h-[88vh] flex flex-col overflow-hidden animate-scale-up">
+            <div className="p-4 sm:p-5 border-b border-surface-border flex items-center justify-between shrink-0 bg-surface">
+              <h3 className="text-base font-bold text-foreground">Ajouter une nouvelle chambre</h3>
+              <button
+                type="button"
+                onClick={() => setModalAjoutChambre(false)}
+                className="p-1.5 rounded-lg text-foreground-muted hover:text-foreground hover:bg-surface-muted transition"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
 
-              <div>
-                <label className="text-xs font-semibold text-foreground-muted block mb-1">
-                  Typologie d'Hébergement *
-                </label>
-                <select
-                  value={nouveauType}
-                  onChange={(e) => setNouveauType(e.target.value)}
-                  className="w-full px-3 py-2 text-sm rounded-lg bg-surface border border-surface-border focus:outline-none"
-                >
-                  {typesChambres.map((t) => (
-                    <option key={t.id} value={t.id}>
-                      {t.nom} ({formatXOF(t.tarifBase)}/nuit)
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
+            <form onSubmit={handleAjoutChambre} className="flex flex-col flex-1 overflow-hidden">
+              <div className="p-4 sm:p-5 overflow-y-auto flex-1 space-y-3.5 text-xs">
                 <div>
-                  <label className="text-xs font-semibold text-foreground-muted block mb-1">
-                    Bâtiment / Aile
+                  <label className="text-xs font-semibold text-foreground block mb-1.5">
+                    Numéro ou Nom de la Chambre / Villa <span className="text-danger">*</span>
                   </label>
                   <input
                     type="text"
-                    value={nouveauBatiment}
-                    onChange={(e) => setNouveauBatiment(e.target.value)}
-                    className="w-full px-3 py-2 text-sm rounded-lg bg-surface border border-surface-border focus:outline-none"
+                    placeholder="ex: 104, Suite 302, Villa 5"
+                    required
+                    value={nouveauNumero}
+                    onChange={(e) => setNouveauNumero(e.target.value)}
+                    className="w-full px-3 py-2 text-xs sm:text-sm rounded-xl bg-background text-foreground placeholder:text-foreground-muted/60 border border-surface-border focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
                   />
                 </div>
+
                 <div>
-                  <label className="text-xs font-semibold text-foreground-muted block mb-1">
-                    Étage / Emplacement
+                  <label className="text-xs font-semibold text-foreground block mb-1.5">
+                    Typologie d&apos;Hébergement <span className="text-danger">*</span>
                   </label>
-                  <input
-                    type="text"
-                    value={nouvelEtage}
-                    onChange={(e) => setNouvelEtage(e.target.value)}
-                    className="w-full px-3 py-2 text-sm rounded-lg bg-surface border border-surface-border focus:outline-none"
-                  />
+                  <select
+                    value={nouveauType}
+                    onChange={(e) => setNouveauType(e.target.value)}
+                    className="w-full px-2.5 py-2 text-xs sm:text-sm rounded-xl bg-background text-foreground border border-surface-border focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                  >
+                    {typesChambres.map((t) => (
+                      <option key={t.id} value={t.id}>
+                        {t.nom} ({formatXOF(t.tarifBase)}/nuit)
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-xs font-semibold text-foreground block mb-1.5">
+                      Bâtiment / Aile
+                    </label>
+                    <input
+                      type="text"
+                      value={nouveauBatiment}
+                      onChange={(e) => setNouveauBatiment(e.target.value)}
+                      className="w-full px-3 py-2 text-xs sm:text-sm rounded-xl bg-background text-foreground border border-surface-border focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-semibold text-foreground block mb-1.5">
+                      Étage / Emplacement
+                    </label>
+                    <input
+                      type="text"
+                      value={nouvelEtage}
+                      onChange={(e) => setNouvelEtage(e.target.value)}
+                      className="w-full px-3 py-2 text-xs sm:text-sm rounded-xl bg-background text-foreground border border-surface-border focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                    />
+                  </div>
                 </div>
               </div>
 
-              <div className="flex items-center justify-end gap-3 pt-3">
+              <div className="p-4 sm:p-5 border-t border-surface-border shrink-0 flex items-center justify-end gap-3 bg-surface">
                 <button
                   type="button"
                   onClick={() => setModalAjoutChambre(false)}
-                  className="px-4 py-2 text-sm font-medium rounded-lg text-foreground-muted hover:bg-surface-muted transition"
+                  className="px-4 py-2 text-xs sm:text-sm font-semibold rounded-xl text-foreground-muted hover:text-foreground hover:bg-surface-muted transition"
                 >
                   Annuler
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 text-sm font-bold rounded-lg bg-[var(--primary)] text-[var(--primary-foreground)] shadow-sm hover:opacity-95 transition"
+                  className="px-5 py-2.5 text-xs sm:text-sm font-bold rounded-xl bg-[var(--primary)] text-[var(--primary-foreground)] shadow-sm hover:opacity-95 transition"
                 >
                   Créer la Chambre
                 </button>
@@ -655,60 +668,72 @@ export default function ChambresPage() {
 
       {/* MODAL MODIFIER TARIF TYPOLOGIE */}
       {modalTypeTarif && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-surface rounded-2xl border border-surface-border shadow-2xl max-w-md w-full p-6 space-y-4 animate-scale-up">
-            <h3 className="text-lg font-bold">
-              Modifier la tarification : {modalTypeTarif.nom}
-            </h3>
-            <div className="space-y-3">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-3 sm:p-4 overflow-y-auto">
+          <div className="bg-surface text-foreground rounded-2xl border border-surface-border shadow-2xl max-w-md w-full max-h-[92vh] sm:max-h-[88vh] flex flex-col overflow-hidden animate-scale-up">
+            <div className="p-4 sm:p-5 border-b border-surface-border flex items-center justify-between shrink-0 bg-surface">
+              <h3 className="text-base font-bold text-foreground">
+                Modifier la tarification : {modalTypeTarif.nom}
+              </h3>
+              <button
+                type="button"
+                onClick={() => setModalTypeTarif(null)}
+                className="p-1.5 rounded-lg text-foreground-muted hover:text-foreground hover:bg-surface-muted transition"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-4 sm:p-5 overflow-y-auto flex-1 space-y-3.5 text-xs">
               <div>
-                <label className="text-xs font-semibold text-foreground-muted block mb-1">
+                <label className="text-xs font-semibold text-foreground block mb-1.5">
                   Tarif Moyen de Base (FCFA)
                 </label>
                 <input
                   type="number"
                   defaultValue={modalTypeTarif.tarifBase}
-                  className="w-full px-3 py-2 text-sm rounded-lg bg-surface border border-surface-border"
+                  className="w-full px-3 py-2 text-xs sm:text-sm rounded-xl bg-background text-foreground border border-surface-border focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
                 />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs font-semibold text-foreground-muted block mb-1">
+                  <label className="text-xs font-semibold text-foreground block mb-1.5">
                     Basse Saison (FCFA)
                   </label>
                   <input
                     type="number"
                     defaultValue={modalTypeTarif.saisonBasse}
-                    className="w-full px-3 py-2 text-sm rounded-lg bg-surface border border-surface-border"
+                    className="w-full px-3 py-2 text-xs sm:text-sm rounded-xl bg-background text-foreground border border-surface-border focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-semibold text-foreground-muted block mb-1">
+                  <label className="text-xs font-semibold text-foreground block mb-1.5">
                     Haute Saison (FCFA)
                   </label>
                   <input
                     type="number"
                     defaultValue={modalTypeTarif.saisonHaute}
-                    className="w-full px-3 py-2 text-sm rounded-lg bg-surface border border-surface-border"
+                    className="w-full px-3 py-2 text-xs sm:text-sm rounded-xl bg-background text-foreground border border-surface-border focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
                   />
                 </div>
               </div>
             </div>
 
-            <div className="flex items-center justify-end gap-3 pt-3">
+            <div className="p-4 sm:p-5 border-t border-surface-border shrink-0 flex items-center justify-end gap-3 bg-surface">
               <button
+                type="button"
                 onClick={() => setModalTypeTarif(null)}
-                className="px-4 py-2 text-sm font-medium rounded-lg text-foreground-muted hover:bg-surface-muted"
+                className="px-4 py-2 text-xs sm:text-sm font-semibold rounded-xl text-foreground-muted hover:text-foreground hover:bg-surface-muted transition"
               >
                 Fermer
               </button>
               <button
+                type="button"
                 onClick={() => {
                   setSuccesMsg("Grille tarifaire actualisée.");
                   setModalTypeTarif(null);
                   setTimeout(() => setSuccesMsg(null), 3000);
                 }}
-                className="px-4 py-2 text-sm font-bold rounded-lg bg-[var(--primary)] text-[var(--primary-foreground)] shadow-sm"
+                className="px-5 py-2.5 text-xs sm:text-sm font-bold rounded-xl bg-[var(--primary)] text-[var(--primary-foreground)] shadow-sm hover:opacity-95 transition"
               >
                 Enregistrer les Tarifs
               </button>
