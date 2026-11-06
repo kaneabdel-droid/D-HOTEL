@@ -15,6 +15,7 @@ export interface EtablissementItem {
   plan: string;
   prix: string;
   statut: 'actif' | 'essai' | 'suspendu';
+  compte_verrouille?: boolean;
   expireLe: string;
   dateCreation?: string;
   source?: 'supabase' | 'demo';
@@ -144,6 +145,7 @@ export async function getEtablissementsSuperAdmin(): Promise<EtablissementItem[]
               plan: planKey,
               prix: prixLabel,
               statut: u.banned_until ? 'suspendu' : u.email_confirmed_at ? 'actif' : 'essai',
+              compte_verrouille: Boolean(u.banned_until),
               expireLe: new Date(new Date(u.created_at).getTime() + 30 * 24 * 3600 * 1000)
                 .toISOString()
                 .split('T')[0],
@@ -164,6 +166,7 @@ export async function getEtablissementsSuperAdmin(): Promise<EtablissementItem[]
         for (const h of hotelsData) {
           if (!realEtablissements.some((item) => item.id === h.id || item.nom.toLowerCase() === h.nom.toLowerCase())) {
             const planKey = h.subscription_tier === 'auberge' ? 'auberge' : 'hotel';
+            const estVerrouille = Boolean(h.compte_verrouille || h.statut === 'suspendu');
             realEtablissements.push({
               id: h.id,
               nom: h.nom,
@@ -175,7 +178,8 @@ export async function getEtablissementsSuperAdmin(): Promise<EtablissementItem[]
               email: h.email,
               plan: planKey,
               prix: planKey === 'auberge' ? '15 000 FCFA/m' : '20 000 FCFA/m',
-              statut: h.statut === 'actif' ? 'actif' : 'suspendu',
+              statut: estVerrouille ? 'suspendu' : 'actif',
+              compte_verrouille: estVerrouille,
               expireLe: new Date(Date.now() + 30 * 24 * 3600 * 1000).toISOString().split('T')[0],
               source: 'supabase',
             });
@@ -289,6 +293,7 @@ export async function creerEtablissementSuperAdmin(formData: FormData) {
         plan,
         prix: plan === 'auberge' ? '15 000 FCFA/m' : '20 000 FCFA/m',
         statut: statut as 'actif' | 'essai' | 'suspendu',
+        compte_verrouille: statut === 'suspendu',
         expireLe: new Date(Date.now() + 30 * 24 * 3600 * 1000).toISOString().split('T')[0],
         source: 'supabase',
       },
@@ -297,4 +302,215 @@ export async function creerEtablissementSuperAdmin(formData: FormData) {
     return { error: err.message || "Erreur lors de la création de l'établissement." };
   }
 }
+
+export async function toggleVerrouillerEtablissement(etablissementId: string, bloquer: boolean) {
+  const admin = createAdminClient();
+  try {
+    // 1. Mise à jour de la table hotels
+    try {
+      await admin
+        .from('hotels')
+        .update({
+          statut: bloquer ? 'suspendu' : 'actif',
+          compte_verrouille: bloquer,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', etablissementId);
+    } catch (e) {
+      console.warn('Note mise à jour hotel:', e);
+    }
+
+    // 2. Si c\'est un compte Auth ou lié
+    try {
+      await admin.auth.admin.updateUserById(etablissementId, {
+        ban_duration: bloquer ? '87600h' : 'none',
+      });
+    } catch {
+      try {
+        const { data: users } = await admin
+          .from('utilisateurs')
+          .select('id')
+          .eq('hotel_id', etablissementId);
+
+        if (users && users.length > 0) {
+          for (const u of users) {
+            await admin.auth.admin.updateUserById(u.id, {
+              ban_duration: bloquer ? '87600h' : 'none',
+            });
+          }
+        }
+      } catch {}
+    }
+
+    revalidatePath('/admin/etablissements');
+    revalidatePath('/admin');
+    return { success: true, bloquer };
+  } catch (err: any) {
+    return { error: err.message || 'Erreur lors du verrouillage' };
+  }
+}
+
+export interface PaiementAbonnementItem {
+  id: string;
+  hotelId?: string;
+  hotelNom: string;
+  montant: number;
+  devise: string;
+  niveau: string;
+  provider: string;
+  moyenPaiement: string;
+  statut: 'pending' | 'completed' | 'failed';
+  notes?: string;
+  date: string;
+}
+
+export async function getPaiementsAbonnementsSuperAdmin(): Promise<PaiementAbonnementItem[]> {
+  const admin = createAdminClient();
+  try {
+    const { data, error } = await admin
+      .from('abonnement_paiements')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (!error && data && data.length > 0) {
+      return data.map((p) => ({
+        id: p.id,
+        hotelId: p.hotel_id,
+        hotelNom: p.hotel_nom || 'Établissement Hôtelier',
+        montant: Number(p.montant),
+        devise: p.devise || 'XOF',
+        niveau: p.niveau,
+        provider: p.provider,
+        moyenPaiement: p.moyen_paiement,
+        statut: p.statut as any,
+        notes: p.notes,
+        date: p.created_at ? p.created_at.split('T')[0] : new Date().toISOString().split('T')[0],
+      }));
+    }
+  } catch (err) {
+    console.warn('Note getPaiementsAbonnementsSuperAdmin:', err);
+  }
+
+  // Fallback démo
+  return [
+    {
+      id: 'PAY-1089',
+      hotelNom: 'Hôtel Teranga Palace 5★',
+      montant: 216000,
+      devise: 'XOF',
+      niveau: 'hotel',
+      provider: 'virement',
+      moyenPaiement: 'virement',
+      statut: 'completed',
+      date: '2026-10-28',
+    },
+    {
+      id: 'PAY-1088',
+      hotelNom: 'Campement Le Bolong Fleuri',
+      montant: 15000,
+      devise: 'XOF',
+      niveau: 'auberge',
+      provider: 'maketou',
+      moyenPaiement: 'wave',
+      statut: 'completed',
+      date: '2026-10-25',
+    },
+    {
+      id: 'PAY-1087',
+      hotelNom: 'Résidence Palm Beach',
+      montant: 20000,
+      devise: 'XOF',
+      niveau: 'hotel',
+      provider: 'maketou',
+      moyenPaiement: 'orange',
+      statut: 'completed',
+      date: '2026-10-20',
+    },
+    {
+      id: 'PAY-1086',
+      hotelNom: 'Écolodge du Saloum',
+      montant: 162000,
+      devise: 'XOF',
+      niveau: 'auberge',
+      provider: 'chariow',
+      moyenPaiement: 'carte',
+      statut: 'completed',
+      date: '2026-10-15',
+    },
+  ];
+}
+
+export async function validerPaiementCaisse(paiementId: string) {
+  const admin = createAdminClient();
+  try {
+    const { data: p, error } = await admin
+      .from('abonnement_paiements')
+      .select('*')
+      .eq('id', paiementId)
+      .maybeSingle();
+
+    if (error || !p) {
+      return { error: 'Paiement introuvable' };
+    }
+
+    const { fulfillSubscriptionPayment } = await import('@/lib/payments/fulfill');
+    await fulfillSubscriptionPayment({
+      hotelId: p.hotel_id,
+      forfait: p.niveau,
+      montant: p.montant,
+      provider: 'caisse',
+      paymentId: p.id,
+    });
+
+    revalidatePath('/admin');
+    revalidatePath('/admin/abonnements');
+    revalidatePath('/admin/etablissements');
+    return { success: true };
+  } catch (err: any) {
+    return { error: err.message || 'Erreur lors de la validation caisse' };
+  }
+}
+
+export async function validerPaiementVirement(paiementId: string) {
+  const admin = createAdminClient();
+  try {
+    const { data: p, error } = await admin
+      .from('abonnement_paiements')
+      .select('*')
+      .eq('id', paiementId)
+      .maybeSingle();
+
+    if (error || !p) {
+      return { error: 'Paiement introuvable' };
+    }
+
+    const { fulfillSubscriptionPayment } = await import('@/lib/payments/fulfill');
+    await fulfillSubscriptionPayment({
+      hotelId: p.hotel_id,
+      forfait: p.niveau,
+      montant: p.montant,
+      provider: 'virement',
+      paymentId: p.id,
+    });
+
+    revalidatePath('/admin');
+    revalidatePath('/admin/abonnements');
+    revalidatePath('/admin/etablissements');
+    return { success: true };
+  } catch (err: any) {
+    return { error: err.message || 'Erreur lors de la validation du virement' };
+  }
+}
+
+export async function supprimerPaiementAbonnement(paiementId: string) {
+  const admin = createAdminClient();
+  try {
+    await admin.from('abonnement_paiements').delete().eq('id', paiementId);
+    revalidatePath('/admin/abonnements');
+    return { success: true };
+  } catch (err: any) {
+    return { error: err.message };
+  }
+}
+
 

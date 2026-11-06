@@ -18,10 +18,13 @@ import {
   SlidersHorizontal,
   ChevronRight,
   Loader2,
+  Lock,
+  Unlock,
 } from 'lucide-react'
 import {
   type EtablissementItem,
   creerEtablissementSuperAdmin,
+  toggleVerrouillerEtablissement,
 } from '@/app/admin/(protected)/actions'
 
 export function ClientEtablissementsPage({
@@ -34,7 +37,40 @@ export function ClientEtablissementsPage({
   const [filterStatut, setFilterStatut] = useState('tous')
   const [hotels, setHotels] = useState<EtablissementItem[]>(initialHotels)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [loadingActionId, setLoadingActionId] = useState<string | null>(null)
   const [successToast, setSuccessToast] = useState<string | null>(null)
+
+  const handleToggleLock = async (h: EtablissementItem) => {
+    const isLocked = h.statut === 'suspendu' || Boolean(h.compte_verrouille)
+    const newBlockedState = !isLocked
+    setLoadingActionId(h.id)
+
+    const res = await toggleVerrouillerEtablissement(h.id, newBlockedState)
+    setLoadingActionId(null)
+
+    if (res?.success) {
+      setHotels((prev) =>
+        prev.map((item) =>
+          item.id === h.id
+            ? {
+                ...item,
+                statut: newBlockedState ? 'suspendu' : 'actif',
+                compte_verrouille: newBlockedState,
+              }
+            : item
+        )
+      )
+      setSuccessToast(
+        newBlockedState
+          ? `L'établissement "${h.nom}" a été verrouillé (accès bloqué).`
+          : `L'établissement "${h.nom}" a été activé et déverrouillé avec succès.`
+      )
+      setTimeout(() => setSuccessToast(null), 3500)
+    } else {
+      setSuccessToast(`Erreur : ${res?.error || 'Action impossible'}`)
+      setTimeout(() => setSuccessToast(null), 3500)
+    }
+  }
 
   // Formulaire modal
   const [nom, setNom] = useState('')
@@ -211,72 +247,109 @@ export function ClientEtablissementsPage({
                 <th className="py-3 px-4">Formule</th>
                 <th className="py-3 px-4">Statut</th>
                 <th className="py-3 px-4 text-right">Échéance</th>
+                <th className="py-3 px-4 text-center">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800/60 font-medium text-xs">
-              {filtered.map((h) => (
-                <tr key={h.id} className="hover:bg-slate-800/40 transition-colors">
-                  <td className="py-3.5 px-4">
-                    <div className="flex items-center gap-2">
-                      <span className="font-bold text-white text-sm">{h.nom}</span>
-                      {(h.source === 'supabase' || h.email) && (
-                        <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                          Inscrit en ligne
+              {filtered.map((h) => {
+                const isLocked = h.statut === 'suspendu' || Boolean(h.compte_verrouille)
+                const isLoading = loadingActionId === h.id
+
+                return (
+                  <tr key={h.id} className="hover:bg-slate-800/40 transition-colors">
+                    <td className="py-3.5 px-4">
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-white text-sm">{h.nom}</span>
+                        {(h.source === 'supabase' || h.email) && (
+                          <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                            Inscrit en ligne
+                          </span>
+                        )}
+                      </div>
+                      {h.email && (
+                        <p className="text-[11px] text-slate-400 font-mono mt-0.5">{h.email}</p>
+                      )}
+                    </td>
+                    <td className="py-3.5 px-4 text-xs font-medium text-slate-300">
+                      <span className="flex items-center gap-1">
+                        <MapPin className="w-3.5 h-3.5 text-slate-500" />
+                        {h.ville}
+                      </span>
+                    </td>
+                    <td className="py-3.5 px-4">
+                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-slate-800 text-xs font-bold text-slate-200">
+                        <BedDouble className="w-3.5 h-3.5 text-amber-400" />
+                        {h.chambres} hébergements
+                      </span>
+                    </td>
+                    <td className="py-3.5 px-4 text-xs">
+                      <p className="text-white font-medium">{h.directeur}</p>
+                      <p className="text-slate-400 flex items-center gap-1 mt-0.5">
+                        <Phone className="w-3 h-3 text-slate-500" />
+                        {h.telephone}
+                      </p>
+                    </td>
+                    <td className="py-3.5 px-4">
+                      <span
+                        className={`text-xs font-bold px-2 py-1 rounded-lg ${
+                          h.plan === 'hotel'
+                            ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
+                            : 'bg-sky-500/10 text-sky-400 border border-sky-500/20'
+                        }`}
+                      >
+                        {h.plan === 'hotel' ? 'Hôtel (20k/m)' : 'Auberge (15k/m)'}
+                      </span>
+                    </td>
+                    <td className="py-3.5 px-4">
+                      {isLocked ? (
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-rose-500/10 text-rose-400 border border-rose-500/20">
+                          <Lock className="w-3.5 h-3.5" />
+                          Verrouillé
+                        </span>
+                      ) : h.statut === 'actif' ? (
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                          <CheckCircle2 className="w-3.5 h-3.5" />
+                          Actif
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                          <Clock className="w-3.5 h-3.5" />
+                          Essai
                         </span>
                       )}
-                    </div>
-                    {h.email && (
-                      <p className="text-[11px] text-slate-400 font-mono mt-0.5">{h.email}</p>
-                    )}
-                  </td>
-                  <td className="py-3.5 px-4 text-xs font-medium text-slate-300">
-                    <span className="flex items-center gap-1">
-                      <MapPin className="w-3.5 h-3.5 text-slate-500" />
-                      {h.ville}
-                    </span>
-                  </td>
-                  <td className="py-3.5 px-4">
-                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-slate-800 text-xs font-bold text-slate-200">
-                      <BedDouble className="w-3.5 h-3.5 text-amber-400" />
-                      {h.chambres} hébergements
-                    </span>
-                  </td>
-                  <td className="py-3.5 px-4 text-xs">
-                    <p className="text-white font-medium">{h.directeur}</p>
-                    <p className="text-slate-400 flex items-center gap-1 mt-0.5">
-                      <Phone className="w-3 h-3 text-slate-500" />
-                      {h.telephone}
-                    </p>
-                  </td>
-                  <td className="py-3.5 px-4">
-                    <span
-                      className={`text-xs font-bold px-2 py-1 rounded-lg ${
-                        h.plan === 'hotel'
-                          ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
-                          : 'bg-sky-500/10 text-sky-400 border border-sky-500/20'
-                      }`}
-                    >
-                      {h.plan === 'hotel' ? 'Hôtel (20k/m)' : 'Auberge (15k/m)'}
-                    </span>
-                  </td>
-                  <td className="py-3.5 px-4">
-                    {h.statut === 'actif' ? (
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                        <CheckCircle2 className="w-3.5 h-3.5" />
-                        Actif
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20">
-                        <Clock className="w-3.5 h-3.5" />
-                        Essai
-                      </span>
-                    )}
-                  </td>
-                  <td className="py-3.5 px-4 text-right font-mono text-slate-400 text-xs">
-                    {h.expireLe}
-                  </td>
-                </tr>
-              ))}
+                    </td>
+                    <td className="py-3.5 px-4 text-right font-mono text-slate-400 text-xs">
+                      {h.expireLe}
+                    </td>
+                    <td className="py-3.5 px-4 text-center">
+                      <button
+                        type="button"
+                        onClick={() => handleToggleLock(h)}
+                        disabled={isLoading}
+                        className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all disabled:opacity-50 ${
+                          isLocked
+                            ? 'bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 border border-emerald-500/30'
+                            : 'bg-rose-600/20 hover:bg-rose-600/30 text-rose-400 border border-rose-500/30'
+                        }`}
+                      >
+                        {isLoading ? (
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        ) : isLocked ? (
+                          <>
+                            <Unlock className="w-3.5 h-3.5" />
+                            <span>Activer</span>
+                          </>
+                        ) : (
+                          <>
+                            <Lock className="w-3.5 h-3.5" />
+                            <span>Verrouiller</span>
+                          </>
+                        )}
+                      </button>
+                    </td>
+                  </tr>
+                )
+              })}
             </tbody>
           </table>
         </div>
