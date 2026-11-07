@@ -75,6 +75,7 @@ export function AppShell({
     direction: false,
   });
   const [searchModalOuvert, setSearchModalOuvert] = useState(false);
+  const [alertesOuvertes, setAlertesOuvertes] = useState(false);
   const [recherche, setRecherche] = useState("");
 
   useEffect(() => {
@@ -278,13 +279,20 @@ export function AppShell({
                 </p>
               </div>
             </div>
-            <Link
-              href="/login"
+            <button
+              type="button"
+              onClick={() => {
+                try {
+                  localStorage.removeItem("dhotel_demo_role");
+                  localStorage.removeItem("dhotel_offline_user");
+                } catch {}
+                window.location.href = "/auth/logout";
+              }}
               title={t("common.logout", "Déconnexion")}
-              className="p-1.5 text-[var(--sidebar-muted)] hover:text-white hover:bg-[var(--sidebar-hover)] rounded-lg transition-colors"
+              className="p-1.5 text-[var(--sidebar-muted)] hover:text-white hover:bg-[var(--sidebar-hover)] rounded-lg transition-colors cursor-pointer"
             >
               <LogOut className="w-4 h-4" />
-            </Link>
+            </button>
           </div>
         </div>
       </aside>
@@ -335,14 +343,55 @@ export function AppShell({
             <ThemeSwitcher />
 
             {/* Cloche d'alertes hôtelières */}
-            <button
-              type="button"
-              className="relative p-2 rounded-full border border-[var(--surface-border)] text-[var(--foreground-muted)] hover:text-[var(--foreground)] hover:bg-[var(--surface-muted)] transition-colors"
-              title={t("common.alerts_tasks", "Alertes & Tâches")}
-            >
-              <Bell className="w-4 h-4" />
-              <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-[#EF4444]" />
-            </button>
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setAlertesOuvertes(!alertesOuvertes)}
+                className="relative p-2 rounded-full border border-[var(--surface-border)] text-[var(--foreground-muted)] hover:text-[var(--foreground)] hover:bg-[var(--surface-muted)] transition-colors cursor-pointer"
+                title={t("common.alerts_tasks", "Alertes & Tâches")}
+              >
+                <Bell className="w-4 h-4" />
+                <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-[#EF4444]" />
+              </button>
+
+              {alertesOuvertes && (
+                <div className="absolute right-0 mt-2 w-80 bg-[var(--surface)] border border-[var(--surface-border)] rounded-2xl shadow-2xl p-4 z-50 text-xs space-y-3 animate-in fade-in">
+                  <div className="flex items-center justify-between pb-2 border-b border-[var(--surface-border)]">
+                    <span className="font-bold text-[var(--foreground)]">Notifications Opérationnelles</span>
+                    <span className="px-2 py-0.5 rounded-full bg-red-500/10 text-red-500 text-[10px] font-bold">3 actives</span>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Link
+                      href="/hebergements/reservations"
+                      onClick={() => setAlertesOuvertes(false)}
+                      className="block p-2.5 rounded-xl bg-[var(--surface-muted)]/50 hover:bg-[var(--surface-muted)] transition-colors"
+                    >
+                      <p className="font-bold text-[var(--foreground)]">3 Arrivées prévues</p>
+                      <p className="text-[10px] text-[var(--foreground-muted)]">Check-in et folios à valider aujourd&apos;hui</p>
+                    </Link>
+
+                    <Link
+                      href="/gouvernance/etages"
+                      onClick={() => setAlertesOuvertes(false)}
+                      className="block p-2.5 rounded-xl bg-[var(--surface-muted)]/50 hover:bg-[var(--surface-muted)] transition-colors"
+                    >
+                      <p className="font-bold text-[var(--foreground)]">2 Chambres à inspecter</p>
+                      <p className="text-[10px] text-[var(--foreground-muted)]">Chambres 102 & 201 nettoyées par les étages</p>
+                    </Link>
+
+                    <Link
+                      href="/economat"
+                      onClick={() => setAlertesOuvertes(false)}
+                      className="block p-2.5 rounded-xl bg-[var(--surface-muted)]/50 hover:bg-[var(--surface-muted)] transition-colors"
+                    >
+                      <p className="font-bold text-[var(--foreground)]">Alerte Stock Économat</p>
+                      <p className="text-[10px] text-[var(--foreground-muted)]">Boissons & amenities sous le seuil d&apos;alerte</p>
+                    </Link>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </header>
 

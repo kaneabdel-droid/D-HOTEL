@@ -368,12 +368,12 @@ export default function DashboardPage() {
                       {arr.heure}
                     </td>
                     <td className={`py-2.5 ${isRTL ? "text-left" : "text-right"}`}>
-                      <button
-                        type="button"
-                        className="px-2.5 py-1 rounded-md bg-[var(--primary)] hover:bg-[var(--primary-hover)] text-white font-medium text-[11px] transition-colors"
+                      <Link
+                        href={`/hebergements/reservations?action=checkin&resa=${arr.id}`}
+                        className="inline-block px-2.5 py-1 rounded-md bg-[var(--primary)] hover:bg-[var(--primary-hover)] text-white font-medium text-[11px] transition-colors"
                       >
                         {t("dashboard.checkin")}
-                      </button>
+                      </Link>
                     </td>
                   </tr>
                 ))}

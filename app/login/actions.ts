@@ -142,3 +142,16 @@ export async function login(formData: FormData): Promise<LoginActionResult> {
     };
   }
 }
+
+export async function enterHotelDemoRoleAction(role: string) {
+  const cookieStore = await cookies();
+  cookieStore.set("dhotel_demo_role", role, { path: "/", maxAge: 86400, sameSite: "lax" });
+  cookieStore.set("d_hotel_session", "demo", { path: "/", maxAge: 86400, sameSite: "lax" });
+
+  let destination = "/dashboard";
+  if (role === "receptionniste") destination = "/hebergements/reservations";
+  if (role === "serveur") destination = "/restauration/pos";
+  if (role === "gouvernante") destination = "/gouvernance/etages";
+
+  return { success: true, redirectUrl: destination };
+}

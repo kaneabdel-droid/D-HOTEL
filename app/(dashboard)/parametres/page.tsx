@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import {
   SlidersHorizontal,
   Hotel,
@@ -308,13 +309,13 @@ export default function ParametresHotelPage() {
                 Comptes Utilisateurs & Rôles Terrain (RBAC)
               </h3>
             </div>
-            <button
-              type="button"
-              className="text-xs font-bold text-[var(--primary)] hover:underline flex items-center gap-1"
+            <Link
+              href="/personnel"
+              className="text-xs font-bold text-[var(--primary)] hover:underline flex items-center gap-1 cursor-pointer"
             >
               <PlusCircle className="w-3.5 h-3.5" />
               Ajouter un Collaborateur
-            </button>
+            </Link>
           </div>
 
           <div className="overflow-x-auto">

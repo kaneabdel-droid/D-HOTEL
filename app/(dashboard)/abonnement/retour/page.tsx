@@ -145,15 +145,15 @@ export default async function AbonnementRetourPage({
                 {isCaisse
                   ? ab.retour_pending_cash_title
                   : isVirement
-                  ? ab.retour_pending_transfer_title
-                  : ab.retour_pending_online_title}
+                    ? ab.retour_pending_transfer_title
+                    : ab.retour_pending_online_title}
               </h1>
               <p className="text-xs text-slate-300">
                 {isCaisse
                   ? ab.retour_pending_cash_desc
                   : isVirement
-                  ? ab.retour_pending_transfer_desc
-                  : ab.retour_pending_online_desc}
+                    ? ab.retour_pending_transfer_desc
+                    : ab.retour_pending_online_desc}
               </p>
               {payment?.id && (
                 <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 text-xs font-mono text-slate-400">

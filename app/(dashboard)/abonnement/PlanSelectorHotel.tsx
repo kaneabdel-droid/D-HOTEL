@@ -164,11 +164,10 @@ export default function PlanSelectorHotel({
                 key={p.id}
                 type="button"
                 onClick={() => setSelectedPlan(p.id)}
-                className={`text-left rounded-2xl border p-5 transition-all relative flex flex-col justify-between ${
-                  isSelected
+                className={`text-left rounded-2xl border p-5 transition-all relative flex flex-col justify-between ${isSelected
                     ? 'border-amber-500 bg-amber-500/5 ring-2 ring-amber-500/30 shadow-md'
                     : 'border-surface-border bg-surface hover:border-amber-500/50 shadow-xs'
-                }`}
+                  }`}
               >
                 <div>
                   <div className="flex items-center justify-between mb-2">
@@ -181,11 +180,10 @@ export default function PlanSelectorHotel({
                       )}
                     </span>
                     <div
-                      className={`w-5 h-5 rounded-full border flex items-center justify-center ${
-                        isSelected
+                      className={`w-5 h-5 rounded-full border flex items-center justify-center ${isSelected
                           ? 'border-amber-500 bg-amber-500 text-slate-950'
                           : 'border-surface-border bg-background'
-                      }`}
+                        }`}
                     >
                       {isSelected && <Check className="w-3.5 h-3.5 stroke-[3]" />}
                     </div>
@@ -228,11 +226,10 @@ export default function PlanSelectorHotel({
           <button
             type="button"
             onClick={() => setFrequence('mensuel')}
-            className={`py-3 px-4 rounded-xl border text-xs font-bold transition-all text-center ${
-              frequence === 'mensuel'
+            className={`py-3 px-4 rounded-xl border text-xs font-bold transition-all text-center ${frequence === 'mensuel'
                 ? 'border-amber-500 bg-amber-500/10 text-amber-700 dark:text-amber-400 ring-1 ring-amber-500'
                 : 'border-surface-border bg-surface text-foreground-muted hover:text-foreground'
-            }`}
+              }`}
           >
             {t('abonnement.monthly_billing', 'Facturation Mensuelle')}
             <span className="block text-[11px] font-normal text-foreground-muted mt-0.5">
@@ -242,11 +239,10 @@ export default function PlanSelectorHotel({
           <button
             type="button"
             onClick={() => setFrequence('annuel')}
-            className={`py-3 px-4 rounded-xl border text-xs font-bold transition-all text-center relative ${
-              frequence === 'annuel'
+            className={`py-3 px-4 rounded-xl border text-xs font-bold transition-all text-center relative ${frequence === 'annuel'
                 ? 'border-amber-500 bg-amber-500/10 text-amber-700 dark:text-amber-400 ring-1 ring-amber-500'
                 : 'border-surface-border bg-surface text-foreground-muted hover:text-foreground'
-            }`}
+              }`}
           >
             <span className={`absolute -top-2.5 ${isRTL ? 'left-3' : 'right-3'} bg-emerald-600 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full shadow`}>
               {t('abonnement.discount_10', '-10% REMISE')}
@@ -269,16 +265,14 @@ export default function PlanSelectorHotel({
           <button
             type="button"
             onClick={() => setMoyenPaiement('mobile_money')}
-            className={`p-4 rounded-2xl border text-left transition-all ${
-              moyenPaiement === 'mobile_money'
+            className={`p-4 rounded-2xl border text-left transition-all ${moyenPaiement === 'mobile_money'
                 ? 'border-amber-500 bg-amber-500/10 ring-1 ring-amber-500'
                 : 'border-surface-border bg-surface hover:border-amber-500/40'
-            }`}
+              }`}
           >
             <Smartphone
-              className={`w-6 h-6 mb-2 ${
-                moyenPaiement === 'mobile_money' ? 'text-amber-600' : 'text-foreground-muted'
-              }`}
+              className={`w-6 h-6 mb-2 ${moyenPaiement === 'mobile_money' ? 'text-amber-600' : 'text-foreground-muted'
+                }`}
             />
             <p className="font-bold text-xs text-foreground">
               {t('abonnement.mobile_money', 'Wave / Orange Money')}
@@ -292,16 +286,14 @@ export default function PlanSelectorHotel({
           <button
             type="button"
             onClick={() => setMoyenPaiement('carte')}
-            className={`p-4 rounded-2xl border text-left transition-all ${
-              moyenPaiement === 'carte'
+            className={`p-4 rounded-2xl border text-left transition-all ${moyenPaiement === 'carte'
                 ? 'border-amber-500 bg-amber-500/10 ring-1 ring-amber-500'
                 : 'border-surface-border bg-surface hover:border-amber-500/40'
-            }`}
+              }`}
           >
             <CreditCard
-              className={`w-6 h-6 mb-2 ${
-                moyenPaiement === 'carte' ? 'text-amber-600' : 'text-foreground-muted'
-              }`}
+              className={`w-6 h-6 mb-2 ${moyenPaiement === 'carte' ? 'text-amber-600' : 'text-foreground-muted'
+                }`}
             />
             <p className="font-bold text-xs text-foreground">
               {t('abonnement.card', 'Carte Bancaire')}
@@ -315,16 +307,14 @@ export default function PlanSelectorHotel({
           <button
             type="button"
             onClick={() => setMoyenPaiement('caisse')}
-            className={`p-4 rounded-2xl border text-left transition-all ${
-              moyenPaiement === 'caisse'
+            className={`p-4 rounded-2xl border text-left transition-all ${moyenPaiement === 'caisse'
                 ? 'border-amber-500 bg-amber-500/10 ring-1 ring-amber-500'
                 : 'border-surface-border bg-surface hover:border-amber-500/40'
-            }`}
+              }`}
           >
             <Banknote
-              className={`w-6 h-6 mb-2 ${
-                moyenPaiement === 'caisse' ? 'text-amber-600' : 'text-foreground-muted'
-              }`}
+              className={`w-6 h-6 mb-2 ${moyenPaiement === 'caisse' ? 'text-amber-600' : 'text-foreground-muted'
+                }`}
             />
             <p className="font-bold text-xs text-foreground">
               {t('abonnement.cash', 'Paiement Caisse')}
@@ -338,16 +328,14 @@ export default function PlanSelectorHotel({
           <button
             type="button"
             onClick={() => setMoyenPaiement('virement')}
-            className={`p-4 rounded-2xl border text-left transition-all ${
-              moyenPaiement === 'virement'
+            className={`p-4 rounded-2xl border text-left transition-all ${moyenPaiement === 'virement'
                 ? 'border-amber-500 bg-amber-500/10 ring-1 ring-amber-500'
                 : 'border-surface-border bg-surface hover:border-amber-500/40'
-            }`}
+              }`}
           >
             <Landmark
-              className={`w-6 h-6 mb-2 ${
-                moyenPaiement === 'virement' ? 'text-amber-600' : 'text-foreground-muted'
-              }`}
+              className={`w-6 h-6 mb-2 ${moyenPaiement === 'virement' ? 'text-amber-600' : 'text-foreground-muted'
+                }`}
             />
             <p className="font-bold text-xs text-foreground">
               {t('abonnement.transfer', 'Virement Bancaire')}

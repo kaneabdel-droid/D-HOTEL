@@ -11,9 +11,13 @@ import {
   ArrowRight,
   Sparkles,
   MessageCircle,
+  BedDouble,
+  UtensilsCrossed,
+  Sparkle,
+  UserCheck,
 } from "lucide-react";
 
-import { login } from "./actions";
+import { login, enterHotelDemoRoleAction } from "./actions";
 import { authenticateOffline, hashPasswordWithSalt, generateSalt } from "@/lib/offline/offline-auth";
 import { saveOfflineAccount } from "@/lib/offline/offline-storage";
 
@@ -208,6 +212,56 @@ export default function LoginPage() {
               )}
             </button>
           </form>
+
+          {/* Accès Direct par Rôles Hôteliers (Démonstration) */}
+          <div className="pt-4 border-t border-white/10 space-y-2.5">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-bold text-white flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-[#D4AF37]" />
+                Tester directement selon votre rôle
+              </span>
+              <span className="text-[9px] uppercase tracking-wider text-[#8E9EAF]">
+                Sans identifiants
+              </span>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              {[
+                { role: "directeur", titre: "Directeur Général", sub: "Pilotage & Revenus", icon: UserCheck, color: "text-[#D4AF37] bg-amber-500/10 border-amber-500/20" },
+                { role: "receptionniste", titre: "Réceptionniste", sub: "PMS & Réservations", icon: BedDouble, color: "text-[#38BDF8] bg-sky-500/10 border-sky-500/20" },
+                { role: "serveur", titre: "Restaurant / Bar", sub: "Caisse Tactile POS", icon: UtensilsCrossed, color: "text-[#F97316] bg-orange-500/10 border-orange-500/20" },
+                { role: "gouvernante", titre: "Gouvernante", sub: "Étages & Chambres", icon: Sparkles, color: "text-[#A855F7] bg-purple-500/10 border-purple-500/20" },
+              ].map((r) => {
+                const Icon = r.icon;
+                return (
+                  <button
+                    key={r.role}
+                    type="button"
+                    onClick={async () => {
+                      setChargement(true);
+                      const res = await enterHotelDemoRoleAction(r.role);
+                      if (res.redirectUrl) {
+                        window.location.href = res.redirectUrl;
+                      }
+                    }}
+                    className="p-2 rounded-xl border border-white/10 bg-black/30 hover:bg-white/5 hover:border-[#D4AF37]/50 text-left transition-all flex items-center gap-2 cursor-pointer group"
+                  >
+                    <div className={`w-7 h-7 rounded-lg ${r.color} flex items-center justify-center shrink-0`}>
+                      <Icon className="w-3.5 h-3.5" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-[11px] font-bold text-white group-hover:text-[#D4AF37] truncate">
+                        {r.titre}
+                      </p>
+                      <p className="text-[9px] text-[#8E9EAF] truncate">
+                        {r.sub}
+                      </p>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
 
           {/* Badge de sécurité Cloudflare & HSTS */}
           <div className="pt-2 flex items-center justify-between text-[11px] text-[#8E9EAF] border-t border-white/5">

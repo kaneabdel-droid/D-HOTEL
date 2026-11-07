@@ -43,6 +43,7 @@ export default function ReservationsPage() {
   const [filtreStatut, setFiltreStatut] = useState("tous");
   const [modalCreation, setModalCreation] = useState(false);
   const [succesMsg, setSuccesMsg] = useState<string | null>(null);
+  const [reservationDetails, setReservationDetails] = useState<Reservation | null>(null);
 
   // Formulaire nouvelle réservation
   const [nouveauClient, setNouveauClient] = useState("");
@@ -321,14 +322,16 @@ export default function ReservationsPage() {
                     <div className="flex items-center justify-end gap-1.5">
                       <button
                         type="button"
-                        className="p-1.5 rounded-md hover:bg-[var(--surface-muted)] text-[var(--foreground-muted)] hover:text-[var(--foreground)]"
+                        onClick={() => setReservationDetails(r)}
+                        className="p-1.5 rounded-md hover:bg-[var(--surface-muted)] text-[var(--foreground-muted)] hover:text-[var(--foreground)] cursor-pointer"
                         title="Voir Folio et Facture"
                       >
                         <FileText className="w-4 h-4" />
                       </button>
                       <button
                         type="button"
-                        className="px-2 py-1 rounded-md bg-[var(--primary)] hover:bg-[var(--primary-hover)] text-white text-[11px] font-medium"
+                        onClick={() => setReservationDetails(r)}
+                        className="px-2 py-1 rounded-md bg-[var(--primary)] hover:bg-[var(--primary-hover)] text-white text-[11px] font-medium cursor-pointer"
                       >
                         Détails
                       </button>
@@ -483,6 +486,95 @@ export default function ReservationsPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── MODALE DÉTAILS / FOLIO CLIENT ── */}
+      {reservationDetails && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm overflow-y-auto">
+          <div className="w-full max-w-lg bg-surface text-foreground border border-surface-border rounded-2xl shadow-2xl p-6 space-y-4 animate-scale-up">
+            <div className="flex items-center justify-between pb-3 border-b border-surface-border">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center font-bold">
+                  <FileText className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-base text-foreground">
+                    Folio & Détails Réservation
+                  </h3>
+                  <p className="text-xs text-foreground-muted font-mono">
+                    {reservationDetails.code}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setReservationDetails(null)}
+                className="p-1.5 rounded-lg text-foreground-muted hover:text-foreground hover:bg-surface-muted transition"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-3 text-xs">
+              <div className="p-3.5 rounded-xl bg-surface-muted/40 border border-surface-border space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-foreground-muted">Client Titulaire :</span>
+                  <span className="font-bold text-foreground">{reservationDetails.client}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-foreground-muted">Contact Téléphone :</span>
+                  <span className="font-medium text-foreground">{reservationDetails.telephone}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-foreground-muted">Chambre assignée :</span>
+                  <span className="font-bold text-[var(--accent)]">{reservationDetails.chambre} ({reservationDetails.typeChambre})</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-foreground-muted">Période de séjour :</span>
+                  <span className="font-medium text-foreground">{reservationDetails.dateArrivee} au {reservationDetails.dateDepart} ({reservationDetails.nuits} nuits)</span>
+                </div>
+              </div>
+
+              <div className="p-3.5 rounded-xl bg-surface-muted/40 border border-surface-border space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-foreground-muted">Montant Total :</span>
+                  <span className="font-bold text-foreground text-sm">{reservationDetails.montantTotal.toLocaleString("fr-FR")} FCFA</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-foreground-muted">Acompte / Réglé :</span>
+                  <span className="font-bold text-emerald-600">{reservationDetails.acompteVerse.toLocaleString("fr-FR")} FCFA</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-foreground-muted">Mode de Règlement :</span>
+                  <span className="font-medium text-foreground">{reservationDetails.modePaiement}</span>
+                </div>
+                <div className="flex justify-between items-center pt-2 border-t border-surface-border">
+                  <span className="font-bold text-foreground">Reste à payer :</span>
+                  <span className="font-extrabold text-amber-500 text-sm">
+                    {(reservationDetails.montantTotal - reservationDetails.acompteVerse).toLocaleString("fr-FR")} FCFA
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className="pt-2 flex items-center justify-end gap-2 border-t border-surface-border">
+              <button
+                type="button"
+                onClick={() => window.print()}
+                className="px-4 py-2 rounded-xl border border-surface-border text-xs font-bold text-foreground hover:bg-surface-muted transition flex items-center gap-1.5 cursor-pointer"
+              >
+                <span>Imprimer le Folio</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setReservationDetails(null)}
+                className="px-4 py-2 rounded-xl bg-[var(--primary)] text-white text-xs font-bold hover:opacity-95 transition cursor-pointer"
+              >
+                Fermer
+              </button>
+            </div>
           </div>
         </div>
       )}
