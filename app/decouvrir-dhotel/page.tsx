@@ -613,7 +613,7 @@ export default function DecouvrirDHotelPage() {
       {/* Call to action footer */}
       <footer className="border-t border-slate-800 py-12 px-4 sm:px-6 text-center text-xs text-slate-500">
         <p className="max-w-xl mx-auto mb-4">
-          D-HOTEL est un progiciel édité par DEMBA Solution pour l&apos;Afrique de l&apos;Ouest. Compatible réglementation hôtelière et SYSCOHADA.
+          D-HOTEL est un progiciel édité par DEMBA Solution pour l'hôtellerie moderne et les resorts. Compatible réglementation hôtelière et SYSCOHADA.
         </p>
         <div className="flex items-center justify-center gap-4 text-slate-400">
           <Link href="/guide" className="hover:text-amber-400">Guide d&apos;utilisation</Link>

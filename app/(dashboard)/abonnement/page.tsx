@@ -1,11 +1,14 @@
 import { Hotel, Phone, ShieldCheck, Sparkles } from 'lucide-react'
 import { cookies } from 'next/headers'
 import { createClient } from '@/utils/supabase/server'
+import { getDictionary } from '@/dictionaries'
 import PlanSelectorHotel from './PlanSelectorHotel'
 
 export const dynamic = 'force-dynamic'
 
 export default async function AbonnementHotelDashboardPage() {
+  const dict = await getDictionary()
+  const t = dict?.abonnement || {}
   let isDemo = true
   let planActuel = 'hotel'
 
@@ -50,11 +53,11 @@ export default async function AbonnementHotelDashboardPage() {
               <Hotel className="w-5 h-5" />
             </span>
             <h1 className="text-2xl font-bold tracking-tight text-foreground">
-              Gestion de l&apos;Abonnement D-HOTEL
+              {t.title || 'Gestion de l\'Abonnement D-HOTEL'}
             </h1>
           </div>
           <p className="text-sm text-foreground-muted">
-            Souscrivez votre licence en ligne via Mobile Money (Wave, Orange Money) ou Carte Bancaire, ou réglez directement par virement ou en caisse.
+            {t.subtitle || 'Souscrivez votre licence en ligne via Mobile Money (Wave, Orange Money) ou Carte Bancaire, ou réglez directement par virement ou en caisse.'}
           </p>
         </div>
 
@@ -66,7 +69,7 @@ export default async function AbonnementHotelDashboardPage() {
             className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-all shadow-md shadow-emerald-600/20"
           >
             <Phone className="w-3.5 h-3.5" />
-            <span>Assistance Facturation WhatsApp</span>
+            <span>{t.assistance_btn || 'Assistance Facturation WhatsApp'}</span>
           </a>
         </div>
       </div>
@@ -77,10 +80,10 @@ export default async function AbonnementHotelDashboardPage() {
           <Sparkles className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0" />
           <div>
             <p className="text-sm font-bold text-amber-900 dark:text-amber-300">
-              Espace de Démonstration Hôtelière • Licence Hôtel &amp; Résidence Débloquée
+              {t.demo_banner_title || 'Espace de Démonstration Hôtelière • Licence Hôtel & Résidence Débloquée'}
             </p>
             <p className="text-xs text-foreground-muted mt-0.5">
-              Tous les modules hôteliers sont intégralement débloqués pour vos tests : Planning PMS &amp; Rack chambres, Point de Vente Restaurant / Bar tactile, Transfert folios chambre, Housekeeping mobile, Salles MICE &amp; Événements, Économat, Trésorerie et Comptabilité SYSCOHADA.
+              {t.demo_banner_desc || 'Tous les modules hôteliers sont intégralement débloqués pour vos tests : Planning PMS & Rack chambres, Point de Vente Restaurant / Bar tactile, Transfert folios chambre, Housekeeping mobile, Salles MICE & Événements, Économat, Trésorerie et Comptabilité SYSCOHADA.'}
             </p>
           </div>
         </div>
@@ -93,10 +96,10 @@ export default async function AbonnementHotelDashboardPage() {
       <div className="p-6 rounded-2xl bg-surface border border-surface-border space-y-3 shadow-xs">
         <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">
           <ShieldCheck className="w-4 h-4" />
-          <span>Passerelle Sécurisée Maketou avec secours Chariow</span>
+          <span>{t.security_badge || 'Passerelle Sécurisée Maketou avec secours Chariow'}</span>
         </div>
         <p className="text-xs text-foreground-muted leading-relaxed">
-          Les paiements en ligne par Mobile Money (Wave Sénégal, Orange Money) et Carte Bancaire (Visa, Mastercard) sont instantanément validés sans délai d&apos;attente. En cas de règlement en caisse ou par virement bancaire, l&apos;activation est effectuée directement par l&apos;administrateur depuis le SuperAdmin dès réception des fonds.
+          {t.security_text || 'Les paiements en ligne par Mobile Money (Wave Sénégal, Orange Money) et Carte Bancaire (Visa, Mastercard) sont instantanément validés sans délai d\'attente. En cas de règlement en caisse ou par virement bancaire, l\'activation est effectuée directement par l\'administrateur depuis le SuperAdmin dès réception des fonds.'}
         </p>
       </div>
     </div>

@@ -2,7 +2,8 @@ import type { Metadata, Viewport } from "next";
 import { Inter, Outfit } from "next/font/google";
 import "./globals.css";
 import { ClientSecurityShield } from "@/components/ClientSecurityShield";
-import { getLocale } from "@/dictionaries";
+import { getDictionary, getLocale } from "@/dictionaries";
+import { I18nProvider, type Locale } from "@/lib/i18n";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -34,7 +35,8 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const locale = await getLocale();
+  const locale = (await getLocale()) as Locale;
+  const dict = await getDictionary(locale);
   const dir = locale === "ar" ? "rtl" : "ltr";
 
   return (
@@ -58,8 +60,10 @@ export default async function RootLayout({
         />
       </head>
       <body className="font-sans antialiased min-h-screen">
-        <ClientSecurityShield />
-        {children}
+        <I18nProvider dict={dict} locale={locale}>
+          <ClientSecurityShield />
+          {children}
+        </I18nProvider>
       </body>
     </html>
   );

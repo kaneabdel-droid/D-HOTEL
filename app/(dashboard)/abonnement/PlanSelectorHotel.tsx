@@ -14,6 +14,7 @@ import {
   ArrowRight,
   ShieldCheck,
 } from 'lucide-react'
+import { useTranslation } from '@/lib/i18n'
 import { initierPaiementAbonnementHotel, type MoyenPaiement } from './actions'
 
 interface PlanOption {
@@ -69,6 +70,7 @@ export default function PlanSelectorHotel({
   planActuel?: string
   telephoneDefaut?: string
 }) {
+  const { t, dict, isRTL } = useTranslation()
   const [selectedPlan, setSelectedPlan] = useState<'auberge' | 'hotel'>(
     planActuel === 'auberge' ? 'auberge' : 'hotel'
   )
@@ -138,15 +140,24 @@ export default function PlanSelectorHotel({
       {/* 1. Choix du Forfait */}
       <div>
         <label className="block text-sm font-bold text-foreground mb-3">
-          1. Choisissez votre Formule D-HOTEL
+          {t('abonnement.step1_title', '1. Choisissez votre Formule D-HOTEL')}
         </label>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {PLANS.map((p) => {
             const isSelected = selectedPlan === p.id
+            const planI18n = dict?.abonnement?.plans?.[p.id]
+            const planNom = planI18n?.nom || p.nom
+            const planDesc = planI18n?.desc || p.desc
+            const planFeatures = (planI18n?.features as string[]) || p.features
+
+            const unitMonth = t('abonnement.per_month', 'FCFA/mois')
+            const unitYear = t('abonnement.per_year', 'F/an')
+            const totalPrefix = t('abonnement.total_per_year', 'Total')
+
             const prixAffiche =
               frequence === 'annuel'
-                ? `${(p.prixAnnuel / 12).toLocaleString('fr-FR')} FCFA/mois`
-                : `${p.prixMensuel.toLocaleString('fr-FR')} FCFA/mois`
+                ? `${(p.prixAnnuel / 12).toLocaleString('fr-FR')} ${unitMonth}`
+                : `${p.prixMensuel.toLocaleString('fr-FR')} ${unitMonth}`
 
             return (
               <button
@@ -162,10 +173,10 @@ export default function PlanSelectorHotel({
                 <div>
                   <div className="flex items-center justify-between mb-2">
                     <span className="font-extrabold text-base text-foreground flex items-center gap-2">
-                      {p.nom}
+                      {planNom}
                       {p.populaire && (
                         <span className="text-[10px] bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-500/30 px-2 py-0.5 rounded-full font-bold">
-                          RECOMMANDÉ
+                          {t('abonnement.recommended', 'RECOMMANDÉ')}
                         </span>
                       )}
                     </span>
@@ -180,7 +191,7 @@ export default function PlanSelectorHotel({
                     </div>
                   </div>
 
-                  <p className="text-xs text-foreground-muted mb-4">{p.desc}</p>
+                  <p className="text-xs text-foreground-muted mb-4">{planDesc}</p>
 
                   <div className="flex items-baseline gap-1.5 mb-4">
                     <span className="text-2xl font-black text-foreground font-mono">
@@ -188,13 +199,13 @@ export default function PlanSelectorHotel({
                     </span>
                     <span className="text-xs text-foreground-muted">
                       {frequence === 'annuel'
-                        ? `(Total ${p.prixAnnuel.toLocaleString('fr-FR')} F/an)`
-                        : 'sans engagement'}
+                        ? `(${totalPrefix} ${p.prixAnnuel.toLocaleString('fr-FR')} ${unitYear})`
+                        : t('abonnement.without_commitment', 'sans engagement')}
                     </span>
                   </div>
 
                   <ul className="space-y-1.5 text-xs text-foreground-muted border-t border-surface-border pt-3">
-                    {p.features.slice(0, 4).map((f, i) => (
+                    {planFeatures.slice(0, 4).map((f, i) => (
                       <li key={i} className="flex items-center gap-2">
                         <CheckCircle2 className="w-3.5 h-3.5 text-amber-600 shrink-0" />
                         <span className="line-clamp-1">{f}</span>
@@ -211,7 +222,7 @@ export default function PlanSelectorHotel({
       {/* 2. Périodicité */}
       <div>
         <label className="block text-sm font-bold text-foreground mb-2">
-          2. Durée de la licence
+          {t('abonnement.step2_title', '2. Durée de la licence')}
         </label>
         <div className="grid grid-cols-2 gap-3 max-w-md">
           <button
@@ -223,9 +234,9 @@ export default function PlanSelectorHotel({
                 : 'border-surface-border bg-surface text-foreground-muted hover:text-foreground'
             }`}
           >
-            Facturation Mensuelle
+            {t('abonnement.monthly_billing', 'Facturation Mensuelle')}
             <span className="block text-[11px] font-normal text-foreground-muted mt-0.5">
-              Sans engagement
+              {t('abonnement.without_commitment', 'Sans engagement')}
             </span>
           </button>
           <button
@@ -237,12 +248,12 @@ export default function PlanSelectorHotel({
                 : 'border-surface-border bg-surface text-foreground-muted hover:text-foreground'
             }`}
           >
-            <span className="absolute -top-2.5 right-3 bg-emerald-600 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full shadow">
-              -10% REMISE
+            <span className={`absolute -top-2.5 ${isRTL ? 'left-3' : 'right-3'} bg-emerald-600 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full shadow`}>
+              {t('abonnement.discount_10', '-10% REMISE')}
             </span>
-            Facturation Annuelle
+            {t('abonnement.annual_billing', 'Facturation Annuelle')}
             <span className="block text-[11px] font-normal text-foreground-muted mt-0.5">
-              1 an de sérénité
+              {t('abonnement.peace_of_mind', '1 an de sérénité')}
             </span>
           </button>
         </div>
@@ -251,10 +262,10 @@ export default function PlanSelectorHotel({
       {/* 3. Moyen de Paiement */}
       <div>
         <label className="block text-sm font-bold text-foreground mb-3">
-          3. Mode de règlement
+          {t('abonnement.step3_title', '3. Mode de règlement')}
         </label>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-          {/* Mobile Money : Maketou avec Chariow secours */}
+          {/* Mobile Money */}
           <button
             type="button"
             onClick={() => setMoyenPaiement('mobile_money')}
@@ -269,9 +280,11 @@ export default function PlanSelectorHotel({
                 moyenPaiement === 'mobile_money' ? 'text-amber-600' : 'text-foreground-muted'
               }`}
             />
-            <p className="font-bold text-xs text-foreground">Wave / Orange Money</p>
+            <p className="font-bold text-xs text-foreground">
+              {t('abonnement.mobile_money', 'Wave / Orange Money')}
+            </p>
             <p className="text-[11px] text-foreground-muted mt-0.5">
-              Maketou direct (Chariow secours)
+              {t('abonnement.mobile_money_desc', 'Maketou direct (Chariow secours)')}
             </p>
           </button>
 
@@ -290,8 +303,12 @@ export default function PlanSelectorHotel({
                 moyenPaiement === 'carte' ? 'text-amber-600' : 'text-foreground-muted'
               }`}
             />
-            <p className="font-bold text-xs text-foreground">Carte Bancaire</p>
-            <p className="text-[11px] text-foreground-muted mt-0.5">Visa & Mastercard (Maketou)</p>
+            <p className="font-bold text-xs text-foreground">
+              {t('abonnement.card', 'Carte Bancaire')}
+            </p>
+            <p className="text-[11px] text-foreground-muted mt-0.5">
+              {t('abonnement.card_desc', 'Visa & Mastercard (Maketou)')}
+            </p>
           </button>
 
           {/* Caisse / Espèces */}
@@ -309,9 +326,11 @@ export default function PlanSelectorHotel({
                 moyenPaiement === 'caisse' ? 'text-amber-600' : 'text-foreground-muted'
               }`}
             />
-            <p className="font-bold text-xs text-foreground">Paiement Caisse</p>
+            <p className="font-bold text-xs text-foreground">
+              {t('abonnement.cash', 'Paiement Caisse')}
+            </p>
             <p className="text-[11px] text-foreground-muted mt-0.5">
-              Espèces • Validé par l&apos;Admin
+              {t('abonnement.cash_desc', 'Espèces • Validé par l\'Admin')}
             </p>
           </button>
 
@@ -330,8 +349,12 @@ export default function PlanSelectorHotel({
                 moyenPaiement === 'virement' ? 'text-amber-600' : 'text-foreground-muted'
               }`}
             />
-            <p className="font-bold text-xs text-foreground">Virement Bancaire</p>
-            <p className="text-[11px] text-foreground-muted mt-0.5">Compte BOA / UBA Sénégal</p>
+            <p className="font-bold text-xs text-foreground">
+              {t('abonnement.transfer', 'Virement Bancaire')}
+            </p>
+            <p className="text-[11px] text-foreground-muted mt-0.5">
+              {t('abonnement.transfer_desc', 'Compte BOA / UBA Sénégal')}
+            </p>
           </button>
         </div>
       </div>
@@ -340,13 +363,13 @@ export default function PlanSelectorHotel({
       {moyenPaiement === 'mobile_money' && (
         <div className="max-w-md">
           <label className="block text-xs font-semibold text-foreground mb-1">
-            Numéro de téléphone Wave / Orange Money
+            {t('abonnement.phone_label', 'Numéro de téléphone Wave / Orange Money')}
           </label>
           <input
             type="tel"
             value={telephone}
             onChange={(e) => setTelephone(e.target.value)}
-            placeholder="77 000 00 00 ou 78 000 00 00"
+            placeholder={t('abonnement.phone_placeholder', '77 000 00 00 ou 78 000 00 00')}
             className="w-full bg-surface border border-surface-border rounded-xl px-4 py-2.5 text-foreground text-xs font-mono focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
           />
         </div>
@@ -378,13 +401,16 @@ export default function PlanSelectorHotel({
       {/* Bouton de confirmation & Total */}
       <div className="p-6 rounded-2xl bg-surface border border-surface-border flex flex-col sm:flex-row items-center justify-between gap-4 shadow-sm">
         <div>
-          <span className="text-xs text-foreground-muted block">Total à régler :</span>
+          <span className="text-xs text-foreground-muted block">
+            {t('abonnement.total_due', 'Total à régler :')}
+          </span>
           <div className="flex items-baseline gap-1">
             <span className="text-3xl font-black text-amber-600 dark:text-amber-400 font-mono">
               {montant.toLocaleString('fr-FR')} FCFA
             </span>
             <span className="text-xs text-foreground-muted">
-              pour 1 {frequence === 'annuel' ? 'an' : 'mois'}
+              {t('abonnement.for_period', 'pour 1')}{' '}
+              {frequence === 'annuel' ? t('abonnement.year', 'an') : t('abonnement.month', 'mois')}
             </span>
           </div>
         </div>
@@ -398,16 +424,16 @@ export default function PlanSelectorHotel({
           {isPending ? (
             <>
               <Loader2 className="w-4 h-4 animate-spin" />
-              <span>Traitement en cours...</span>
+              <span>{t('abonnement.btn_processing', 'Traitement en cours...')}</span>
             </>
           ) : (
             <>
               <span>
                 {moyenPaiement === 'caisse'
-                  ? 'Enregistrer le paiement en Caisse'
+                  ? t('abonnement.btn_cash', 'Enregistrer le paiement en Caisse')
                   : moyenPaiement === 'virement'
-                    ? 'Générer l’ordre de Virement'
-                    : 'Régler via Maketou (ou Chariow)'}
+                    ? t('abonnement.btn_transfer', 'Générer l’ordre de Virement')
+                    : t('abonnement.btn_submit', 'Valider & Activer la formule')}
               </span>
               <ArrowRight className="w-4 h-4" />
             </>

@@ -21,8 +21,11 @@ import {
   PlusCircle,
 } from "lucide-react";
 import { formatXOF } from "@/lib/utils";
+import { useTranslation } from "@/lib/i18n";
 
 export default function DashboardPage() {
+  const { t, isRTL } = useTranslation();
+
   // Données de démonstration réalistes pour un complexe hôtelier haut de gamme
   const kpis = {
     tauxOccupation: 84,
@@ -54,7 +57,7 @@ export default function DashboardPage() {
       client: "M. Ibrahima Diallo",
       chambre: "Suite Junior 201",
       nuits: 3,
-      personnes: "2 adultes",
+      personnes: `2 ${t("dashboard.adults")}`,
       acompte: "Payé (Wave)",
       heure: "14h30",
     },
@@ -63,7 +66,7 @@ export default function DashboardPage() {
       client: "Mme Sophie Martin",
       chambre: "Bungalow Plage 12",
       nuits: 5,
-      personnes: "1 adulte",
+      personnes: `1 ${t("dashboard.adults")}`,
       acompte: "Payé (Carte)",
       heure: "15h00",
     },
@@ -72,7 +75,7 @@ export default function DashboardPage() {
       client: "Délégation Sonatel (8 pers)",
       chambre: "Chambres 104 à 107",
       nuits: 2,
-      personnes: "8 adultes",
+      personnes: `8 ${t("dashboard.adults")}`,
       acompte: "Bon de commande",
       heure: "16h15",
     },
@@ -108,10 +111,10 @@ export default function DashboardPage() {
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 pb-2 border-b border-[var(--surface-border)]">
         <div>
           <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-[var(--foreground)]">
-            Tableau de Bord Général
+            {t("dashboard.title")}
           </h1>
           <p className="text-xs sm:text-sm text-[var(--foreground-muted)]">
-            Hôtel Teranga Palace 5★ • Suivi opérationnel en direct
+            {t("dashboard.subtitle")}
           </p>
         </div>
 
@@ -121,21 +124,21 @@ export default function DashboardPage() {
             className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-[var(--primary)] hover:bg-[var(--primary-hover)] text-[var(--primary-foreground)] text-xs font-semibold shadow-xs transition-colors"
           >
             <PlusCircle className="w-4 h-4" />
-            <span>Nouvelle Réservation</span>
+            <span>{t("dashboard.new_reservation")}</span>
           </Link>
           <Link
             href="/hebergements/rack"
             className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-[var(--surface)] hover:bg-[var(--surface-muted)] text-[var(--foreground)] border border-[var(--surface-border)] text-xs font-semibold shadow-xs transition-colors"
           >
             <Hotel className="w-4 h-4 text-[#D4AF37]" />
-            <span>Rack d&apos;Occupation</span>
+            <span>{t("dashboard.gantt_rack")}</span>
           </Link>
           <Link
             href="/restauration/pos"
             className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-[var(--surface)] hover:bg-[var(--surface-muted)] text-[var(--foreground)] border border-[var(--surface-border)] text-xs font-semibold shadow-xs transition-colors"
           >
             <UtensilsCrossed className="w-4 h-4 text-[#3B82F6]" />
-            <span>Caisse Resto (POS)</span>
+            <span>{t("dashboard.restaurant_pos")}</span>
           </Link>
         </div>
       </div>
@@ -145,7 +148,7 @@ export default function DashboardPage() {
         {/* Taux d'Occupation */}
         <div className="p-4 rounded-xl bg-[var(--surface)] border border-[var(--surface-border)] shadow-xs">
           <div className="flex items-center justify-between text-[var(--foreground-muted)] text-xs font-medium">
-            <span>Taux d&apos;Occupation (TO)</span>
+            <span>{t("dashboard.kpi_occupancy")}</span>
             <Hotel className="w-4 h-4 text-[#3B82F6]" />
           </div>
           <div className="mt-2 flex items-baseline gap-2">
@@ -168,7 +171,7 @@ export default function DashboardPage() {
         {/* Tarif Moyen Journalier (ADR) */}
         <div className="p-4 rounded-xl bg-[var(--surface)] border border-[var(--surface-border)] shadow-xs">
           <div className="flex items-center justify-between text-[var(--foreground-muted)] text-xs font-medium">
-            <span>Tarif Moyen (ADR)</span>
+            <span>{t("dashboard.kpi_adr")}</span>
             <TrendingUp className="w-4 h-4 text-[#D4AF37]" />
           </div>
           <div className="mt-2 flex items-baseline gap-2">
@@ -181,14 +184,14 @@ export default function DashboardPage() {
             </span>
           </div>
           <p className="text-[11px] text-[var(--foreground-muted)] mt-2">
-            Par chambre louée / nuitée
+            {t("dashboard.adr_desc")}
           </p>
         </div>
 
         {/* RevPAR */}
         <div className="p-4 rounded-xl bg-[var(--surface)] border border-[var(--surface-border)] shadow-xs">
           <div className="flex items-center justify-between text-[var(--foreground-muted)] text-xs font-medium">
-            <span>RevPAR</span>
+            <span>{t("dashboard.kpi_revpar")}</span>
             <Sparkles className="w-4 h-4 text-[#9E2A2B]" />
           </div>
           <div className="mt-2 flex items-baseline gap-2">
@@ -201,14 +204,14 @@ export default function DashboardPage() {
             </span>
           </div>
           <p className="text-[11px] text-[var(--foreground-muted)] mt-2">
-            Revenu / chambre disponible
+            {t("dashboard.revpar_desc")}
           </p>
         </div>
 
         {/* Chiffre d'Affaires du Jour */}
         <div className="p-4 rounded-xl bg-[var(--surface)] border border-[var(--surface-border)] shadow-xs">
           <div className="flex items-center justify-between text-[var(--foreground-muted)] text-xs font-medium">
-            <span>Encaissé Jour (Global)</span>
+            <span>{t("dashboard.kpi_revenue_today")}</span>
             <Coins className="w-4 h-4 text-[#10B981]" />
           </div>
           <div className="mt-2 flex items-baseline gap-2">
@@ -221,7 +224,7 @@ export default function DashboardPage() {
             </span>
           </div>
           <p className="text-[11px] text-[var(--foreground-muted)] mt-2">
-            Hébergement + Resto + MICE + Loisirs
+            {t("dashboard.ca_today_desc")}
           </p>
         </div>
       </div>
@@ -233,10 +236,10 @@ export default function DashboardPage() {
           <div>
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-sm font-bold text-[var(--foreground)]">
-                État des Chambres en Temps Réel
+                {t("dashboard.room_status_overview")}
               </h2>
               <span className="text-xs px-2 py-0.5 rounded-full bg-[var(--surface-muted)] text-[var(--foreground-muted)] font-semibold">
-                {chambresStatuts.total} chambres
+                {chambresStatuts.total} {t("dashboard.rooms")}
               </span>
             </div>
 
@@ -245,22 +248,22 @@ export default function DashboardPage() {
               <div
                 className="bg-[#3B82F6]"
                 style={{ width: `${(chambresStatuts.occupees / chambresStatuts.total) * 100}%` }}
-                title="Occupées"
+                title={t("dashboard.occupied")}
               />
               <div
                 className="bg-[#10B981]"
                 style={{ width: `${(chambresStatuts.propresLibres / chambresStatuts.total) * 100}%` }}
-                title="Libres & Propres"
+                title={t("dashboard.free_clean")}
               />
               <div
                 className="bg-[#F59E0B]"
                 style={{ width: `${(chambresStatuts.enNettoyage / chambresStatuts.total) * 100}%` }}
-                title="En nettoyage"
+                title={t("dashboard.cleaning")}
               />
               <div
                 className="bg-[#EF4444]"
                 style={{ width: `${(chambresStatuts.maintenance / chambresStatuts.total) * 100}%` }}
-                title="Hors service"
+                title={t("dashboard.maintenance")}
               />
             </div>
 
@@ -269,7 +272,7 @@ export default function DashboardPage() {
               <div className="flex items-center justify-between">
                 <span className="flex items-center gap-2 text-[var(--foreground)]">
                   <span className="w-2.5 h-2.5 rounded-full bg-[#3B82F6]" />
-                  <span>Occupées (En séjour)</span>
+                  <span>{t("dashboard.occupied")}</span>
                 </span>
                 <span className="font-bold text-[var(--foreground)]">
                   {chambresStatuts.occupees}
@@ -278,7 +281,7 @@ export default function DashboardPage() {
               <div className="flex items-center justify-between">
                 <span className="flex items-center gap-2 text-[var(--foreground)]">
                   <span className="w-2.5 h-2.5 rounded-full bg-[#10B981]" />
-                  <span>Libres & Propres (Prêtes)</span>
+                  <span>{t("dashboard.free_clean")}</span>
                 </span>
                 <span className="font-bold text-[#10B981]">
                   {chambresStatuts.propresLibres}
@@ -287,7 +290,7 @@ export default function DashboardPage() {
               <div className="flex items-center justify-between">
                 <span className="flex items-center gap-2 text-[var(--foreground)]">
                   <span className="w-2.5 h-2.5 rounded-full bg-[#F59E0B]" />
-                  <span>En cours de ménage</span>
+                  <span>{t("dashboard.cleaning")}</span>
                 </span>
                 <span className="font-bold text-[#F59E0B]">
                   {chambresStatuts.enNettoyage}
@@ -296,7 +299,7 @@ export default function DashboardPage() {
               <div className="flex items-center justify-between">
                 <span className="flex items-center gap-2 text-[var(--foreground)]">
                   <span className="w-2.5 h-2.5 rounded-full bg-[#EF4444]" />
-                  <span>Hors service / Maintenance</span>
+                  <span>{t("dashboard.maintenance")}</span>
                 </span>
                 <span className="font-bold text-[#EF4444]">
                   {chambresStatuts.maintenance}
@@ -309,7 +312,7 @@ export default function DashboardPage() {
             href="/gouvernance"
             className="mt-5 w-full py-2 px-3 text-center text-xs font-semibold rounded-lg border border-[var(--surface-border)] hover:bg-[var(--surface-muted)] text-[var(--foreground)] transition-colors"
           >
-            Accéder au tableau Gouvernance & Ménage
+            {t("dashboard.housekeeping_btn")}
           </Link>
         </div>
 
@@ -317,16 +320,16 @@ export default function DashboardPage() {
         <div className="p-5 rounded-xl bg-[var(--surface)] border border-[var(--surface-border)] shadow-xs lg:col-span-2">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-sm font-bold text-[var(--foreground)]">
-              Mouvements Front-Desk du Jour
+              {t("dashboard.upcoming_arrivals")}
             </h2>
             <div className="flex items-center gap-3 text-xs">
               <span className="flex items-center gap-1.5 text-[#10B981] font-semibold">
                 <LogIn className="w-3.5 h-3.5" />
-                <span>{kpis.arriveesEnregistrees}/{kpis.arriveesDuJour} Arrivées</span>
+                <span>{kpis.arriveesEnregistrees}/{kpis.arriveesDuJour} {t("dashboard.arrivals")}</span>
               </span>
               <span className="flex items-center gap-1.5 text-[#9E2A2B] font-semibold">
                 <LogOut className="w-3.5 h-3.5" />
-                <span>{kpis.departsEffectues}/{kpis.departsDuJour} Départs</span>
+                <span>{kpis.departsEffectues}/{kpis.departsDuJour} {t("dashboard.departures")}</span>
               </span>
             </div>
           </div>
@@ -336,12 +339,12 @@ export default function DashboardPage() {
             <table className="w-full text-left text-xs">
               <thead>
                 <tr className="border-b border-[var(--surface-border)] text-[var(--foreground-muted)]">
-                  <th className="pb-2 font-medium">Client</th>
-                  <th className="pb-2 font-medium">Hébergement</th>
-                  <th className="pb-2 font-medium">Durée & Pax</th>
-                  <th className="pb-2 font-medium">Statut Acompte</th>
-                  <th className="pb-2 font-medium text-right">Heure</th>
-                  <th className="pb-2 font-medium text-right">Action</th>
+                  <th className="pb-2 font-medium">{t("dashboard.client")}</th>
+                  <th className="pb-2 font-medium">{t("dashboard.lodging")}</th>
+                  <th className="pb-2 font-medium">{t("dashboard.duration_pax")}</th>
+                  <th className="pb-2 font-medium">{t("dashboard.deposit_status")}</th>
+                  <th className={`pb-2 font-medium ${isRTL ? "text-left" : "text-right"}`}>{t("dashboard.time")}</th>
+                  <th className={`pb-2 font-medium ${isRTL ? "text-left" : "text-right"}`}>{t("dashboard.action")}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[var(--surface-border)]">
@@ -354,22 +357,22 @@ export default function DashboardPage() {
                       {arr.chambre}
                     </td>
                     <td className="py-2.5 text-[var(--foreground-muted)]">
-                      {arr.nuits} nuits • {arr.personnes}
+                      {arr.nuits} {t("dashboard.stay_nights")} • {arr.personnes}
                     </td>
                     <td className="py-2.5">
                       <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#10B981]/10 text-[#10B981]">
                         {arr.acompte}
                       </span>
                     </td>
-                    <td className="py-2.5 text-right font-medium text-[var(--foreground)]">
+                    <td className={`py-2.5 font-medium text-[var(--foreground)] ${isRTL ? "text-left" : "text-right"}`}>
                       {arr.heure}
                     </td>
-                    <td className="py-2.5 text-right">
+                    <td className={`py-2.5 ${isRTL ? "text-left" : "text-right"}`}>
                       <button
                         type="button"
                         className="px-2.5 py-1 rounded-md bg-[var(--primary)] hover:bg-[var(--primary-hover)] text-white font-medium text-[11px] transition-colors"
                       >
-                        Check-in
+                        {t("dashboard.checkin")}
                       </button>
                     </td>
                   </tr>
@@ -387,7 +390,7 @@ export default function DashboardPage() {
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-sm font-bold text-[var(--foreground)] flex items-center gap-2">
               <AlertTriangle className="w-4 h-4 text-[#F59E0B]" />
-              <span>Alertes Opérationnelles</span>
+              <span>{t("dashboard.operational_alerts")}</span>
             </h2>
             <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-[#EF4444] text-white">
               3
@@ -419,7 +422,7 @@ export default function DashboardPage() {
         {/* Aperçu rapide des autres départements (F&B, MICE, Loisirs) */}
         <div className="p-5 rounded-xl bg-[var(--surface)] border border-[var(--surface-border)] shadow-xs lg:col-span-2">
           <h2 className="text-sm font-bold text-[var(--foreground)] mb-4">
-            Points d&apos;Activité par Département
+            {t("dashboard.dept_activity")}
           </h2>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -428,20 +431,20 @@ export default function DashboardPage() {
               <div>
                 <div className="flex items-center gap-2 text-xs font-bold text-[var(--foreground)] mb-2">
                   <UtensilsCrossed className="w-4 h-4 text-[#3B82F6]" />
-                  <span>Restauration & Bar</span>
+                  <span>{t("dashboard.restauration_bar")}</span>
                 </div>
                 <p className="text-lg font-black text-[var(--foreground)]">
-                  18 tables actives
+                  18 {t("dashboard.active_tables")}
                 </p>
                 <p className="text-[11px] text-[var(--foreground-muted)] mt-1">
-                  CA Caisse : 1 240 000 FCFA
+                  {t("dashboard.pos_ca")} : 1 240 000 FCFA
                 </p>
               </div>
               <Link
                 href="/restauration/pos"
                 className="mt-3 text-[11px] font-semibold text-[#3B82F6] hover:underline"
               >
-                Ouvrir Touch POS →
+                {t("dashboard.open_pos")}
               </Link>
             </div>
 
@@ -450,20 +453,20 @@ export default function DashboardPage() {
               <div>
                 <div className="flex items-center gap-2 text-xs font-bold text-[var(--foreground)] mb-2">
                   <Building className="w-4 h-4 text-[#D4AF37]" />
-                  <span>MICE & Piscine</span>
+                  <span>{t("dashboard.mice_pool")}</span>
                 </div>
                 <p className="text-lg font-black text-[var(--foreground)]">
-                  34 Day-Pass vendus
+                  34 {t("dashboard.day_pass_sold")}
                 </p>
                 <p className="text-[11px] text-[var(--foreground-muted)] mt-1">
-                  1 séminaire en cours
+                  1 {t("dashboard.ongoing_seminar")}
                 </p>
               </div>
               <Link
                 href="/evenements/salles"
                 className="mt-3 text-[11px] font-semibold text-[#D4AF37] hover:underline"
               >
-                Gérer les Salles →
+                {t("dashboard.manage_rooms")}
               </Link>
             </div>
 
@@ -472,20 +475,20 @@ export default function DashboardPage() {
               <div>
                 <div className="flex items-center gap-2 text-xs font-bold text-[var(--foreground)] mb-2">
                   <Compass className="w-4 h-4 text-[#10B981]" />
-                  <span>Loisirs & Excursions</span>
+                  <span>{t("dashboard.leisure_excursions")}</span>
                 </div>
                 <p className="text-lg font-black text-[var(--foreground)]">
-                  2 sorties du jour
+                  2 {t("dashboard.daily_outings")}
                 </p>
                 <p className="text-[11px] text-[var(--foreground-muted)] mt-1">
-                  14 clients participants
+                  14 {t("dashboard.participants")}
                 </p>
               </div>
               <Link
                 href="/loisirs/excursions"
                 className="mt-3 text-[11px] font-semibold text-[#10B981] hover:underline"
               >
-                Planning Excursions →
+                {t("dashboard.excursions_schedule")}
               </Link>
             </div>
           </div>

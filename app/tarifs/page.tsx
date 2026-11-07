@@ -18,34 +18,26 @@ import {
   UtensilsCrossed,
   Layers,
 } from "lucide-react";
+import { useTranslation } from "@/lib/i18n";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 export default function TarifsDHotelPage() {
+  const { t, isRTL, dict } = useTranslation();
+  const ab = dict.abonnement;
   const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">("yearly");
   const [contactSubmitted, setContactSubmitted] = useState(false);
-
-  const discount = billingCycle === "yearly" ? 0.9 : 1; // 10% discount on annual
 
   const plans = [
     {
       id: "auberge",
-      name: "Auberge & Campement",
-      tagline: "Pour auberges touristiques, campements villageois, écolodges, maisons d'hôtes et gîtes ruraux",
+      name: ab.plans.auberge.nom,
+      tagline: ab.plans.auberge.desc,
       monthlyPrice: 15000,
       annualTotal: 162000, // 15000 * 12 * 0.9
       annualMonthlyEquivalent: 13500,
       capacity: "Chambres, cases, bungalows & lodges",
       popular: false,
-      features: [
-        "PMS complet (Planning d'occupation interactif)",
-        "Check-in & Check-out express avec assignation des clés",
-        "Fiches de police dématérialisées conformes Ministère de l'Intérieur",
-        "Gestion des tarifs nuitées (Haute / Basse saison)",
-        "Facturation des séjours & Folio client individuel ou groupe",
-        "Encaissement multi-moyens (Wave, Orange Money, Espèces, Carte)",
-        "Gouvernance & Statut ménage (Propre, Sale, En recouche)",
-        "Mode PWA résilient utilisable en zone rurale à faible débit",
-        "Support technique réactif par WhatsApp & Email (7j/7)",
-      ],
+      features: ab.plans.auberge.features,
       notIncluded: [
         "Point de Vente tactile Restaurant & Bar avec report sur chambre",
         "Module MICE (Salles de séminaires, mariages, conférences)",
@@ -56,31 +48,20 @@ export default function TarifsDHotelPage() {
     },
     {
       id: "hotel",
-      name: "Hôtel & Résidence",
-      tagline: "Pour hôtels d'affaires, résidences hôtelières meublées, complexes balnéaires et resorts",
+      name: ab.plans.hotel.nom,
+      tagline: ab.plans.hotel.desc,
       monthlyPrice: 20000,
       annualTotal: 216000, // 20000 * 12 * 0.9
       annualMonthlyEquivalent: 18000,
       capacity: "Chambres, suites, appartements & villas illimités",
       popular: true,
-      features: [
-        "Tout ce qui est inclus dans Auberge & Campement",
-        "Point de Vente tactile Restaurant, Bar & Pool-Bar (Touch POS)",
-        "Transfert direct et sécurisé des consommations F&B sur le folio de la chambre",
-        "Gouvernance mobile complète (Housekeeping smartphone, inspection, maintenance)",
-        "Module MICE : Salles de séminaires, banquets, réunions & mariages",
-        "Billetterie piscine & Day-Pass pour clients extérieurs",
-        "Économat & gestion des stocks F&B (matières premières, boissons, fiches recettes)",
-        "Audit de nuit automatisé & Main courante journalière",
-        "Intégration et export comptable SYSCOHADA certifié",
-        "Support prioritaire 24/7 & assistance personnalisée au paramétrage",
-      ],
+      features: ab.plans.hotel.features,
       notIncluded: [],
     },
   ];
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 selection:bg-amber-500/30 selection:text-amber-200">
+    <div className={`min-h-screen bg-slate-950 text-slate-100 selection:bg-amber-500/30 selection:text-amber-200 ${isRTL ? "rtl" : "ltr"}`}>
       {/* Header */}
       <header className="border-b border-slate-800/80 bg-slate-900/60 backdrop-blur-md sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
@@ -97,15 +78,16 @@ export default function TarifsDHotelPage() {
           </Link>
 
           <div className="flex items-center gap-3">
+            <LanguageSwitcher />
             <Link
               href="/decouvrir-dhotel"
-              className="text-xs font-medium text-slate-300 hover:text-white px-3 py-2 rounded-lg hover:bg-slate-800 transition-colors"
+              className="text-xs font-medium text-slate-300 hover:text-white px-3 py-2 rounded-lg hover:bg-slate-800 transition-colors hidden sm:inline-block"
             >
               Découverte & Démo
             </Link>
             <Link
               href="/guide"
-              className="text-xs font-medium text-slate-300 hover:text-white px-3 py-2 rounded-lg hover:bg-slate-800 transition-colors"
+              className="text-xs font-medium text-slate-300 hover:text-white px-3 py-2 rounded-lg hover:bg-slate-800 transition-colors hidden sm:inline-block"
             >
               Guide d&apos;utilisation
             </Link>
@@ -113,7 +95,7 @@ export default function TarifsDHotelPage() {
               href="/login"
               className="text-xs font-semibold text-slate-300 hover:text-white px-3 py-2 rounded-lg hover:bg-slate-800 transition-colors"
             >
-              Connexion
+              {dict.landing?.hero_badge ? "Connexion" : "Connexion"}
             </Link>
             <Link
               href="/signup"
@@ -129,19 +111,19 @@ export default function TarifsDHotelPage() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-16 pb-12 text-center">
         <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs font-semibold mb-4">
           <Sparkles className="w-3.5 h-3.5" />
-          Tarification claire, sans commission par réservation ni frais cachés
+          {ab.step1_title}
         </div>
         <h1 className="text-4xl sm:text-5xl font-extrabold text-white tracking-tight mb-4">
-          Des forfaits conçus pour l&apos;hôtellerie africaine
+          {ab.title}
         </h1>
         <p className="text-slate-400 max-w-2xl mx-auto text-base">
-          Optez pour un abonnement mensuel souple ou profitez de <strong>10% de réduction</strong> en souscription annuelle. Déploiement rapide, formation et assistance incluses.
+          {ab.subtitle}
         </p>
 
         {/* Toggle billing cycle */}
         <div className="flex items-center justify-center gap-3 mt-8">
           <span className={`text-xs font-semibold ${billingCycle === "monthly" ? "text-white" : "text-slate-400"}`}>
-            Mensuel
+            {ab.monthly_billing}
           </span>
           <button
             onClick={() => setBillingCycle(billingCycle === "monthly" ? "yearly" : "monthly")}
@@ -150,14 +132,14 @@ export default function TarifsDHotelPage() {
           >
             <div
               className={`w-5 h-5 rounded-full bg-amber-500 transition-transform ${
-                billingCycle === "yearly" ? "translate-x-7" : "translate-x-0"
+                billingCycle === "yearly" ? (isRTL ? "-translate-x-7" : "translate-x-7") : "translate-x-0"
               }`}
             />
           </button>
           <span className={`text-xs font-semibold flex items-center gap-1.5 ${billingCycle === "yearly" ? "text-white" : "text-slate-400"}`}>
-            Annuel
+            {ab.annual_billing}
             <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 font-bold border border-amber-500/30">
-              -10% d&apos;économie
+              {ab.discount_10}
             </span>
           </span>
         </div>
@@ -179,7 +161,7 @@ export default function TarifsDHotelPage() {
               >
                 {plan.popular && (
                   <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 text-xs font-extrabold uppercase tracking-wider shadow-lg">
-                    Recommandé • Solution Complète
+                    {ab.recommended}
                   </div>
                 )}
 
@@ -188,7 +170,7 @@ export default function TarifsDHotelPage() {
                     <div className="flex items-center justify-between mb-2">
                       <h3 className="text-2xl font-bold text-white">{plan.name}</h3>
                       <span className="text-[11px] font-semibold px-2.5 py-1 rounded-lg bg-slate-800 text-amber-300 border border-slate-700">
-                        {plan.id === "auberge" ? "Auberges & Écolodges" : "Hôtels & Résidences"}
+                        {plan.id === "auberge" ? "Auberge" : "Hôtel"}
                       </span>
                     </div>
                     <p className="text-xs text-slate-400 leading-relaxed min-h-[40px]">{plan.tagline}</p>
@@ -197,30 +179,30 @@ export default function TarifsDHotelPage() {
                   <div className="mb-6 p-4 rounded-2xl bg-slate-950/70 border border-slate-800">
                     <div className="flex items-baseline gap-1.5">
                       <span className="text-3xl sm:text-4xl font-extrabold text-amber-400">
-                        {displayedPrice.toLocaleString("fr-FR")}
+                        {displayedPrice.toLocaleString(isRTL ? "ar-EG" : "fr-FR")}
                       </span>
-                      <span className="text-xs text-slate-400 font-semibold">FCFA / mois</span>
+                      <span className="text-xs text-slate-400 font-semibold">{ab.per_month}</span>
                     </div>
                     <div className="text-[11px] text-slate-400 mt-1.5 flex items-center gap-2">
                       {billingCycle === "yearly" ? (
                         <>
                           <span className="text-emerald-400 font-semibold">
-                            Facturé {plan.annualTotal.toLocaleString("fr-FR")} FCFA / an
+                            {ab.total_per_year} {plan.annualTotal.toLocaleString(isRTL ? "ar-EG" : "fr-FR")} {ab.per_year}
                           </span>
-                          <span className="text-slate-500">• (-10% appliqué)</span>
+                          <span className="text-slate-500">• ({ab.discount_10})</span>
                         </>
                       ) : (
-                        <span>Facturation mensuelle sans engagement</span>
+                        <span>{ab.without_commitment}</span>
                       )}
                     </div>
                   </div>
 
                   <div className="space-y-3 mb-8">
                     <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">
-                      Fonctionnalités incluses :
+                      Fonctionnalités :
                     </span>
                     <ul className="space-y-2.5 text-xs text-slate-300">
-                      {plan.features.map((f, i) => (
+                      {plan.features.map((f: string, i: number) => (
                         <li key={i} className="flex items-start gap-2.5">
                           <Check className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
                           <span>{f}</span>
@@ -231,9 +213,9 @@ export default function TarifsDHotelPage() {
                     {plan.notIncluded.length > 0 && (
                       <div className="pt-4 border-t border-slate-800/80 space-y-2 text-xs text-slate-500">
                         <span className="text-[10px] font-bold uppercase tracking-wider block text-slate-500">
-                          Non inclus dans cette formule :
+                          Non inclus :
                         </span>
-                        {plan.notIncluded.map((nf, i) => (
+                        {plan.notIncluded.map((nf: string, i: number) => (
                           <li key={i} className="flex items-start gap-2 list-none">
                             <span className="w-1.5 h-1.5 rounded-full bg-slate-700 shrink-0 mt-1.5" />
                             <span>{nf}</span>
@@ -253,8 +235,8 @@ export default function TarifsDHotelPage() {
                         : "bg-slate-800 hover:bg-slate-700 text-white"
                     }`}
                   >
-                    Activer {plan.name}
-                    <ArrowRight className="w-4 h-4" />
+                    <span>{plan.name}</span>
+                    <ArrowRight className={`w-4 h-4 ${isRTL ? "rotate-180" : ""}`} />
                   </Link>
                   <p className="text-[11px] text-center text-slate-500">
                     Essai gratuit 7 jours • Activation sans carte bancaire
@@ -274,7 +256,7 @@ export default function TarifsDHotelPage() {
               Besoin d&apos;un devis multi-établissements ou d&apos;un audit sur site ?
             </h2>
             <p className="text-slate-400 text-xs sm:text-sm mt-2 max-w-xl mx-auto">
-              Notre équipe d&apos;ingénieurs hôteliers installe D-HOTEL sur site ou à distance et forme vos réceptionnistes, gouvernantes et gérants.
+              Notre équipe d&apos;ingénieurs hôteliers installe D-HOTEL sur site ou à distance et forme vos équipes.
             </p>
           </div>
 
@@ -283,7 +265,7 @@ export default function TarifsDHotelPage() {
               <ShieldCheck className="w-10 h-10 mx-auto mb-2 text-emerald-400" />
               <h3 className="font-bold text-base text-white">Demande transmise avec succès</h3>
               <p className="text-xs text-slate-300 mt-1">
-                Un conseiller hôtelier DEMBA prendra contact avec vous dans un délai maximal de 2 heures ouvrées.
+                Un conseiller hôtelier DEMBA prendra contact avec vous rapidement.
               </p>
             </div>
           ) : (
@@ -351,7 +333,7 @@ export default function TarifsDHotelPage() {
                 className="w-full py-3.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all shadow-lg shadow-amber-500/20 cursor-pointer"
               >
                 Envoyer ma demande de devis & d&apos;assistance
-                <ArrowRight className="w-4 h-4" />
+                <ArrowRight className={`w-4 h-4 ${isRTL ? "rotate-180" : ""}`} />
               </button>
             </form>
           )}
@@ -378,7 +360,7 @@ export default function TarifsDHotelPage() {
 
       {/* Footer */}
       <footer className="border-t border-slate-900 bg-slate-950 py-8 text-center text-xs text-slate-500">
-        <p>© {new Date().getFullYear()} D-HOTEL • DEMBA Hospitality Management System. Tous droits réservés.</p>
+        <p>© {new Date().getFullYear()} D-HOTEL • DEMBA Hospitality Management System.</p>
       </footer>
     </div>
   );
