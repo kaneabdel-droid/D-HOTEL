@@ -24,3 +24,4 @@ create table if not exists public.abonnement_paiements (
 
 create index if not exists idx_abonnement_paiements_hotel on public.abonnement_paiements (hotel_id);
 create index if not exists idx_abonnement_paiements_statut on public.abonnement_paiements (statut);
+

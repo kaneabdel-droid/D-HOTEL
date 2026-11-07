@@ -76,3 +76,4 @@ export async function fulfillSubscriptionPayment(params: FulfillPaymentParams) {
     return { ok: false, error: err.message || 'Erreur lors de l’activation' }
   }
 }
+

@@ -148,22 +148,20 @@ export function AbonnementsSuperAdminClient({
           <button
             type="button"
             onClick={() => setFilterStatut('tous')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-              filterStatut === 'tous'
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${filterStatut === 'tous'
                 ? 'bg-amber-500 text-slate-950 shadow'
                 : 'bg-slate-800 text-slate-400 hover:text-white'
-            }`}
+              }`}
           >
             Tous ({paiements.length})
           </button>
           <button
             type="button"
             onClick={() => setFilterStatut('pending')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
-              filterStatut === 'pending'
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${filterStatut === 'pending'
                 ? 'bg-amber-500 text-slate-950 shadow'
                 : 'bg-slate-800 text-slate-400 hover:text-white'
-            }`}
+              }`}
           >
             <Clock className="w-3 h-3" />
             <span>En attente ({enAttenteCount})</span>
@@ -171,11 +169,10 @@ export function AbonnementsSuperAdminClient({
           <button
             type="button"
             onClick={() => setFilterStatut('completed')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
-              filterStatut === 'completed'
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${filterStatut === 'completed'
                 ? 'bg-amber-500 text-slate-950 shadow'
                 : 'bg-slate-800 text-slate-400 hover:text-white'
-            }`}
+              }`}
           >
             <CheckCircle2 className="w-3 h-3" />
             <span>Complétés</span>
@@ -223,11 +220,10 @@ export function AbonnementsSuperAdminClient({
                       </td>
                       <td className="py-3.5 px-4">
                         <span
-                          className={`px-2 py-0.5 rounded text-[11px] font-bold ${
-                            p.niveau === 'hotel'
+                          className={`px-2 py-0.5 rounded text-[11px] font-bold ${p.niveau === 'hotel'
                               ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
                               : 'bg-sky-500/10 text-sky-400 border border-sky-500/20'
-                          }`}
+                            }`}
                         >
                           {p.niveau === 'hotel' ? 'Hôtel & Résidence' : 'Auberge & Campement'}
                         </span>
@@ -336,3 +332,4 @@ export function AbonnementsSuperAdminClient({
     </div>
   )
 }
+

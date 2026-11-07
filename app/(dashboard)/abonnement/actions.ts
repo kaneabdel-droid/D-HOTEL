@@ -206,3 +206,4 @@ export async function initierPaiementAbonnementHotel(
     error: 'La passerelle de paiement en ligne est momentanément indisponible. Vous pouvez choisir "Paiement en Caisse" ou "Virement Bancaire" pour activer votre formule sans délai.',
   }
 }
+

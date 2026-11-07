@@ -53,10 +53,10 @@ export function ClientEtablissementsPage({
         prev.map((item) =>
           item.id === h.id
             ? {
-                ...item,
-                statut: newBlockedState ? 'suspendu' : 'actif',
-                compte_verrouille: newBlockedState,
-              }
+              ...item,
+              statut: newBlockedState ? 'suspendu' : 'actif',
+              compte_verrouille: newBlockedState,
+            }
             : item
         )
       )
@@ -291,11 +291,10 @@ export function ClientEtablissementsPage({
                     </td>
                     <td className="py-3.5 px-4">
                       <span
-                        className={`text-xs font-bold px-2 py-1 rounded-lg ${
-                          h.plan === 'hotel'
+                        className={`text-xs font-bold px-2 py-1 rounded-lg ${h.plan === 'hotel'
                             ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
                             : 'bg-sky-500/10 text-sky-400 border border-sky-500/20'
-                        }`}
+                          }`}
                       >
                         {h.plan === 'hotel' ? 'Hôtel (20k/m)' : 'Auberge (15k/m)'}
                       </span>
@@ -326,11 +325,10 @@ export function ClientEtablissementsPage({
                         type="button"
                         onClick={() => handleToggleLock(h)}
                         disabled={isLoading}
-                        className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all disabled:opacity-50 ${
-                          isLocked
+                        className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all disabled:opacity-50 ${isLocked
                             ? 'bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 border border-emerald-500/30'
                             : 'bg-rose-600/20 hover:bg-rose-600/30 text-rose-400 border border-rose-500/30'
-                        }`}
+                          }`}
                       >
                         {isLoading ? (
                           <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -374,128 +372,128 @@ export function ClientEtablissementsPage({
 
             <form onSubmit={handleCreate} className="flex flex-col flex-1 overflow-hidden">
               <div className="p-4 sm:p-6 overflow-y-auto flex-1 space-y-4 text-xs">
-              <div>
-                <label className="block font-semibold text-slate-300 mb-1">
-                  Nom de l&apos;Établissement *
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="ex: Teranga Luxury Beach"
-                  value={nom}
-                  onChange={(e) => setNom(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-amber-500"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block font-semibold text-slate-300 mb-1">
-                    Formule de Souscription *
-                  </label>
-                  <select
-                    value={plan}
-                    onChange={(e) => setPlan(e.target.value as any)}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-amber-500"
-                  >
-                    <option value="auberge">Auberge / Campement (15 000 F/m)</option>
-                    <option value="hotel">Hôtel / Résidence (20 000 F/m)</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block font-semibold text-slate-300 mb-1">
-                    Capacité (Chambres)
-                  </label>
-                  <input
-                    type="number"
-                    min="1"
-                    value={chambres}
-                    onChange={(e) => setChambres(Number(e.target.value))}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-amber-500"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block font-semibold text-slate-300 mb-1">
-                    Ville d&apos;implantation *
+                    Nom de l&apos;Établissement *
                   </label>
                   <input
                     type="text"
                     required
-                    value={ville}
-                    onChange={(e) => setVille(e.target.value)}
+                    placeholder="ex: Teranga Luxury Beach"
+                    value={nom}
+                    onChange={(e) => setNom(e.target.value)}
                     className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-amber-500"
                   />
                 </div>
-                <div>
-                  <label className="block font-semibold text-slate-300 mb-1">
-                    Statut Initial
-                  </label>
-                  <select
-                    value={statut}
-                    onChange={(e) => setStatut(e.target.value as any)}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-amber-500"
-                  >
-                    <option value="actif">Actif (Contrat réglé)</option>
-                    <option value="essai">Essai (Période test)</option>
-                  </select>
-                </div>
-              </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block font-semibold text-slate-300 mb-1">
-                    Nom du Directeur
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="ex: Amadou Diop"
-                    value={directeur}
-                    onChange={(e) => setDirecteur(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-amber-500"
-                  />
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block font-semibold text-slate-300 mb-1">
+                      Formule de Souscription *
+                    </label>
+                    <select
+                      value={plan}
+                      onChange={(e) => setPlan(e.target.value as any)}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-amber-500"
+                    >
+                      <option value="auberge">Auberge / Campement (15 000 F/m)</option>
+                      <option value="hotel">Hôtel / Résidence (20 000 F/m)</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block font-semibold text-slate-300 mb-1">
+                      Capacité (Chambres)
+                    </label>
+                    <input
+                      type="number"
+                      min="1"
+                      value={chambres}
+                      onChange={(e) => setChambres(Number(e.target.value))}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-amber-500"
+                    />
+                  </div>
                 </div>
-                <div>
-                  <label className="block font-semibold text-slate-300 mb-1">
-                    Téléphone Contact
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="+221 77 000 00 00"
-                    value={telephone}
-                    onChange={(e) => setTelephone(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-amber-500"
-                  />
-                </div>
-              </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block font-semibold text-slate-300 mb-1">
-                    E-mail de connexion
-                  </label>
-                  <input
-                    type="email"
-                    placeholder="contact@hotel.sn"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-amber-500"
-                  />
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block font-semibold text-slate-300 mb-1">
+                      Ville d&apos;implantation *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={ville}
+                      onChange={(e) => setVille(e.target.value)}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-amber-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-semibold text-slate-300 mb-1">
+                      Statut Initial
+                    </label>
+                    <select
+                      value={statut}
+                      onChange={(e) => setStatut(e.target.value as any)}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-amber-500"
+                    >
+                      <option value="actif">Actif (Contrat réglé)</option>
+                      <option value="essai">Essai (Période test)</option>
+                    </select>
+                  </div>
                 </div>
-                <div>
-                  <label className="block font-semibold text-slate-300 mb-1">
-                    Mot de passe initial
-                  </label>
-                  <input
-                    type="text"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-amber-500 font-mono"
-                  />
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block font-semibold text-slate-300 mb-1">
+                      Nom du Directeur
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="ex: Amadou Diop"
+                      value={directeur}
+                      onChange={(e) => setDirecteur(e.target.value)}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-amber-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-semibold text-slate-300 mb-1">
+                      Téléphone Contact
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="+221 77 000 00 00"
+                      value={telephone}
+                      onChange={(e) => setTelephone(e.target.value)}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-amber-500"
+                    />
+                  </div>
                 </div>
-              </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block font-semibold text-slate-300 mb-1">
+                      E-mail de connexion
+                    </label>
+                    <input
+                      type="email"
+                      placeholder="contact@hotel.sn"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-amber-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-semibold text-slate-300 mb-1">
+                      Mot de passe initial
+                    </label>
+                    <input
+                      type="text"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-amber-500 font-mono"
+                    />
+                  </div>
+                </div>
 
               </div>
 

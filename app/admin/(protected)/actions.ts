@@ -117,8 +117,8 @@ export async function getEtablissementsSuperAdmin(): Promise<EtablissementItem[]
           if (meta.etablissement_nom || u.email) {
             const planKey =
               meta.plan === 'auberge' ||
-              meta.etablissement_type === 'campement' ||
-              meta.etablissement_type === 'auberge'
+                meta.etablissement_type === 'campement' ||
+                meta.etablissement_type === 'auberge'
                 ? 'auberge'
                 : 'hotel';
 
@@ -126,10 +126,10 @@ export async function getEtablissementsSuperAdmin(): Promise<EtablissementItem[]
               meta.etablissement_type === 'campement'
                 ? 'Campement Touristique'
                 : meta.etablissement_type === 'auberge'
-                ? 'Auberge & Gîte'
-                : planKey === 'auberge'
-                ? 'Auberge & Campement'
-                : 'Hôtel & Résidence';
+                  ? 'Auberge & Gîte'
+                  : planKey === 'auberge'
+                    ? 'Auberge & Campement'
+                    : 'Hôtel & Résidence';
 
             const prixLabel = planKey === 'auberge' ? '15 000 FCFA/m' : '20 000 FCFA/m';
 
@@ -339,7 +339,7 @@ export async function toggleVerrouillerEtablissement(etablissementId: string, bl
             });
           }
         }
-      } catch {}
+      } catch { }
     }
 
     revalidatePath('/admin/etablissements');

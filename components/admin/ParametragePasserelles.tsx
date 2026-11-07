@@ -86,11 +86,10 @@ export function ParametragePasserelles() {
 
       {testResult && (
         <div
-          className={`p-4 rounded-xl border text-xs flex items-center justify-between gap-3 ${
-            testResult.ok
+          className={`p-4 rounded-xl border text-xs flex items-center justify-between gap-3 ${testResult.ok
               ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
               : 'bg-rose-500/10 border-rose-500/30 text-rose-300'
-          }`}
+            }`}
         >
           <div className="flex items-center gap-2">
             <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
@@ -117,11 +116,11 @@ export function ParametragePasserelles() {
                 <div className="flex items-center gap-2">
                   <h3 className="text-lg font-bold text-white">Passerelle Maketou</h3>
                   <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                    Officiel Mobile Money
+                    Wave, OM & Carte • Autonome (Sans webhook)
                   </span>
                 </div>
                 <p className="text-xs text-slate-400">
-                  Encaissement direct des abonnements et acomptes via Wave Sénégal, Orange Money et Cartes Bancaires.
+                  Encaissement direct des abonnements et acomptes avec vérification instantanée de l&apos;état du panier (aucun webhook obligatoire).
                 </p>
               </div>
             </div>
