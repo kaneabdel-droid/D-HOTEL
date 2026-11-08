@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useFormStatus } from "react-dom";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import {
@@ -18,6 +19,26 @@ import {
 } from "lucide-react";
 import { signupHotelAction } from "./actions";
 
+function SubmitHotelSignupButton() {
+  const { pending } = useFormStatus();
+  return (
+    <button
+      type="submit"
+      disabled={pending}
+      className="w-full py-4 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all shadow-lg shadow-amber-500/20 cursor-pointer disabled:opacity-50"
+    >
+      {pending ? (
+        <span>Initialisation de votre établissement en cours...</span>
+      ) : (
+        <>
+          <span>Créer mon établissement & Débuter l&apos;essai</span>
+          <ArrowRight className="w-4 h-4" />
+        </>
+      )}
+    </button>
+  );
+}
+
 export default function ClientSignupForm() {
   const searchParams = useSearchParams();
   const initialPlan = searchParams.get("plan") === "auberge" ? "auberge" : "hotel";
@@ -26,7 +47,6 @@ export default function ClientSignupForm() {
 
   const [selectedPlan, setSelectedPlan] = useState<"auberge" | "hotel">(initialPlan);
   const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">(initialCycle);
-  const [isPending, setIsPending] = useState(false);
 
   const plansInfo = {
     auberge: {
@@ -148,11 +168,7 @@ export default function ClientSignupForm() {
       </div>
 
       {/* Formulaire d'inscription */}
-      <form
-        action={signupHotelAction}
-        onSubmit={() => setIsPending(true)}
-        className="space-y-5"
-      >
+      <form action={signupHotelAction} className="space-y-5">
         <input type="hidden" name="plan" value={selectedPlan} />
         <input type="hidden" name="cycle" value={billingCycle} />
 
@@ -296,20 +312,7 @@ export default function ClientSignupForm() {
           </div>
         </div>
 
-        <button
-          type="submit"
-          disabled={isPending}
-          className="w-full py-4 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all shadow-lg shadow-amber-500/20 cursor-pointer disabled:opacity-50"
-        >
-          {isPending ? (
-            <span>Initialisation de votre établissement en cours...</span>
-          ) : (
-            <>
-              <span>Créer mon établissement & Débuter l&apos;essai</span>
-              <ArrowRight className="w-4 h-4" />
-            </>
-          )}
-        </button>
+        <SubmitHotelSignupButton />
       </form>
     </div>
   );

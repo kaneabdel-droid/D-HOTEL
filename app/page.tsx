@@ -164,7 +164,7 @@ export default async function DHotelHomePage() {
 
               <Link
                 href="/login"
-                className="hidden sm:inline-flex text-xs font-semibold text-slate-300 hover:text-white px-3 py-2 rounded-xl hover:bg-slate-900 transition-colors"
+                className="inline-flex items-center text-xs font-semibold text-slate-300 hover:text-white px-2.5 sm:px-3 py-2 rounded-xl hover:bg-slate-900 transition-colors"
               >
                 {t.nav_login}
               </Link>
