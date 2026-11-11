@@ -477,8 +477,8 @@ export default function ReservationsPage() {
 
       {/* ── MODALE NOUVELLE RÉSERVATION ── */}
       {modalCreation && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm overflow-y-auto">
-          <div className="w-full max-w-lg bg-surface text-foreground border border-surface-border rounded-2xl shadow-2xl max-h-[92vh] sm:max-h-[88vh] flex flex-col overflow-hidden animate-scale-up">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/75 backdrop-blur-sm overflow-y-auto">
+          <div className="w-full max-w-lg bg-white bg-surface text-foreground border border-surface-border rounded-2xl shadow-2xl max-h-[92vh] sm:max-h-[88vh] flex flex-col overflow-hidden animate-scale-up">
             <div className="p-4 sm:p-5 border-b border-surface-border flex items-center justify-between bg-surface shrink-0">
               <div className="flex items-center gap-2">
                 <Calendar className="w-5 h-5 text-primary" />
@@ -583,8 +583,8 @@ export default function ReservationsPage() {
 
       {/* ── MODALE MODIFICATION RÉSERVATION ── */}
       {modalModifierReservation && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm overflow-y-auto">
-          <div className="w-full max-w-lg bg-surface text-foreground border border-surface-border rounded-2xl shadow-2xl max-h-[92vh] sm:max-h-[88vh] flex flex-col overflow-hidden animate-scale-up">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/75 backdrop-blur-sm overflow-y-auto">
+          <div className="w-full max-w-lg bg-white bg-surface text-foreground border border-surface-border rounded-2xl shadow-2xl max-h-[92vh] sm:max-h-[88vh] flex flex-col overflow-hidden animate-scale-up">
             <div className="p-4 sm:p-5 border-b border-surface-border flex items-center justify-between bg-surface shrink-0">
               <div className="flex items-center gap-2">
                 <Edit2 className="w-5 h-5 text-primary" />
@@ -737,8 +737,8 @@ export default function ReservationsPage() {
 
       {/* ── MODALE FOLIO DÉTAILS ── */}
       {reservationDetails && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm overflow-y-auto">
-          <div className="w-full max-w-lg bg-surface text-foreground border border-surface-border rounded-2xl shadow-2xl p-5 space-y-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/75 backdrop-blur-sm overflow-y-auto">
+          <div className="w-full max-w-lg bg-white bg-surface text-foreground border border-surface-border rounded-2xl shadow-2xl p-5 space-y-4">
             <div className="flex justify-between items-center pb-2 border-b border-surface-border">
               <h3 className="text-base sm:text-lg font-bold">
                 Folio Dossier {reservationDetails.code}

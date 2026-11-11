@@ -605,8 +605,8 @@ export default function ChambresPage() {
 
       {/* MODALE AJOUT CHAMBRE */}
       {modalAjoutChambre && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-xs">
-          <div className="bg-surface border border-surface-border w-full max-w-md rounded-2xl p-5 shadow-2xl space-y-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/75 backdrop-blur-sm">
+          <div className="bg-white bg-surface text-foreground border border-surface-border w-full max-w-md rounded-2xl p-5 shadow-2xl space-y-4">
             <div className="flex justify-between items-center pb-2 border-b border-surface-border">
               <h3 className="text-lg font-bold text-foreground">Ajouter une Chambre</h3>
               <button
@@ -688,8 +688,8 @@ export default function ChambresPage() {
 
       {/* MODALE MODIFICATION CHAMBRE */}
       {modalModifierChambre && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-xs">
-          <div className="bg-surface border border-surface-border w-full max-w-md rounded-2xl p-5 shadow-2xl space-y-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/75 backdrop-blur-sm">
+          <div className="bg-white bg-surface text-foreground border border-surface-border w-full max-w-md rounded-2xl p-5 shadow-2xl space-y-4">
             <div className="flex justify-between items-center pb-2 border-b border-surface-border">
               <h3 className="text-lg font-bold text-foreground">
                 Modifier Chambre N° {modalModifierChambre.numero}

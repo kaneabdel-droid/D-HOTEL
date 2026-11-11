@@ -124,13 +124,13 @@ export default function LoginPage() {
           </p>
         </div>
 
-        {/* Carte de Connexion */}
-        <div className="p-6 sm:p-8 rounded-2xl bg-[#141B26]/90 border border-white/10 shadow-2xl backdrop-blur-md space-y-5">
-          <div className="pb-3 border-b border-white/10">
+        {/* Carte de Connexion Opaque Haute Lisibilité */}
+        <div className="p-6 sm:p-8 rounded-2xl bg-[#0F172A] border border-slate-700/80 shadow-2xl space-y-5">
+          <div className="pb-3 border-b border-slate-800">
             <h2 className="text-base font-bold text-white">
               Espace Sécurisé de l&apos;Établissement
             </h2>
-            <p className="text-[11px] text-[#8E9EAF]">
+            <p className="text-[11px] text-slate-400">
               Connectez-vous avec votre e-mail, identifiant ou numéro de téléphone
             </p>
           </div>
@@ -151,7 +151,7 @@ export default function LoginPage() {
           <form onSubmit={handleSubmit} className="space-y-4 text-xs">
             {/* Champ Identifiant / E-mail / Téléphone */}
             <div className="space-y-1.5">
-              <label className="block font-semibold text-[#F2F5F8]">
+              <label className="block font-semibold text-slate-200">
                 Identifiant, Téléphone ou E-mail
               </label>
               <div className="relative">
@@ -161,16 +161,16 @@ export default function LoginPage() {
                   placeholder="ex: amadou_bar ou +221 77 123 45 67"
                   value={identifiant}
                   onChange={(e) => setIdentifiant(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-black/40 border border-white/15 text-white placeholder:text-white/30 text-xs focus:outline-hidden focus:border-[#D4AF37] transition-colors"
+                  className="login-dark-input w-full pl-9 pr-3 py-2.5 rounded-xl bg-[#1E293B] border border-slate-600 text-white placeholder:text-slate-400 font-medium text-xs focus:outline-hidden focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] transition-colors"
                 />
-                <User className="w-4 h-4 text-[#8E9EAF] absolute left-3 top-3" />
+                <User className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
               </div>
             </div>
 
             {/* Champ Mot de Passe */}
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
-                <label className="font-semibold text-[#F2F5F8]">
+                <label className="font-semibold text-slate-200">
                   Mot de passe
                 </label>
                 <a
@@ -190,9 +190,9 @@ export default function LoginPage() {
                   placeholder="••••••••••••"
                   value={motDePasse}
                   onChange={(e) => setMotDePasse(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2.5 rounded-xl bg-black/40 border border-white/15 text-white placeholder:text-white/30 text-xs focus:outline-hidden focus:border-[#D4AF37] transition-colors"
+                  className="login-dark-input w-full pl-9 pr-3 py-2.5 rounded-xl bg-[#1E293B] border border-slate-600 text-white placeholder:text-slate-400 font-medium text-xs focus:outline-hidden focus:border-[#D4AF37] focus:ring-1 focus:ring-[#D4AF37] transition-colors"
                 />
-                <KeyRound className="w-4 h-4 text-[#8E9EAF] absolute left-3 top-3" />
+                <KeyRound className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
               </div>
             </div>
 
@@ -214,13 +214,13 @@ export default function LoginPage() {
           </form>
 
           {/* Accès Direct par Rôles Hôteliers (Démonstration) */}
-          <div className="pt-4 border-t border-white/10 space-y-2.5">
+          <div className="pt-4 border-t border-slate-800 space-y-2.5">
             <div className="flex items-center justify-between">
               <span className="text-[11px] font-bold text-white flex items-center gap-1.5">
                 <Sparkles className="w-3.5 h-3.5 text-[#D4AF37]" />
                 Tester directement selon votre rôle
               </span>
-              <span className="text-[9px] uppercase tracking-wider text-[#8E9EAF]">
+              <span className="text-[9px] uppercase tracking-wider text-slate-400">
                 Sans identifiants
               </span>
             </div>
@@ -244,7 +244,7 @@ export default function LoginPage() {
                         window.location.href = res.redirectUrl;
                       }
                     }}
-                    className="p-2 rounded-xl border border-white/10 bg-black/30 hover:bg-white/5 hover:border-[#D4AF37]/50 text-left transition-all flex items-center gap-2 cursor-pointer group"
+                    className="p-2.5 rounded-xl border border-slate-700 bg-[#1E293B] hover:bg-[#2A374A] hover:border-[#D4AF37]/60 text-left transition-all flex items-center gap-2 cursor-pointer group shadow-xs"
                   >
                     <div className={`w-7 h-7 rounded-lg ${r.color} flex items-center justify-center shrink-0`}>
                       <Icon className="w-3.5 h-3.5" />
@@ -253,7 +253,7 @@ export default function LoginPage() {
                       <p className="text-[11px] font-bold text-white group-hover:text-[#D4AF37] truncate">
                         {r.titre}
                       </p>
-                      <p className="text-[9px] text-[#8E9EAF] truncate">
+                      <p className="text-[9px] text-slate-400 truncate">
                         {r.sub}
                       </p>
                     </div>

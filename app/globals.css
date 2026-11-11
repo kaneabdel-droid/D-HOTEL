@@ -125,11 +125,99 @@
   --info: #2563EB;
 }
 
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-border: var(--surface-border);
+  --color-surface-muted: var(--surface-muted);
+  --color-foreground: var(--foreground);
+  --color-foreground-muted: var(--foreground-muted);
+
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-muted: var(--sidebar-muted);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-hover: var(--sidebar-hover);
+  --color-sidebar-actif: var(--sidebar-actif);
+  --color-sidebar-actif-foreground: var(--sidebar-actif-foreground);
+
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-soft: var(--primary-soft);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+
+  --color-card: var(--surface);
+  --color-card-foreground: var(--foreground);
+  --color-border: var(--surface-border);
+  --color-muted: var(--surface-muted);
+  --color-muted-foreground: var(--foreground-muted);
+
+  --color-status-clean: var(--status-clean);
+  --color-status-occupied: var(--status-occupied);
+  --color-status-cleaning: var(--status-cleaning);
+  --color-status-maintenance: var(--status-maintenance);
+  --color-status-reserved: var(--status-reserved);
+
+  --color-danger: var(--danger);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-info: var(--info);
+}
+
 body {
   background-color: var(--background);
   color: var(--foreground);
   font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   overflow-x: hidden;
+}
+
+/* ── OPACITÉ ET LISIBILITÉ ABSOLUE DES FORMULAIRES & MODALES ── */
+.bg-surface {
+  background-color: var(--surface, #FFFFFF) !important;
+}
+
+.bg-card {
+  background-color: var(--surface, #FFFFFF) !important;
+}
+
+/* Arrière-plan des modales : assombri pour un contraste optimal */
+.fixed.inset-0.z-50 {
+  background-color: rgba(0, 0, 0, 0.75) !important;
+}
+
+/* Conteneurs de modales & boîtes de dialogue : fond 100% opaque sans translucidité */
+.fixed.inset-0.z-50 > div:not(.bg-slate-900):not(.bg-black) {
+  background-color: #FFFFFF !important;
+  opacity: 1 !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+}
+
+/* Tous les champs de formulaire (inputs, selects, textareas) : fond blanc pur opaque et bordure nette */
+input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not([type="reset"]):not(.login-dark-input),
+select:not(.login-dark-input),
+textarea:not(.login-dark-input) {
+  background-color: #FFFFFF !important;
+  color: var(--foreground, #1E1914) !important;
+  border-color: var(--surface-border, #D8D0C5) !important;
+  opacity: 1 !important;
+}
+
+input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not([type="reset"]):not(.login-dark-input):focus,
+select:not(.login-dark-input):focus,
+textarea:not(.login-dark-input):focus {
+  background-color: #FFFFFF !important;
+  border-color: var(--primary, #B2533E) !important;
+  box-shadow: 0 0 0 2px var(--primary-soft, rgba(178, 83, 62, 0.2)) !important;
+  outline: none !important;
+}
+
+/* Placeholders lisibles et contrastés */
+input::placeholder,
+textarea::placeholder {
+  color: var(--foreground-muted, #786C5E) !important;
+  opacity: 0.8 !important;
 }
 
 /* Glassmorphism subtil pour cartes de prestige */

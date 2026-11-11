@@ -427,8 +427,8 @@ export default function CartesMenusPage() {
 
       {/* MODAL MODIFIER PLAT */}
       {modalModifierPlat && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-3 sm:p-4 overflow-y-auto">
-          <div className="bg-surface text-foreground rounded-2xl border border-surface-border shadow-2xl max-w-md w-full p-5 space-y-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-3 sm:p-4 overflow-y-auto">
+          <div className="bg-white bg-surface text-foreground rounded-2xl border border-surface-border shadow-2xl max-w-md w-full p-5 space-y-4">
             <div className="flex items-center justify-between pb-2 border-b border-surface-border">
               <h3 className="text-lg font-bold">Modifier Article : {modalModifierPlat.nom}</h3>
               <button
@@ -532,8 +532,8 @@ export default function CartesMenusPage() {
 
       {/* MODAL NOUVEAU PLAT */}
       {modalNouveauPlat && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-3 sm:p-4 overflow-y-auto">
-          <div className="bg-surface text-foreground rounded-2xl border border-surface-border shadow-2xl max-w-md w-full p-5 space-y-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-3 sm:p-4 overflow-y-auto">
+          <div className="bg-white bg-surface text-foreground rounded-2xl border border-surface-border shadow-2xl max-w-md w-full p-5 space-y-4">
             <div className="flex items-center justify-between pb-2 border-b border-surface-border">
               <h3 className="text-lg font-bold">Ajouter un Plat / Recette</h3>
               <button
@@ -629,8 +629,8 @@ export default function CartesMenusPage() {
 
       {/* MODAL FICHE TECHNIQUE */}
       {platSelectionne && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-3 sm:p-4 overflow-y-auto">
-          <div className="bg-surface text-foreground rounded-2xl border border-surface-border shadow-2xl max-w-lg w-full p-5 space-y-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-3 sm:p-4 overflow-y-auto">
+          <div className="bg-white bg-surface text-foreground rounded-2xl border border-surface-border shadow-2xl max-w-lg w-full p-5 space-y-4">
             <div className="flex items-start justify-between pb-2 border-b border-surface-border">
               <div>
                 <span className="text-xs uppercase font-bold text-foreground-muted">
