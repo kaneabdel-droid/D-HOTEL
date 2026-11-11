@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Hotel,
   PlusCircle,
@@ -22,8 +22,12 @@ import {
   Coffee,
   Waves,
   X,
+  Edit2,
+  Trash2,
+  AlertTriangle,
 } from "lucide-react";
 import { formatXOF } from "@/lib/utils";
+import { loadHotelData, saveHotelData, clearHotelData } from "@/lib/hotel-storage";
 
 interface Chambre {
   id: string;
@@ -52,12 +56,144 @@ interface TypeChambre {
   saisonBasse: number;
 }
 
+const DEFAULT_TYPES_CHAMBRES: TypeChambre[] = [
+  {
+    id: "std",
+    nom: "Chambre Standard",
+    code: "STD",
+    tarifBase: 45000,
+    capacite: "2 adultes",
+    nbTotal: 16,
+    description: "Chambre lumineuse avec vue jardin, lit queen size, salle d'eau italienne.",
+    saisonHaute: 55000,
+    saisonBasse: 38000,
+  },
+  {
+    id: "dlx",
+    nom: "Chambre Deluxe",
+    code: "DLX",
+    tarifBase: 65000,
+    capacite: "2 adultes + 1 enfant",
+    nbTotal: 12,
+    description: "Spacieuse avec balcon privatif, salon cosy, minibar garni et bureau.",
+    saisonHaute: 80000,
+    saisonBasse: 55000,
+  },
+  {
+    id: "ste-jr",
+    nom: "Suite Junior",
+    code: "SJR",
+    tarifBase: 95000,
+    capacite: "2 adultes + 1 enfant",
+    nbTotal: 8,
+    description: "Espace salon distinct, lit king size, baignoire balnéo et machine Nespresso.",
+    saisonHaute: 120000,
+    saisonBasse: 80000,
+  },
+  {
+    id: "bung-plage",
+    nom: "Bungalow Plage",
+    code: "BPL",
+    tarifBase: 180000,
+    capacite: "4 personnes (2 chambres)",
+    nbTotal: 6,
+    description: "Accès direct au sable blanc, terrasse panoramique, plunge pool privée.",
+    saisonHaute: 230000,
+    saisonBasse: 150000,
+  },
+  {
+    id: "lodge",
+    nom: "Tente Lodge Safari",
+    code: "LOD",
+    tarifBase: 110000,
+    capacite: "2 adultes",
+    nbTotal: 4,
+    description: "Immersion nature avec le confort 5 étoiles, terrasse sur pilotis ombragée.",
+    saisonHaute: 140000,
+    saisonBasse: 90000,
+  },
+];
+
+const DEFAULT_CHAMBRES: Chambre[] = [
+  {
+    id: "demo-1",
+    numero: "101",
+    etage: "RDC",
+    batiment: "Principal",
+    typeId: "std",
+    typeNom: "Chambre Standard",
+    prixBase: 45000,
+    capaciteAdultes: 2,
+    capaciteEnfants: 0,
+    statutOccupation: "occupee",
+    statutMenage: "propre",
+    equipements: ["wifi", "clim", "tv", "minibar"],
+  },
+  {
+    id: "demo-2",
+    numero: "102",
+    etage: "RDC",
+    batiment: "Principal",
+    typeId: "std",
+    typeNom: "Chambre Standard",
+    prixBase: 45000,
+    capaciteAdultes: 2,
+    capaciteEnfants: 0,
+    statutOccupation: "reservee",
+    statutMenage: "propre",
+    equipements: ["wifi", "clim", "tv", "minibar"],
+  },
+  {
+    id: "demo-3",
+    numero: "103",
+    etage: "RDC",
+    batiment: "Principal",
+    typeId: "dlx",
+    typeNom: "Chambre Deluxe",
+    prixBase: 65000,
+    capaciteAdultes: 2,
+    capaciteEnfants: 1,
+    statutOccupation: "libre",
+    statutMenage: "en_cours",
+    equipements: ["wifi", "clim", "tv", "minibar", "balcon"],
+  },
+  {
+    id: "demo-4",
+    numero: "201",
+    etage: "1er étage",
+    batiment: "Principal",
+    typeId: "ste-jr",
+    typeNom: "Suite Junior",
+    prixBase: 95000,
+    capaciteAdultes: 2,
+    capaciteEnfants: 1,
+    statutOccupation: "occupee",
+    statutMenage: "propre",
+    equipements: ["wifi", "clim", "tv", "minibar", "balneo", "nespresso"],
+  },
+  {
+    id: "demo-5",
+    numero: "204",
+    etage: "1er étage",
+    batiment: "Principal",
+    typeId: "ste-jr",
+    typeNom: "Suite Junior",
+    prixBase: 95000,
+    capaciteAdultes: 2,
+    capaciteEnfants: 1,
+    statutOccupation: "libre",
+    statutMenage: "hors_service",
+    equipements: ["wifi", "clim", "tv", "minibar", "balneo"],
+  },
+];
+
 export default function ChambresPage() {
   const [ongletActif, setOngletActif] = useState<"chambres" | "tarifs">("chambres");
   const [recherche, setRecherche] = useState("");
   const [filtreType, setFiltreType] = useState("tous");
   const [filtreStatut, setFiltreStatut] = useState("tous");
   const [modalAjoutChambre, setModalAjoutChambre] = useState(false);
+  const [modalModifierChambre, setModalModifierChambre] = useState<Chambre | null>(null);
   const [modalTypeTarif, setModalTypeTarif] = useState<TypeChambre | null>(null);
   const [succesMsg, setSuccesMsg] = useState<string | null>(null);
 
@@ -67,188 +203,30 @@ export default function ChambresPage() {
   const [nouvelEtage, setNouvelEtage] = useState("RDC");
   const [nouveauBatiment, setNouveauBatiment] = useState("Principal");
 
-  const [typesChambres, setTypesChambres] = useState<TypeChambre[]>([
-    {
-      id: "std",
-      nom: "Chambre Standard",
-      code: "STD",
-      tarifBase: 45000,
-      capacite: "2 adultes",
-      nbTotal: 16,
-      description: "Chambre lumineuse avec vue jardin, lit queen size, salle d'eau italienne.",
-      saisonHaute: 55000,
-      saisonBasse: 38000,
-    },
-    {
-      id: "dlx",
-      nom: "Chambre Deluxe",
-      code: "DLX",
-      tarifBase: 65000,
-      capacite: "2 adultes + 1 enfant",
-      nbTotal: 12,
-      description: "Spacieuse avec balcon privatif, salon cosy, minibar garni et bureau.",
-      saisonHaute: 80000,
-      saisonBasse: 55000,
-    },
-    {
-      id: "ste-jr",
-      nom: "Suite Junior",
-      code: "SJR",
-      tarifBase: 95000,
-      capacite: "2 adultes + 1 enfant",
-      nbTotal: 8,
-      description: "Espace salon distinct, lit king size, baignoire balnéo et machine Nespresso.",
-      saisonHaute: 120000,
-      saisonBasse: 80000,
-    },
-    {
-      id: "bung-plage",
-      nom: "Bungalow Plage",
-      code: "BPL",
-      tarifBase: 180000,
-      capacite: "4 personnes (2 chambres)",
-      nbTotal: 6,
-      description: "Accès direct au sable blanc, terrasse panoramique, plunge pool privée.",
-      saisonHaute: 230000,
-      saisonBasse: 150000,
-    },
-    {
-      id: "lodge",
-      nom: "Tente Lodge Safari",
-      code: "LOD",
-      tarifBase: 110000,
-      capacite: "2 adultes",
-      nbTotal: 4,
-      description: "Immersion nature avec le confort 5 étoiles, terrasse sur pilotis ombragée.",
-      saisonHaute: 140000,
-      saisonBasse: 90000,
-    },
-  ]);
+  // Données persistantes
+  const [chambres, setChambres] = useState<Chambre[]>(DEFAULT_CHAMBRES);
+  const [typesChambres, setTypesChambres] = useState<TypeChambre[]>(DEFAULT_TYPES_CHAMBRES);
+  const [isExempleFiligrane, setIsExempleFiligrane] = useState(true);
 
-  const [chambres, setChambres] = useState<Chambre[]>([
-    {
-      id: "1",
-      numero: "101",
-      etage: "RDC",
-      batiment: "Principal",
-      typeId: "std",
-      typeNom: "Chambre Standard",
-      prixBase: 45000,
-      capaciteAdultes: 2,
-      capaciteEnfants: 0,
-      statutOccupation: "occupee",
-      statutMenage: "propre",
-      equipements: ["wifi", "clim", "tv", "minibar"],
-    },
-    {
-      id: "2",
-      numero: "102",
-      etage: "RDC",
-      batiment: "Principal",
-      typeId: "std",
-      typeNom: "Chambre Standard",
-      prixBase: 45000,
-      capaciteAdultes: 2,
-      capaciteEnfants: 0,
-      statutOccupation: "reservee",
-      statutMenage: "propre",
-      equipements: ["wifi", "clim", "tv", "minibar"],
-    },
-    {
-      id: "3",
-      numero: "103",
-      etage: "RDC",
-      batiment: "Principal",
-      typeId: "dlx",
-      typeNom: "Chambre Deluxe",
-      prixBase: 65000,
-      capaciteAdultes: 2,
-      capaciteEnfants: 1,
-      statutOccupation: "libre",
-      statutMenage: "en_cours",
-      equipements: ["wifi", "clim", "tv", "minibar", "balcon"],
-    },
-    {
-      id: "4",
-      numero: "201",
-      etage: "1er étage",
-      batiment: "Principal",
-      typeId: "ste-jr",
-      typeNom: "Suite Junior",
-      prixBase: 95000,
-      capaciteAdultes: 2,
-      capaciteEnfants: 1,
-      statutOccupation: "occupee",
-      statutMenage: "propre",
-      equipements: ["wifi", "clim", "tv", "minibar", "balneo", "nespresso"],
-    },
-    {
-      id: "5",
-      numero: "204",
-      etage: "1er étage",
-      batiment: "Principal",
-      typeId: "ste-jr",
-      typeNom: "Suite Junior",
-      prixBase: 95000,
-      capaciteAdultes: 2,
-      capaciteEnfants: 1,
-      statutOccupation: "libre",
-      statutMenage: "hors_service",
-      equipements: ["wifi", "clim", "tv", "minibar", "balneo"],
-    },
-    {
-      id: "6",
-      numero: "Villa 1",
-      etage: "Front de Mer",
-      batiment: "Bungalows",
-      typeId: "bung-plage",
-      typeNom: "Bungalow Plage",
-      prixBase: 180000,
-      capaciteAdultes: 4,
-      capaciteEnfants: 2,
-      statutOccupation: "occupee",
-      statutMenage: "propre",
-      equipements: ["wifi", "clim", "tv", "minibar", "piscine_privee", "terrasse"],
-    },
-    {
-      id: "7",
-      numero: "Villa 2",
-      etage: "Front de Mer",
-      batiment: "Bungalows",
-      typeId: "bung-plage",
-      typeNom: "Bungalow Plage",
-      prixBase: 180000,
-      capaciteAdultes: 4,
-      capaciteEnfants: 2,
-      statutOccupation: "libre",
-      statutMenage: "propre",
-      equipements: ["wifi", "clim", "tv", "minibar", "piscine_privee", "terrasse"],
-    },
-    {
-      id: "8",
-      numero: "Lodge 01",
-      etage: "Canopée",
-      batiment: "Éco-Lodge",
-      typeId: "lodge",
-      typeNom: "Tente Lodge Safari",
-      prixBase: 110000,
-      capaciteAdultes: 2,
-      capaciteEnfants: 0,
-      statutOccupation: "libre",
-      statutMenage: "propre",
-      equipements: ["wifi", "ventilateur", "minibar", "terrasse"],
-    },
-  ]);
+  // Chargement storage
+  useEffect(() => {
+    const loaded = loadHotelData<Chambre>("dhotel_chambres", DEFAULT_CHAMBRES);
+    setChambres(loaded.items);
+    setIsExempleFiligrane(loaded.isExempleFiligrane);
+
+    const loadedTypes = loadHotelData<TypeChambre>("dhotel_types_chambres", DEFAULT_TYPES_CHAMBRES);
+    setTypesChambres(loadedTypes.items);
+  }, []);
 
   const handleAjoutChambre = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!nouveauNumero) return;
+    if (!nouveauNumero.trim()) return;
 
     const typeObj = typesChambres.find((t) => t.id === nouveauType) || typesChambres[0];
 
     const nouvelle: Chambre = {
-      id: String(Date.now()),
-      numero: nouveauNumero,
+      id: "ch-" + Date.now(),
+      numero: nouveauNumero.trim(),
       etage: nouvelEtage,
       batiment: nouveauBatiment,
       typeId: typeObj.id,
@@ -261,10 +239,68 @@ export default function ChambresPage() {
       equipements: ["wifi", "clim", "tv", "minibar"],
     };
 
-    setChambres([nouvelle, ...chambres]);
+    // Si on était en filigrane, on bascule sur la liste réelle avec ce premier enregistrement
+    const updated = isExempleFiligrane ? [nouvelle] : [nouvelle, ...chambres];
+    setChambres(updated);
+    setIsExempleFiligrane(false);
+    saveHotelData("dhotel_chambres", updated);
+
     setModalAjoutChambre(false);
     setNouveauNumero("");
     setSuccesMsg(`Chambre ${nouvelle.numero} créée avec succès.`);
+    setTimeout(() => setSuccesMsg(null), 4000);
+  };
+
+  const handleModifierChambre = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!modalModifierChambre) return;
+
+    const updated = chambres.map((ch) =>
+      ch.id === modalModifierChambre.id ? modalModifierChambre : ch
+    );
+    setChambres(updated);
+    setIsExempleFiligrane(false);
+    saveHotelData("dhotel_chambres", updated);
+
+    setModalModifierChambre(null);
+    setSuccesMsg(`Chambre ${modalModifierChambre.numero} modifiée avec succès.`);
+    setTimeout(() => setSuccesMsg(null), 4000);
+  };
+
+  const handleSupprimerChambre = (id: string, numero: string) => {
+    if (!window.confirm(`Confirmez-vous la suppression définitive de la chambre ${numero} ?`)) {
+      return;
+    }
+
+    const updated = chambres.filter((ch) => ch.id !== id);
+    setChambres(updated);
+    setIsExempleFiligrane(false);
+    saveHotelData("dhotel_chambres", updated);
+
+    setSuccesMsg(`Chambre ${numero} supprimée.`);
+    setTimeout(() => setSuccesMsg(null), 3000);
+  };
+
+  const handleViderExemples = () => {
+    if (window.confirm("Voulez-vous vider tous les exemples pour démarrer avec un inventaire vierge ?")) {
+      setChambres([]);
+      setIsExempleFiligrane(false);
+      clearHotelData("dhotel_chambres");
+      setSuccesMsg("Inventaire vidé. Vous pouvez maintenant ajouter vos propres chambres.");
+      setTimeout(() => setSuccesMsg(null), 4000);
+    }
+  };
+
+  const handleConvertirExemples = () => {
+    // Rend les chambres de démo modifiables comme réelles
+    const converted = chambres.map((c, i) => ({
+      ...c,
+      id: "ch-reel-" + (i + 1) + "-" + Date.now(),
+    }));
+    setChambres(converted);
+    setIsExempleFiligrane(false);
+    saveHotelData("dhotel_chambres", converted);
+    setSuccesMsg("Les chambres d'exemple ont été converties en données réelles modifiables.");
     setTimeout(() => setSuccesMsg(null), 4000);
   };
 
@@ -291,20 +327,46 @@ export default function ChambresPage() {
             </h1>
           </div>
           <p className="text-sm text-foreground-muted mt-1">
-            Inventaire de l'hébergement, typologies et tarification multi-saisons
+            Inventaire de l&apos;hébergement, typologies et tarification multi-saisons
           </p>
         </div>
 
         <div className="flex items-center gap-3">
           <button
             onClick={() => setModalAjoutChambre(true)}
-            className="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg bg-[var(--primary)] text-[var(--primary-foreground)] hover:opacity-95 shadow-sm transition"
+            className="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg bg-[var(--primary)] text-white hover:opacity-95 shadow-sm transition cursor-pointer"
           >
             <PlusCircle className="w-4 h-4" />
             Ajouter une Chambre
           </button>
         </div>
       </div>
+
+      {/* Bannière filigrane sans impact */}
+      {isExempleFiligrane && (
+        <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-800 dark:text-amber-300 text-xs sm:text-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
+          <div className="flex items-center gap-2.5">
+            <Sparkles className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0" />
+            <span>
+              <strong>Données d&apos;exemple en filigrane :</strong> Votre établissement ne possède pas encore de chambres enregistrées. Ces {chambres.length} chambres sont affichées à titre d&apos;exemple sans impact. Vous pouvez les modifier, les supprimer ou ajouter vos propres chambres.
+            </span>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              onClick={handleConvertirExemples}
+              className="px-3 py-1.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-900 dark:text-amber-200 text-xs font-bold transition cursor-pointer"
+            >
+              Conserver et Modifier
+            </button>
+            <button
+              onClick={handleViderExemples}
+              className="px-3 py-1.5 rounded-lg border border-amber-500/30 hover:bg-black/5 text-amber-900 dark:text-amber-200 text-xs font-semibold transition cursor-pointer"
+            >
+              Partir de zéro
+            </button>
+          </div>
+        </div>
+      )}
 
       {succesMsg && (
         <div className="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200 text-sm flex items-center gap-3 animate-fade-in">
@@ -317,22 +379,20 @@ export default function ChambresPage() {
       <div className="flex border-b border-surface-border gap-6">
         <button
           onClick={() => setOngletActif("chambres")}
-          className={`pb-3 text-sm font-semibold flex items-center gap-2 border-b-2 transition ${
-            ongletActif === "chambres"
+          className={`pb-3 text-sm font-semibold flex items-center gap-2 border-b-2 transition cursor-pointer ${ongletActif === "chambres"
               ? "border-[var(--primary)] text-[var(--primary)]"
               : "border-transparent text-foreground-muted hover:text-foreground"
-          }`}
+            }`}
         >
           <BedDouble className="w-4 h-4" />
           Inventaire des Chambres ({chambres.length})
         </button>
         <button
           onClick={() => setOngletActif("tarifs")}
-          className={`pb-3 text-sm font-semibold flex items-center gap-2 border-b-2 transition ${
-            ongletActif === "tarifs"
+          className={`pb-3 text-sm font-semibold flex items-center gap-2 border-b-2 transition cursor-pointer ${ongletActif === "tarifs"
               ? "border-[var(--primary)] text-[var(--primary)]"
               : "border-transparent text-foreground-muted hover:text-foreground"
-          }`}
+            }`}
         >
           <SlidersHorizontal className="w-4 h-4" />
           Grille Tarifaire Multi-Saisons ({typesChambres.length} typologies)
@@ -348,69 +408,72 @@ export default function ChambresPage() {
               <Search className="w-4 h-4 absolute left-3 top-3 text-foreground-muted" />
               <input
                 type="text"
-                placeholder="Rechercher par numéro, bâtiment, type..."
+                placeholder="Rechercher par numéro, typologie ou bâtiment..."
                 value={recherche}
                 onChange={(e) => setRecherche(e.target.value)}
-                className="w-full pl-9 pr-4 py-2 text-sm rounded-lg bg-surface border border-surface-border focus:outline-none focus:ring-2 focus:ring-[var(--primary)]/30"
+                className="w-full pl-9 pr-4 py-2 text-sm rounded-lg border border-surface-border bg-surface text-foreground placeholder:text-foreground-muted focus:outline-none focus:ring-1 focus:ring-[var(--primary)]"
               />
             </div>
 
-            <select
-              value={filtreType}
-              onChange={(e) => setFiltreType(e.target.value)}
-              className="px-3 py-2 text-sm rounded-lg bg-surface border border-surface-border text-foreground focus:outline-none"
-            >
-              <option value="tous">Toutes les typologies</option>
-              {typesChambres.map((t) => (
-                <option key={t.id} value={t.id}>
-                  {t.nom}
-                </option>
-              ))}
-            </select>
+            <div className="flex gap-2">
+              <select
+                value={filtreType}
+                onChange={(e) => setFiltreType(e.target.value)}
+                className="px-3 py-2 text-sm rounded-lg border border-surface-border bg-surface text-foreground focus:outline-none"
+              >
+                <option value="tous">Toutes typologies</option>
+                {typesChambres.map((t) => (
+                  <option key={t.id} value={t.id}>
+                    {t.nom}
+                  </option>
+                ))}
+              </select>
 
-            <select
-              value={filtreStatut}
-              onChange={(e) => setFiltreStatut(e.target.value)}
-              className="px-3 py-2 text-sm rounded-lg bg-surface border border-surface-border text-foreground focus:outline-none"
-            >
-              <option value="tous">Tous les statuts</option>
-              <option value="libre">Libre</option>
-              <option value="occupee">Occupée</option>
-              <option value="reservee">Réservée</option>
-            </select>
+              <select
+                value={filtreStatut}
+                onChange={(e) => setFiltreStatut(e.target.value)}
+                className="px-3 py-2 text-sm rounded-lg border border-surface-border bg-surface text-foreground focus:outline-none"
+              >
+                <option value="tous">Tous statuts</option>
+                <option value="libre">Libre</option>
+                <option value="occupee">Occupée</option>
+                <option value="reservee">Réservée</option>
+              </select>
+            </div>
           </div>
 
-          {/* Grille des tuiles de chambres */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {/* Grille des chambres */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {chambresFiltrees.length === 0 ? (
+              <div className="col-span-full p-8 text-center bg-surface border border-surface-border rounded-2xl text-foreground-muted">
+                Aucune chambre ne correspond à vos filtres.
+              </div>
+            ) : null}
+
             {chambresFiltrees.map((chambre) => {
               const estOccupee = chambre.statutOccupation === "occupee";
               const estReservee = chambre.statutOccupation === "reservee";
-              const estLibre = chambre.statutOccupation === "libre";
 
               return (
                 <div
                   key={chambre.id}
-                  className="p-5 rounded-xl bg-surface border border-surface-border hover:shadow-md transition space-y-3 relative overflow-hidden"
-                >
-                  <div
-                    className={`absolute top-0 left-0 right-0 h-1.5 ${
-                      estOccupee
-                        ? "bg-blue-500"
-                        : estReservee
-                        ? "bg-purple-500"
-                        : "bg-emerald-500"
+                  className={`p-4 rounded-xl border border-surface-border bg-surface shadow-xs space-y-3 transition hover:shadow-md ${isExempleFiligrane ? "opacity-75 border-dashed border-amber-500/40" : ""
                     }`}
-                  />
-
+                >
                   <div className="flex items-start justify-between">
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="text-xl font-bold tracking-tight text-foreground">
+                        <span className="text-lg font-bold font-mono text-foreground">
                           {chambre.numero}
                         </span>
                         <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-surface-muted text-foreground-muted">
                           {chambre.batiment} • {chambre.etage}
                         </span>
+                        {isExempleFiligrane && (
+                          <span className="text-[9px] px-1.5 py-0.2 rounded font-bold uppercase bg-amber-500/15 text-amber-700 dark:text-amber-300">
+                            Exemple
+                          </span>
+                        )}
                       </div>
                       <p className="text-sm font-medium text-[var(--accent)] mt-0.5">
                         {chambre.typeNom}
@@ -418,13 +481,12 @@ export default function ChambresPage() {
                     </div>
 
                     <span
-                      className={`text-xs px-2 py-0.5 rounded-full font-semibold capitalize ${
-                        estOccupee
+                      className={`text-xs px-2 py-0.5 rounded-full font-semibold capitalize ${estOccupee
                           ? "bg-blue-100 text-blue-800 dark:bg-blue-950/60 dark:text-blue-300"
                           : estReservee
-                          ? "bg-purple-100 text-purple-800 dark:bg-purple-950/60 dark:text-purple-300"
-                          : "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300"
-                      }`}
+                            ? "bg-purple-100 text-purple-800 dark:bg-purple-950/60 dark:text-purple-300"
+                            : "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300"
+                        }`}
                     >
                       {chambre.statutOccupation}
                     </span>
@@ -436,38 +498,56 @@ export default function ChambresPage() {
                       Ménage :
                     </span>
                     <span
-                      className={`font-medium ${
-                        chambre.statutMenage === "propre"
+                      className={`font-medium ${chambre.statutMenage === "propre"
                           ? "text-emerald-600 dark:text-emerald-400"
                           : chambre.statutMenage === "en_cours"
-                          ? "text-amber-600 dark:text-amber-400"
-                          : "text-rose-600 dark:text-rose-400"
-                      }`}
+                            ? "text-amber-600 dark:text-amber-400"
+                            : "text-rose-600 dark:text-rose-400"
+                        }`}
                     >
                       {chambre.statutMenage === "propre"
-                        ? "✓ Propre / Prête"
+                        ? "✓ Propre"
                         : chambre.statutMenage === "en_cours"
-                        ? "En cours"
-                        : chambre.statutMenage === "hors_service"
-                        ? "Hors Service (Panne)"
-                        : "À nettoyer"}
+                          ? "En cours"
+                          : chambre.statutMenage === "hors_service"
+                            ? "Hors Service"
+                            : "À nettoyer"}
                     </span>
                   </div>
 
                   <div className="flex items-center justify-between pt-1">
-                    <span className="text-xs text-foreground-muted">
-                      Tarif nuitée :
-                    </span>
+                    <span className="text-xs text-foreground-muted">Tarif nuitée :</span>
                     <span className="text-sm font-bold text-foreground">
                       {formatXOF(chambre.prixBase)}
                     </span>
                   </div>
 
-                  <div className="flex items-center gap-1 pt-2 text-foreground-muted">
-                    <Wifi className="w-3.5 h-3.5" />
-                    <Wind className="w-3.5 h-3.5 ml-1" />
-                    <Tv className="w-3.5 h-3.5 ml-1" />
-                    <Coffee className="w-3.5 h-3.5 ml-1" />
+                  {/* Actions Modifier & Supprimer */}
+                  <div className="flex items-center justify-between pt-2 border-t border-surface-border/60">
+                    <div className="flex items-center gap-1 text-foreground-muted">
+                      <Wifi className="w-3.5 h-3.5" />
+                      <Wind className="w-3.5 h-3.5 ml-1" />
+                      <Tv className="w-3.5 h-3.5 ml-1" />
+                    </div>
+
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => setModalModifierChambre(chambre)}
+                        className="px-2 py-1 rounded-md text-xs font-semibold bg-surface-border/60 hover:bg-surface-border text-foreground transition cursor-pointer flex items-center gap-1"
+                      >
+                        <Edit2 className="w-3 h-3" />
+                        <span>Modifier</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleSupprimerChambre(chambre.id, chambre.numero)}
+                        className="p-1 rounded-md text-danger/70 hover:text-danger hover:bg-danger/10 transition cursor-pointer"
+                        title="Supprimer cette chambre"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
                   </div>
                 </div>
               );
@@ -476,189 +556,129 @@ export default function ChambresPage() {
         </div>
       )}
 
-      {/* CONTENU ONGLET 2 : GRILLE TARIFAIRE MULTI-SAISONS */}
+      {/* CONTENU ONGLET 2 : GRILLE TARIFAIRE */}
       {ongletActif === "tarifs" && (
-        <div className="space-y-6">
-          <div className="p-4 rounded-xl bg-surface border border-surface-border">
-            <div className="flex items-center gap-3 mb-2">
-              <Calendar className="w-5 h-5 text-[var(--accent)]" />
-              <h3 className="text-sm font-bold">Calendrier des Périodes Saisonnières</h3>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
-              <div className="p-3 rounded-lg bg-surface-muted/70 border border-surface-border">
-                <span className="font-bold text-amber-600 dark:text-amber-400 block mb-1">
-                  ☀️ Haute Saison (Hivernage & Fêtes)
-                </span>
-                <span className="text-foreground-muted">
-                  01 Nov ➔ 15 Avril & 15 Déc ➔ 05 Jan (+20% à +30% sur le tarif de base)
-                </span>
-              </div>
-              <div className="p-3 rounded-lg bg-surface-muted/70 border border-surface-border">
-                <span className="font-bold text-blue-600 dark:text-blue-400 block mb-1">
-                  🍃 Moyenne Saison (Printemps)
-                </span>
-                <span className="text-foreground-muted">
-                  16 Avril ➔ 30 Juin (Tarif nominal de base de référence)
-                </span>
-              </div>
-              <div className="p-3 rounded-lg bg-surface-muted/70 border border-surface-border">
-                <span className="font-bold text-emerald-600 dark:text-emerald-400 block mb-1">
-                  🌧️ Basse Saison
-                </span>
-                <span className="text-foreground-muted">
-                  01 Juil ➔ 31 Octobre (Offres de relance, -15% à -25%)
-                </span>
-              </div>
-            </div>
-          </div>
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {typesChambres.map((type) => (
+              <div
+                key={type.id}
+                className="p-5 rounded-xl border border-surface-border bg-surface shadow-xs space-y-4"
+              >
+                <div className="flex items-start justify-between">
+                  <div>
+                    <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-primary/10 text-primary">
+                      {type.code}
+                    </span>
+                    <h3 className="text-base font-bold text-foreground mt-1">{type.nom}</h3>
+                    <p className="text-xs text-foreground-muted">{type.capacite}</p>
+                  </div>
+                  <button
+                    onClick={() => setModalTypeTarif(type)}
+                    className="p-1.5 rounded-lg hover:bg-surface-muted text-foreground-muted hover:text-foreground cursor-pointer"
+                  >
+                    <Edit2 className="w-4 h-4" />
+                  </button>
+                </div>
 
-          <div className="bg-surface rounded-xl border border-surface-border overflow-hidden shadow-sm">
-            <div className="p-4 border-b border-surface-border font-bold text-sm">
-              Nomenclature des Typologies & Tarifs par Saison
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-sm">
-                <thead className="bg-surface-muted/60 text-xs font-semibold uppercase text-foreground-muted border-b border-surface-border">
-                  <tr>
-                    <th className="px-4 py-3">Typologie</th>
-                    <th className="px-4 py-3">Capacité</th>
-                    <th className="px-4 py-3">Inventaire</th>
-                    <th className="px-4 py-3 text-right">Basse Saison</th>
-                    <th className="px-4 py-3 text-right">Tarif Base (Moyenne)</th>
-                    <th className="px-4 py-3 text-right">Haute Saison</th>
-                    <th className="px-4 py-3 text-center">Action</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-surface-border">
-                  {typesChambres.map((type) => (
-                    <tr key={type.id} className="hover:bg-surface-muted/30">
-                      <td className="px-4 py-3">
-                        <span className="font-bold block text-foreground">
-                          {type.nom}
-                        </span>
-                        <span className="text-xs text-foreground-muted">
-                          Code: {type.code}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 text-foreground-muted">
-                        {type.capacite}
-                      </td>
-                      <td className="px-4 py-3 font-semibold">
-                        {type.nbTotal} unités
-                      </td>
-                      <td className="px-4 py-3 text-right font-medium text-emerald-600 dark:text-emerald-400">
-                        {formatXOF(type.saisonBasse)}
-                      </td>
-                      <td className="px-4 py-3 text-right font-bold text-foreground">
-                        {formatXOF(type.tarifBase)}
-                      </td>
-                      <td className="px-4 py-3 text-right font-bold text-amber-600 dark:text-amber-400">
-                        {formatXOF(type.saisonHaute)}
-                      </td>
-                      <td className="px-4 py-3 text-center">
-                        <button
-                          onClick={() => setModalTypeTarif(type)}
-                          className="px-3 py-1 text-xs font-medium rounded-lg bg-surface-muted hover:bg-surface-border transition"
-                        >
-                          Modifier
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                <p className="text-xs text-foreground-muted line-clamp-2">{type.description}</p>
+
+                <div className="space-y-1.5 pt-2 border-t border-surface-border text-xs">
+                  <div className="flex justify-between">
+                    <span className="text-foreground-muted">Tarif Base :</span>
+                    <span className="font-bold text-foreground">{formatXOF(type.tarifBase)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-foreground-muted">Saison Haute :</span>
+                    <span className="font-bold text-emerald-600">{formatXOF(type.saisonHaute)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-foreground-muted">Saison Basse :</span>
+                    <span className="font-bold text-amber-600">{formatXOF(type.saisonBasse)}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       )}
 
-      {/* MODAL AJOUT CHAMBRE */}
+      {/* MODALE AJOUT CHAMBRE */}
       {modalAjoutChambre && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-3 sm:p-4 overflow-y-auto">
-          <div className="bg-surface text-foreground rounded-2xl border border-surface-border shadow-2xl max-w-md w-full max-h-[92vh] sm:max-h-[88vh] flex flex-col overflow-hidden animate-scale-up">
-            <div className="p-4 sm:p-5 border-b border-surface-border flex items-center justify-between shrink-0 bg-surface">
-              <h3 className="text-base font-bold text-foreground">Ajouter une nouvelle chambre</h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-xs">
+          <div className="bg-surface border border-surface-border w-full max-w-md rounded-2xl p-5 shadow-2xl space-y-4">
+            <div className="flex justify-between items-center pb-2 border-b border-surface-border">
+              <h3 className="text-lg font-bold text-foreground">Ajouter une Chambre</h3>
               <button
-                type="button"
                 onClick={() => setModalAjoutChambre(false)}
-                className="p-1.5 rounded-lg text-foreground-muted hover:text-foreground hover:bg-surface-muted transition"
+                className="p-1 rounded-md text-foreground-muted hover:text-foreground"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <form onSubmit={handleAjoutChambre} className="flex flex-col flex-1 overflow-hidden">
-              <div className="p-4 sm:p-5 overflow-y-auto flex-1 space-y-3.5 text-xs">
+            <form onSubmit={handleAjoutChambre} className="space-y-3 text-xs sm:text-sm">
+              <div>
+                <label className="block font-medium mb-1 text-foreground">Numéro de chambre *</label>
+                <input
+                  type="text"
+                  placeholder="ex: 104, 301, VILLA-1"
+                  value={nouveauNumero}
+                  onChange={(e) => setNouveauNumero(e.target.value)}
+                  required
+                  className="w-full px-3 py-2 rounded-lg border border-surface-border bg-background text-foreground"
+                />
+              </div>
+
+              <div>
+                <label className="block font-medium mb-1 text-foreground">Typologie</label>
+                <select
+                  value={nouveauType}
+                  onChange={(e) => setNouveauType(e.target.value)}
+                  className="w-full px-3 py-2 rounded-lg border border-surface-border bg-background text-foreground"
+                >
+                  {typesChambres.map((t) => (
+                    <option key={t.id} value={t.id}>
+                      {t.nom} ({formatXOF(t.tarifBase)})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="text-xs font-semibold text-foreground block mb-1.5">
-                    Numéro ou Nom de la Chambre / Villa <span className="text-danger">*</span>
-                  </label>
+                  <label className="block font-medium mb-1 text-foreground">Étage</label>
                   <input
                     type="text"
-                    placeholder="ex: 104, Suite 302, Villa 5"
-                    required
-                    value={nouveauNumero}
-                    onChange={(e) => setNouveauNumero(e.target.value)}
-                    className="w-full px-3 py-2 text-xs sm:text-sm rounded-xl bg-background text-foreground placeholder:text-foreground-muted/60 border border-surface-border focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                    value={nouvelEtage}
+                    onChange={(e) => setNouvelEtage(e.target.value)}
+                    className="w-full px-3 py-2 rounded-lg border border-surface-border bg-background text-foreground"
                   />
                 </div>
-
                 <div>
-                  <label className="text-xs font-semibold text-foreground block mb-1.5">
-                    Typologie d&apos;Hébergement <span className="text-danger">*</span>
-                  </label>
-                  <select
-                    value={nouveauType}
-                    onChange={(e) => setNouveauType(e.target.value)}
-                    className="w-full px-2.5 py-2 text-xs sm:text-sm rounded-xl bg-background text-foreground border border-surface-border focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
-                  >
-                    {typesChambres.map((t) => (
-                      <option key={t.id} value={t.id}>
-                        {t.nom} ({formatXOF(t.tarifBase)}/nuit)
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="text-xs font-semibold text-foreground block mb-1.5">
-                      Bâtiment / Aile
-                    </label>
-                    <input
-                      type="text"
-                      value={nouveauBatiment}
-                      onChange={(e) => setNouveauBatiment(e.target.value)}
-                      className="w-full px-3 py-2 text-xs sm:text-sm rounded-xl bg-background text-foreground border border-surface-border focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-xs font-semibold text-foreground block mb-1.5">
-                      Étage / Emplacement
-                    </label>
-                    <input
-                      type="text"
-                      value={nouvelEtage}
-                      onChange={(e) => setNouvelEtage(e.target.value)}
-                      className="w-full px-3 py-2 text-xs sm:text-sm rounded-xl bg-background text-foreground border border-surface-border focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
-                    />
-                  </div>
+                  <label className="block font-medium mb-1 text-foreground">Bâtiment</label>
+                  <input
+                    type="text"
+                    value={nouveauBatiment}
+                    onChange={(e) => setNouveauBatiment(e.target.value)}
+                    className="w-full px-3 py-2 rounded-lg border border-surface-border bg-background text-foreground"
+                  />
                 </div>
               </div>
 
-              <div className="p-4 sm:p-5 border-t border-surface-border shrink-0 flex items-center justify-end gap-3 bg-surface">
+              <div className="flex justify-end gap-2 pt-3 border-t border-surface-border">
                 <button
                   type="button"
                   onClick={() => setModalAjoutChambre(false)}
-                  className="px-4 py-2 text-xs sm:text-sm font-semibold rounded-xl text-foreground-muted hover:text-foreground hover:bg-surface-muted transition"
+                  className="px-4 py-2 rounded-lg border border-surface-border text-foreground hover:bg-black/5"
                 >
                   Annuler
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2.5 text-xs sm:text-sm font-bold rounded-xl bg-[var(--primary)] text-[var(--primary-foreground)] shadow-sm hover:opacity-95 transition"
+                  className="px-4 py-2 rounded-lg bg-[var(--primary)] text-white font-bold hover:opacity-95"
                 >
-                  Créer la Chambre
+                  Enregistrer
                 </button>
               </div>
             </form>
@@ -666,78 +686,129 @@ export default function ChambresPage() {
         </div>
       )}
 
-      {/* MODAL MODIFIER TARIF TYPOLOGIE */}
-      {modalTypeTarif && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-3 sm:p-4 overflow-y-auto">
-          <div className="bg-surface text-foreground rounded-2xl border border-surface-border shadow-2xl max-w-md w-full max-h-[92vh] sm:max-h-[88vh] flex flex-col overflow-hidden animate-scale-up">
-            <div className="p-4 sm:p-5 border-b border-surface-border flex items-center justify-between shrink-0 bg-surface">
-              <h3 className="text-base font-bold text-foreground">
-                Modifier la tarification : {modalTypeTarif.nom}
+      {/* MODALE MODIFICATION CHAMBRE */}
+      {modalModifierChambre && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-xs">
+          <div className="bg-surface border border-surface-border w-full max-w-md rounded-2xl p-5 shadow-2xl space-y-4">
+            <div className="flex justify-between items-center pb-2 border-b border-surface-border">
+              <h3 className="text-lg font-bold text-foreground">
+                Modifier Chambre N° {modalModifierChambre.numero}
               </h3>
               <button
-                type="button"
-                onClick={() => setModalTypeTarif(null)}
-                className="p-1.5 rounded-lg text-foreground-muted hover:text-foreground hover:bg-surface-muted transition"
+                onClick={() => setModalModifierChambre(null)}
+                className="p-1 rounded-md text-foreground-muted hover:text-foreground"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="p-4 sm:p-5 overflow-y-auto flex-1 space-y-3.5 text-xs">
+            <form onSubmit={handleModifierChambre} className="space-y-3 text-xs sm:text-sm">
               <div>
-                <label className="text-xs font-semibold text-foreground block mb-1.5">
-                  Tarif Moyen de Base (FCFA)
-                </label>
+                <label className="block font-medium mb-1 text-foreground">Numéro de chambre *</label>
                 <input
-                  type="number"
-                  defaultValue={modalTypeTarif.tarifBase}
-                  className="w-full px-3 py-2 text-xs sm:text-sm rounded-xl bg-background text-foreground border border-surface-border focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                  type="text"
+                  value={modalModifierChambre.numero}
+                  onChange={(e) =>
+                    setModalModifierChambre({ ...modalModifierChambre, numero: e.target.value })
+                  }
+                  required
+                  className="w-full px-3 py-2 rounded-lg border border-surface-border bg-background text-foreground"
                 />
               </div>
-              <div className="grid grid-cols-2 gap-3">
+
+              <div>
+                <label className="block font-medium mb-1 text-foreground">Typologie</label>
+                <select
+                  value={modalModifierChambre.typeId}
+                  onChange={(e) => {
+                    const sel = typesChambres.find((t) => t.id === e.target.value);
+                    setModalModifierChambre({
+                      ...modalModifierChambre,
+                      typeId: e.target.value,
+                      typeNom: sel?.nom || modalModifierChambre.typeNom,
+                      prixBase: sel?.tarifBase || modalModifierChambre.prixBase,
+                    });
+                  }}
+                  className="w-full px-3 py-2 rounded-lg border border-surface-border bg-background text-foreground"
+                >
+                  {typesChambres.map((t) => (
+                    <option key={t.id} value={t.id}>
+                      {t.nom}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="text-xs font-semibold text-foreground block mb-1.5">
-                    Basse Saison (FCFA)
-                  </label>
-                  <input
-                    type="number"
-                    defaultValue={modalTypeTarif.saisonBasse}
-                    className="w-full px-3 py-2 text-xs sm:text-sm rounded-xl bg-background text-foreground border border-surface-border focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
-                  />
+                  <label className="block font-medium mb-1 text-foreground">Statut Occupation</label>
+                  <select
+                    value={modalModifierChambre.statutOccupation}
+                    onChange={(e: any) =>
+                      setModalModifierChambre({
+                        ...modalModifierChambre,
+                        statutOccupation: e.target.value,
+                      })
+                    }
+                    className="w-full px-3 py-2 rounded-lg border border-surface-border bg-background text-foreground"
+                  >
+                    <option value="libre">Libre</option>
+                    <option value="occupee">Occupée</option>
+                    <option value="reservee">Réservée</option>
+                  </select>
                 </div>
                 <div>
-                  <label className="text-xs font-semibold text-foreground block mb-1.5">
-                    Haute Saison (FCFA)
-                  </label>
-                  <input
-                    type="number"
-                    defaultValue={modalTypeTarif.saisonHaute}
-                    className="w-full px-3 py-2 text-xs sm:text-sm rounded-xl bg-background text-foreground border border-surface-border focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
-                  />
+                  <label className="block font-medium mb-1 text-foreground">Statut Ménage</label>
+                  <select
+                    value={modalModifierChambre.statutMenage}
+                    onChange={(e: any) =>
+                      setModalModifierChambre({
+                        ...modalModifierChambre,
+                        statutMenage: e.target.value,
+                      })
+                    }
+                    className="w-full px-3 py-2 rounded-lg border border-surface-border bg-background text-foreground"
+                  >
+                    <option value="propre">Propre / Prête</option>
+                    <option value="en_cours">En cours</option>
+                    <option value="a_nettoyer">À nettoyer</option>
+                    <option value="hors_service">Hors service</option>
+                  </select>
                 </div>
               </div>
-            </div>
 
-            <div className="p-4 sm:p-5 border-t border-surface-border shrink-0 flex items-center justify-end gap-3 bg-surface">
-              <button
-                type="button"
-                onClick={() => setModalTypeTarif(null)}
-                className="px-4 py-2 text-xs sm:text-sm font-semibold rounded-xl text-foreground-muted hover:text-foreground hover:bg-surface-muted transition"
-              >
-                Fermer
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setSuccesMsg("Grille tarifaire actualisée.");
-                  setModalTypeTarif(null);
-                  setTimeout(() => setSuccesMsg(null), 3000);
-                }}
-                className="px-5 py-2.5 text-xs sm:text-sm font-bold rounded-xl bg-[var(--primary)] text-[var(--primary-foreground)] shadow-sm hover:opacity-95 transition"
-              >
-                Enregistrer les Tarifs
-              </button>
-            </div>
+              <div>
+                <label className="block font-medium mb-1 text-foreground">Tarif Nuitée (FCFA)</label>
+                <input
+                  type="number"
+                  min="0"
+                  value={modalModifierChambre.prixBase}
+                  onChange={(e) =>
+                    setModalModifierChambre({
+                      ...modalModifierChambre,
+                      prixBase: Number(e.target.value),
+                    })
+                  }
+                  className="w-full px-3 py-2 rounded-lg border border-surface-border bg-background text-foreground"
+                />
+              </div>
+
+              <div className="flex justify-end gap-2 pt-3 border-t border-surface-border">
+                <button
+                  type="button"
+                  onClick={() => setModalModifierChambre(null)}
+                  className="px-4 py-2 rounded-lg border border-surface-border text-foreground hover:bg-black/5"
+                >
+                  Annuler
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 rounded-lg bg-[var(--primary)] text-white font-bold hover:opacity-95"
+                >
+                  Sauvegarder
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

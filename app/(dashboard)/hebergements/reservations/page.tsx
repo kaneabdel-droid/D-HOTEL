@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   Hotel,
@@ -18,8 +18,12 @@ import {
   CreditCard,
   Ban,
   X,
+  Edit2,
+  Trash2,
+  Sparkles,
 } from "lucide-react";
 import { formatXOF } from "@/lib/utils";
+import { loadHotelData, saveHotelData, clearHotelData } from "@/lib/hotel-storage";
 
 interface Reservation {
   id: string;
@@ -38,10 +42,94 @@ interface Reservation {
   modePaiement: string;
 }
 
+const DEFAULT_RESERVATIONS: Reservation[] = [
+  {
+    id: "res-demo-1",
+    code: "RES-EX-00421",
+    client: "M. Ibrahima Diop",
+    telephone: "+221 77 450 12 34",
+    chambre: "Chambre 101",
+    typeChambre: "Chambre Standard",
+    dateArrivee: "2026-10-24",
+    dateDepart: "2026-10-27",
+    nuits: 3,
+    personnes: "2 adultes",
+    montantTotal: 135000,
+    acompteVerse: 135000,
+    statut: "check_in",
+    modePaiement: "Wave Mobile Money",
+  },
+  {
+    id: "res-demo-2",
+    code: "RES-EX-00422",
+    client: "Mme Awa Sarr",
+    telephone: "+221 78 123 99 88",
+    chambre: "Chambre 102",
+    typeChambre: "Chambre Standard",
+    dateArrivee: "2026-10-26",
+    dateDepart: "2026-10-29",
+    nuits: 3,
+    personnes: "1 adulte",
+    montantTotal: 135000,
+    acompteVerse: 50000,
+    statut: "confirmee",
+    modePaiement: "Orange Money",
+  },
+  {
+    id: "res-demo-3",
+    code: "RES-EX-00423",
+    client: "Dr. K. Ndiaye",
+    telephone: "+221 76 888 45 12",
+    chambre: "Chambre 103",
+    typeChambre: "Chambre Deluxe",
+    dateArrivee: "2026-10-24",
+    dateDepart: "2026-10-25",
+    nuits: 1,
+    personnes: "1 adulte",
+    montantTotal: 65000,
+    acompteVerse: 0,
+    statut: "check_in",
+    modePaiement: "Facture Entreprise",
+  },
+  {
+    id: "res-demo-4",
+    code: "RES-EX-00424",
+    client: "M. & Mme Moreau",
+    telephone: "+33 6 12 34 56 78",
+    chambre: "Suite Junior 201",
+    typeChambre: "Suite Junior",
+    dateArrivee: "2026-10-24",
+    dateDepart: "2026-10-28",
+    nuits: 4,
+    personnes: "2 adultes",
+    montantTotal: 380000,
+    acompteVerse: 190000,
+    statut: "check_in",
+    modePaiement: "Carte Bancaire Visa",
+  },
+  {
+    id: "res-demo-5",
+    code: "RES-EX-00425",
+    client: "Délégation PNUD (VIP)",
+    telephone: "+221 33 800 00 00",
+    chambre: "Suite Exécutive 202",
+    typeChambre: "Suite Exécutive",
+    dateArrivee: "2026-10-25",
+    dateDepart: "2026-10-30",
+    nuits: 5,
+    personnes: "3 adultes",
+    montantTotal: 675000,
+    acompteVerse: 675000,
+    statut: "confirmee",
+    modePaiement: "Virement Bancaire",
+  },
+];
+
 export default function ReservationsPage() {
   const [recherche, setRecherche] = useState("");
   const [filtreStatut, setFiltreStatut] = useState("tous");
   const [modalCreation, setModalCreation] = useState(false);
+  const [modalModifierReservation, setModalModifierReservation] = useState<Reservation | null>(null);
   const [succesMsg, setSuccesMsg] = useState<string | null>(null);
   const [reservationDetails, setReservationDetails] = useState<Reservation | null>(null);
 
@@ -54,96 +142,25 @@ export default function ReservationsPage() {
   const [nouveauRegime, setNouveauRegime] = useState("BB");
   const [nouvelAcompte, setNouvelAcompte] = useState("50000");
 
-  const [reservations, setReservations] = useState<Reservation[]>([
-    {
-      id: "1",
-      code: "RES-2026-00421",
-      client: "M. Ibrahima Diop",
-      telephone: "+221 77 450 12 34",
-      chambre: "Chambre 101",
-      typeChambre: "Chambre Standard",
-      dateArrivee: "2026-10-24",
-      dateDepart: "2026-10-27",
-      nuits: 3,
-      personnes: "2 adultes",
-      montantTotal: 135000,
-      acompteVerse: 135000,
-      statut: "check_in",
-      modePaiement: "Wave Mobile Money",
-    },
-    {
-      id: "2",
-      code: "RES-2026-00422",
-      client: "Mme Awa Sarr",
-      telephone: "+221 78 123 99 88",
-      chambre: "Chambre 102",
-      typeChambre: "Chambre Standard",
-      dateArrivee: "2026-10-26",
-      dateDepart: "2026-10-29",
-      nuits: 3,
-      personnes: "1 adulte",
-      montantTotal: 135000,
-      acompteVerse: 50000,
-      statut: "confirmee",
-      modePaiement: "Orange Money",
-    },
-    {
-      id: "3",
-      code: "RES-2026-00423",
-      client: "Dr. K. Ndiaye",
-      telephone: "+221 76 888 45 12",
-      chambre: "Chambre 103",
-      typeChambre: "Chambre Deluxe",
-      dateArrivee: "2026-10-24",
-      dateDepart: "2026-10-25",
-      nuits: 1,
-      personnes: "1 adulte",
-      montantTotal: 65000,
-      acompteVerse: 0,
-      statut: "check_in",
-      modePaiement: "Facture Entreprise",
-    },
-    {
-      id: "4",
-      code: "RES-2026-00424",
-      client: "M. & Mme Moreau",
-      telephone: "+33 6 12 34 56 78",
-      chambre: "Suite Junior 201",
-      typeChambre: "Suite Junior",
-      dateArrivee: "2026-10-24",
-      dateDepart: "2026-10-28",
-      nuits: 4,
-      personnes: "2 adultes",
-      montantTotal: 380000,
-      acompteVerse: 190000,
-      statut: "check_in",
-      modePaiement: "Carte Bancaire Visa",
-    },
-    {
-      id: "5",
-      code: "RES-2026-00425",
-      client: "Délégation PNUD (VIP)",
-      telephone: "+221 33 800 00 00",
-      chambre: "Suite Exécutive 202",
-      typeChambre: "Suite Exécutive",
-      dateArrivee: "2026-10-25",
-      dateDepart: "2026-10-30",
-      nuits: 5,
-      personnes: "3 adultes",
-      montantTotal: 675000,
-      acompteVerse: 675000,
-      statut: "confirmee",
-      modePaiement: "Virement Bancaire",
-    },
-  ]);
+  // Données persistantes
+  const [reservations, setReservations] = useState<Reservation[]>(DEFAULT_RESERVATIONS);
+  const [isExempleFiligrane, setIsExempleFiligrane] = useState(true);
+
+  useEffect(() => {
+    const loaded = loadHotelData<Reservation>("dhotel_reservations", DEFAULT_RESERVATIONS);
+    setReservations(loaded.items);
+    setIsExempleFiligrane(loaded.isExempleFiligrane);
+  }, []);
 
   function handleCreerReservation(e: React.FormEvent) {
     e.preventDefault();
+    if (!nouveauClient.trim()) return;
+
     const nouvelle: Reservation = {
-      id: Date.now().toString(),
+      id: "res-" + Date.now(),
       code: `RES-2026-${Math.floor(1000 + Math.random() * 9000)}`,
-      client: nouveauClient,
-      telephone: nouveauTel,
+      client: nouveauClient.trim(),
+      telephone: nouveauTel.trim(),
       chambre: `Chambre ${nouvelleChambre}`,
       typeChambre: "Chambre Standard",
       dateArrivee: nouvelleArrivee,
@@ -156,10 +173,68 @@ export default function ReservationsPage() {
       modePaiement: "Lien Maketou (Wave / Orange)",
     };
 
-    setReservations((prev) => [nouvelle, ...prev]);
+    const updated = isExempleFiligrane ? [nouvelle] : [nouvelle, ...reservations];
+    setReservations(updated);
+    setIsExempleFiligrane(false);
+    saveHotelData("dhotel_reservations", updated);
+
     setModalCreation(false);
+    setNouveauClient("");
+    setNouveauTel("");
     setSuccesMsg(`Réservation ${nouvelle.code} créée avec succès pour ${nouvelle.client} !`);
+    setTimeout(() => setSuccesMsg(null), 3500);
+  }
+
+  function handleModifierReservation(e: React.FormEvent) {
+    e.preventDefault();
+    if (!modalModifierReservation) return;
+
+    const updated = reservations.map((r) =>
+      r.id === modalModifierReservation.id ? modalModifierReservation : r
+    );
+    setReservations(updated);
+    setIsExempleFiligrane(false);
+    saveHotelData("dhotel_reservations", updated);
+
+    setModalModifierReservation(null);
+    setSuccesMsg(`Réservation ${modalModifierReservation.code} mise à jour avec succès.`);
+    setTimeout(() => setSuccesMsg(null), 3500);
+  }
+
+  function handleSupprimerReservation(id: string, code: string) {
+    if (!window.confirm(`Confirmez-vous la suppression de la réservation ${code} ?`)) {
+      return;
+    }
+
+    const updated = reservations.filter((r) => r.id !== id);
+    setReservations(updated);
+    setIsExempleFiligrane(false);
+    saveHotelData("dhotel_reservations", updated);
+
+    setSuccesMsg(`Réservation ${code} supprimée.`);
     setTimeout(() => setSuccesMsg(null), 3000);
+  }
+
+  function handleViderExemples() {
+    if (window.confirm("Voulez-vous vider tous les exemples de réservations pour partir de zéro ?")) {
+      setReservations([]);
+      setIsExempleFiligrane(false);
+      clearHotelData("dhotel_reservations");
+      setSuccesMsg("Liste des réservations vidée. Vous pouvez créer votre première réservation réelle.");
+      setTimeout(() => setSuccesMsg(null), 4000);
+    }
+  }
+
+  function handleConvertirExemples() {
+    const converted = reservations.map((r, idx) => ({
+      ...r,
+      id: "res-reel-" + (idx + 1) + "-" + Date.now(),
+    }));
+    setReservations(converted);
+    setIsExempleFiligrane(false);
+    saveHotelData("dhotel_reservations", converted);
+    setSuccesMsg("Les réservations d'exemple ont été converties en données réelles modifiables.");
+    setTimeout(() => setSuccesMsg(null), 4000);
   }
 
   const reservationsFiltrees = reservations.filter((r) => {
@@ -193,17 +268,42 @@ export default function ReservationsPage() {
           >
             <span>Voir le Rack Gantt</span>
           </Link>
-
           <button
             type="button"
             onClick={() => setModalCreation(true)}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-[var(--primary)] hover:bg-[var(--primary-hover)] text-white text-xs font-semibold shadow-xs"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-[var(--primary)] hover:bg-[var(--primary-hover)] text-white text-xs font-semibold shadow-xs cursor-pointer"
           >
             <PlusCircle className="w-4 h-4" />
             <span>Créer une Réservation</span>
           </button>
         </div>
       </div>
+
+      {/* Bannière filigrane sans impact */}
+      {isExempleFiligrane && (
+        <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-800 dark:text-amber-300 text-xs sm:text-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
+          <div className="flex items-center gap-2.5">
+            <Sparkles className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0" />
+            <span>
+              <strong>Réservations d&apos;exemple en filigrane :</strong> Votre établissement ne possède pas encore de réservations enregistrées. Ces {reservations.length} dossiers sont affichés à titre indicatif et sans impact. Vous pouvez les modifier, les supprimer ou ajouter vos propres réservations.
+            </span>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              onClick={handleConvertirExemples}
+              className="px-3 py-1.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-900 dark:text-amber-200 text-xs font-bold transition cursor-pointer"
+            >
+              Conserver et Modifier
+            </button>
+            <button
+              onClick={handleViderExemples}
+              className="px-3 py-1.5 rounded-lg border border-amber-500/30 hover:bg-black/5 text-amber-900 dark:text-amber-200 text-xs font-semibold transition cursor-pointer"
+            >
+              Partir de zéro
+            </button>
+          </div>
+        </div>
+      )}
 
       {succesMsg && (
         <div className="p-3 bg-[#10B981]/15 border border-[#10B981] rounded-xl text-center text-xs font-bold text-[#10B981] flex items-center justify-center gap-2">
@@ -258,12 +358,34 @@ export default function ReservationsPage() {
             </tr>
           </thead>
           <tbody className="divide-y divide-[var(--surface-border)]">
+            {reservationsFiltrees.length === 0 ? (
+              <tr>
+                <td colSpan={8} className="p-8 text-center text-foreground-muted">
+                  Aucune réservation enregistrée.
+                </td>
+              </tr>
+            ) : null}
+
             {reservationsFiltrees.map((r) => {
               const soldeDu = r.montantTotal - r.acompteVerse;
               return (
-                <tr key={r.id} className="hover:bg-[var(--surface-muted)]/50 transition-colors">
+                <tr
+                  key={r.id}
+                  className={`transition-colors ${
+                    isExempleFiligrane
+                      ? "opacity-75 bg-amber-500/5 hover:bg-amber-500/10"
+                      : "hover:bg-[var(--surface-muted)]/50"
+                  }`}
+                >
                   <td className="p-3">
-                    <span className="font-bold text-[var(--primary)]">{r.code}</span>
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-bold text-[var(--primary)]">{r.code}</span>
+                      {isExempleFiligrane && (
+                        <span className="text-[9px] px-1.5 py-0.2 rounded font-bold uppercase bg-amber-500/15 text-amber-700 dark:text-amber-300">
+                          Exemple
+                        </span>
+                      )}
+                    </div>
                     <p className="text-[10px] text-[var(--foreground-muted)]">
                       {r.modePaiement}
                     </p>
@@ -330,10 +452,19 @@ export default function ReservationsPage() {
                       </button>
                       <button
                         type="button"
-                        onClick={() => setReservationDetails(r)}
-                        className="px-2 py-1 rounded-md bg-[var(--primary)] hover:bg-[var(--primary-hover)] text-white text-[11px] font-medium cursor-pointer"
+                        onClick={() => setModalModifierReservation(r)}
+                        className="px-2 py-1 rounded-md text-xs font-semibold bg-surface-border/60 hover:bg-surface-border text-foreground transition cursor-pointer flex items-center gap-1"
                       >
-                        Détails
+                        <Edit2 className="w-3 h-3" />
+                        <span>Modifier</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleSupprimerReservation(r.id, r.code)}
+                        className="p-1 rounded-md text-danger/70 hover:text-danger hover:bg-danger/10 transition cursor-pointer"
+                        title="Supprimer cette réservation"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
                       </button>
                     </div>
                   </td>
@@ -348,141 +479,101 @@ export default function ReservationsPage() {
       {modalCreation && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm overflow-y-auto">
           <div className="w-full max-w-lg bg-surface text-foreground border border-surface-border rounded-2xl shadow-2xl max-h-[92vh] sm:max-h-[88vh] flex flex-col overflow-hidden animate-scale-up">
-            <div className="p-4 sm:p-5 border-b border-surface-border flex items-center justify-between shrink-0 bg-surface">
-              <div>
-                <h3 className="text-base font-bold text-foreground flex items-center gap-2">
-                  <Hotel className="w-5 h-5 text-[#D4AF37]" />
-                  <span>Enregistrer une Nouvelle Réservation</span>
-                </h3>
-                <p className="text-xs text-foreground-muted">
-                  Chambre réservée avec verrou anti-collision immédiat
-                </p>
+            <div className="p-4 sm:p-5 border-b border-surface-border flex items-center justify-between bg-surface shrink-0">
+              <div className="flex items-center gap-2">
+                <Calendar className="w-5 h-5 text-primary" />
+                <h3 className="text-base sm:text-lg font-bold">Nouvelle Réservation Client</h3>
               </div>
               <button
                 type="button"
                 onClick={() => setModalCreation(false)}
-                className="p-1.5 rounded-lg text-foreground-muted hover:text-foreground hover:bg-surface-muted transition"
+                className="p-1 rounded-lg hover:bg-surface-muted text-foreground-muted hover:text-foreground cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <form onSubmit={handleCreerReservation} className="flex flex-col flex-1 overflow-hidden">
-              <div className="p-4 sm:p-5 overflow-y-auto flex-1 space-y-3.5 text-xs">
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block font-semibold text-foreground mb-1">Nom Complet du Client <span className="text-danger">*</span></label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="Ex: M. Oumar Ba"
-                      value={nouveauClient}
-                      onChange={(e) => setNouveauClient(e.target.value)}
-                      className="w-full px-3 py-2 text-xs sm:text-sm rounded-xl bg-background text-foreground placeholder:text-foreground-muted/60 border border-surface-border focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
-                    />
-                  </div>
-                  <div>
-                    <label className="block font-semibold text-foreground mb-1">Téléphone (WhatsApp) <span className="text-danger">*</span></label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="+221 77 000 00 00"
-                      value={nouveauTel}
-                      onChange={(e) => setNouveauTel(e.target.value)}
-                      className="w-full px-3 py-2 text-xs sm:text-sm rounded-xl bg-background text-foreground placeholder:text-foreground-muted/60 border border-surface-border focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
-                    />
-                  </div>
-                </div>
+            <form onSubmit={handleCreerReservation} className="p-4 sm:p-5 overflow-y-auto space-y-4 text-xs sm:text-sm">
+              <div>
+                <label className="block font-medium mb-1">Nom et Prénom du Client *</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="ex: M. Abdoulaye Ndiaye"
+                  value={nouveauClient}
+                  onChange={(e) => setNouveauClient(e.target.value)}
+                  className="w-full px-3 py-2 rounded-xl border border-surface-border bg-background focus:outline-hidden focus:ring-1 focus:ring-primary"
+                />
+              </div>
 
-                <div className="grid grid-cols-3 gap-3">
-                  <div>
-                    <label className="block font-semibold text-foreground mb-1">Chambre</label>
-                    <select
-                      value={nouvelleChambre}
-                      onChange={(e) => setNouvelleChambre(e.target.value)}
-                      className="w-full px-2.5 py-2 text-xs sm:text-sm rounded-xl bg-background text-foreground border border-surface-border focus:outline-none focus:ring-2 focus:ring-[var(--primary)] font-semibold"
-                    >
-                      <option value="101">101 - Standard (45 000)</option>
-                      <option value="102">102 - Standard (45 000)</option>
-                      <option value="103">103 - Deluxe (65 000)</option>
-                      <option value="201">201 - Suite Junior (95 000)</option>
-                      <option value="B01">Villa 1 - Bungalow (180 000)</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block font-semibold text-foreground mb-1">Date d&apos;Arrivée <span className="text-danger">*</span></label>
-                    <input
-                      type="date"
-                      required
-                      value={nouvelleArrivee}
-                      onChange={(e) => setNouvelleArrivee(e.target.value)}
-                      className="w-full px-3 py-2 text-xs sm:text-sm rounded-xl bg-background text-foreground border border-surface-border focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
-                    />
-                  </div>
-                  <div>
-                    <label className="block font-semibold text-foreground mb-1">Date de Départ <span className="text-danger">*</span></label>
-                    <input
-                      type="date"
-                      required
-                      value={nouveauDepart}
-                      onChange={(e) => setNouveauDepart(e.target.value)}
-                      className="w-full px-3 py-2 text-xs sm:text-sm rounded-xl bg-background text-foreground border border-surface-border focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
-                    />
-                  </div>
-                </div>
+              <div>
+                <label className="block font-medium mb-1">Téléphone / WhatsApp *</label>
+                <input
+                  type="tel"
+                  required
+                  placeholder="+221 77 000 00 00"
+                  value={nouveauTel}
+                  onChange={(e) => setNouveauTel(e.target.value)}
+                  className="w-full px-3 py-2 rounded-xl border border-surface-border bg-background focus:outline-hidden focus:ring-1 focus:ring-primary"
+                />
+              </div>
 
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block font-semibold text-foreground mb-1">Formule / Régime</label>
-                    <select
-                      value={nouveauRegime}
-                      onChange={(e) => setNouveauRegime(e.target.value)}
-                      className="w-full px-2.5 py-2 text-xs sm:text-sm rounded-xl bg-background text-foreground border border-surface-border focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
-                    >
-                      <option value="RO">Logement Seul (RO)</option>
-                      <option value="BB">Petit-Déjeuner Inclus (BB)</option>
-                      <option value="HB">Demi-Pension (HB)</option>
-                      <option value="FB">Pension Complète (FB)</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block font-semibold text-foreground mb-1">Acompte à Exiger (FCFA)</label>
-                    <input
-                      type="number"
-                      value={nouvelAcompte}
-                      onChange={(e) => setNouvelAcompte(e.target.value)}
-                      className="w-full px-3 py-2 text-xs sm:text-sm rounded-xl bg-background text-emerald-600 dark:text-emerald-400 font-bold border border-surface-border focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
-                    />
-                  </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-medium mb-1">Chambre</label>
+                  <input
+                    type="text"
+                    value={nouvelleChambre}
+                    onChange={(e) => setNouvelleChambre(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl border border-surface-border bg-background"
+                  />
                 </div>
-
-                {/* Option d'envoi du lien Maketou */}
-                <div className="p-3.5 rounded-xl bg-background border border-surface-border flex items-center justify-between">
-                  <div>
-                    <p className="font-bold text-foreground">
-                      Générer un Lien de Paiement Maketou
-                    </p>
-                    <p className="text-[11px] text-foreground-muted">
-                      Permet au client de payer son acompte par Wave / Orange Money / Carte
-                    </p>
-                  </div>
-                  <Smartphone className="w-5 h-5 text-[#3B82F6] shrink-0" />
+                <div>
+                  <label className="block font-medium mb-1">Acompte (FCFA)</label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={nouvelAcompte}
+                    onChange={(e) => setNouvelAcompte(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl border border-surface-border bg-background"
+                  />
                 </div>
               </div>
 
-              <div className="p-4 sm:p-5 border-t border-surface-border shrink-0 flex items-center justify-end gap-3 bg-surface">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-medium mb-1">Date Arrivée</label>
+                  <input
+                    type="date"
+                    value={nouvelleArrivee}
+                    onChange={(e) => setNouvelleArrivee(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl border border-surface-border bg-background"
+                  />
+                </div>
+                <div>
+                  <label className="block font-medium mb-1">Date Départ</label>
+                  <input
+                    type="date"
+                    value={nouveauDepart}
+                    onChange={(e) => setNouveauDepart(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl border border-surface-border bg-background"
+                  />
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-2 pt-3 border-t border-surface-border">
                 <button
                   type="button"
                   onClick={() => setModalCreation(false)}
-                  className="px-4 py-2 text-xs sm:text-sm font-semibold rounded-xl text-foreground-muted hover:text-foreground hover:bg-surface-muted transition"
+                  className="px-4 py-2 rounded-xl border border-surface-border text-foreground hover:bg-black/5"
                 >
                   Annuler
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2.5 text-xs sm:text-sm font-bold rounded-xl bg-[var(--primary)] hover:opacity-95 text-white shadow-xs transition"
+                  className="px-4 py-2 rounded-xl bg-primary text-white font-bold hover:opacity-95"
                 >
-                  Confirmer la Réservation
+                  Enregistrer
                 </button>
               </div>
             </form>
@@ -490,28 +581,172 @@ export default function ReservationsPage() {
         </div>
       )}
 
-      {/* ── MODALE DÉTAILS / FOLIO CLIENT ── */}
-      {reservationDetails && (
+      {/* ── MODALE MODIFICATION RÉSERVATION ── */}
+      {modalModifierReservation && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm overflow-y-auto">
-          <div className="w-full max-w-lg bg-surface text-foreground border border-surface-border rounded-2xl shadow-2xl p-6 space-y-4 animate-scale-up">
-            <div className="flex items-center justify-between pb-3 border-b border-surface-border">
-              <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center font-bold">
-                  <FileText className="w-5 h-5" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-base text-foreground">
-                    Folio & Détails Réservation
-                  </h3>
-                  <p className="text-xs text-foreground-muted font-mono">
-                    {reservationDetails.code}
-                  </p>
-                </div>
+          <div className="w-full max-w-lg bg-surface text-foreground border border-surface-border rounded-2xl shadow-2xl max-h-[92vh] sm:max-h-[88vh] flex flex-col overflow-hidden animate-scale-up">
+            <div className="p-4 sm:p-5 border-b border-surface-border flex items-center justify-between bg-surface shrink-0">
+              <div className="flex items-center gap-2">
+                <Edit2 className="w-5 h-5 text-primary" />
+                <h3 className="text-base sm:text-lg font-bold">
+                  Modifier Réservation {modalModifierReservation.code}
+                </h3>
               </div>
               <button
                 type="button"
+                onClick={() => setModalModifierReservation(null)}
+                className="p-1 rounded-lg hover:bg-surface-muted text-foreground-muted hover:text-foreground cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleModifierReservation} className="p-4 sm:p-5 overflow-y-auto space-y-4 text-xs sm:text-sm">
+              <div>
+                <label className="block font-medium mb-1">Client Titulaire *</label>
+                <input
+                  type="text"
+                  required
+                  value={modalModifierReservation.client}
+                  onChange={(e) =>
+                    setModalModifierReservation({ ...modalModifierReservation, client: e.target.value })
+                  }
+                  className="w-full px-3 py-2 rounded-xl border border-surface-border bg-background"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-medium mb-1">Téléphone</label>
+                  <input
+                    type="tel"
+                    value={modalModifierReservation.telephone}
+                    onChange={(e) =>
+                      setModalModifierReservation({ ...modalModifierReservation, telephone: e.target.value })
+                    }
+                    className="w-full px-3 py-2 rounded-xl border border-surface-border bg-background"
+                  />
+                </div>
+                <div>
+                  <label className="block font-medium mb-1">Chambre</label>
+                  <input
+                    type="text"
+                    value={modalModifierReservation.chambre}
+                    onChange={(e) =>
+                      setModalModifierReservation({ ...modalModifierReservation, chambre: e.target.value })
+                    }
+                    className="w-full px-3 py-2 rounded-xl border border-surface-border bg-background"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-medium mb-1">Date Arrivée</label>
+                  <input
+                    type="date"
+                    value={modalModifierReservation.dateArrivee}
+                    onChange={(e) =>
+                      setModalModifierReservation({ ...modalModifierReservation, dateArrivee: e.target.value })
+                    }
+                    className="w-full px-3 py-2 rounded-xl border border-surface-border bg-background"
+                  />
+                </div>
+                <div>
+                  <label className="block font-medium mb-1">Date Départ</label>
+                  <input
+                    type="date"
+                    value={modalModifierReservation.dateDepart}
+                    onChange={(e) =>
+                      setModalModifierReservation({ ...modalModifierReservation, dateDepart: e.target.value })
+                    }
+                    className="w-full px-3 py-2 rounded-xl border border-surface-border bg-background"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-medium mb-1">Montant Total (FCFA)</label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={modalModifierReservation.montantTotal}
+                    onChange={(e) =>
+                      setModalModifierReservation({
+                        ...modalModifierReservation,
+                        montantTotal: Number(e.target.value),
+                      })
+                    }
+                    className="w-full px-3 py-2 rounded-xl border border-surface-border bg-background"
+                  />
+                </div>
+                <div>
+                  <label className="block font-medium mb-1">Acompte Versé (FCFA)</label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={modalModifierReservation.acompteVerse}
+                    onChange={(e) =>
+                      setModalModifierReservation({
+                        ...modalModifierReservation,
+                        acompteVerse: Number(e.target.value),
+                      })
+                    }
+                    className="w-full px-3 py-2 rounded-xl border border-surface-border bg-background"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block font-medium mb-1">Statut du séjour</label>
+                <select
+                  value={modalModifierReservation.statut}
+                  onChange={(e: any) =>
+                    setModalModifierReservation({ ...modalModifierReservation, statut: e.target.value })
+                  }
+                  className="w-full px-3 py-2 rounded-xl border border-surface-border bg-background"
+                >
+                  <option value="confirmee">Confirmée</option>
+                  <option value="attente_acompte">Attente Acompte</option>
+                  <option value="check_in">En séjour (Check-in)</option>
+                  <option value="check_out">Départ effectué (Check-out)</option>
+                  <option value="annulee">Annulée</option>
+                </select>
+              </div>
+
+              <div className="flex justify-end gap-2 pt-3 border-t border-surface-border">
+                <button
+                  type="button"
+                  onClick={() => setModalModifierReservation(null)}
+                  className="px-4 py-2 rounded-xl border border-surface-border text-foreground hover:bg-black/5"
+                >
+                  Annuler
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 rounded-xl bg-primary text-white font-bold hover:opacity-95"
+                >
+                  Sauvegarder
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── MODALE FOLIO DÉTAILS ── */}
+      {reservationDetails && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm overflow-y-auto">
+          <div className="w-full max-w-lg bg-surface text-foreground border border-surface-border rounded-2xl shadow-2xl p-5 space-y-4">
+            <div className="flex justify-between items-center pb-2 border-b border-surface-border">
+              <h3 className="text-base sm:text-lg font-bold">
+                Folio Dossier {reservationDetails.code}
+              </h3>
+              <button
+                type="button"
                 onClick={() => setReservationDetails(null)}
-                className="p-1.5 rounded-lg text-foreground-muted hover:text-foreground hover:bg-surface-muted transition"
+                className="p-1 rounded-md text-foreground-muted hover:text-foreground"
               >
                 <X className="w-5 h-5" />
               </button>

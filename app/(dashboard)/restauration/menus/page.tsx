@@ -1,26 +1,27 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   UtensilsCrossed,
   PlusCircle,
   Search,
   Filter,
   CheckCircle2,
-  Wine,
-  Coffee,
-  Coins,
+  DollarSign,
+  Package,
   Layers,
-  FileSpreadsheet,
-  Flame,
-  Percent,
+  ChefHat,
   Eye,
-  Info,
+  SlidersHorizontal,
   X,
+  Edit2,
+  Trash2,
+  Sparkles,
 } from "lucide-react";
 import { formatXOF } from "@/lib/utils";
+import { loadHotelData, saveHotelData, clearHotelData } from "@/lib/hotel-storage";
 
-interface IngredientRecette {
+interface IngredientFiche {
   nom: string;
   quantite: string;
   coutUnitaire: number;
@@ -29,127 +30,219 @@ interface IngredientRecette {
 interface PlatMenu {
   id: string;
   nom: string;
-  categorie: "Entrées" | "Plats Signature" | "Grillades & Poissons" | "Desserts" | "Cocktails Bar";
+  categorie: string;
   prixVente: number;
   coutMatiere: number;
   description: string;
   actif: boolean;
   destockageAutomatique: boolean;
-  ingredients: IngredientRecette[];
+  ingredients: IngredientFiche[];
 }
+
+const DEFAULT_PLATS: PlatMenu[] = [
+  {
+    id: "plat-demo-1",
+    nom: "Filet de Lotte Grillé au Poivre de Penja",
+    categorie: "Plats Signature",
+    prixVente: 16500,
+    coutMatiere: 4800,
+    description: "Pêche locale du jour saisie au feu de bois, tombée d'épinards et émulsion vanille-citron.",
+    actif: true,
+    destockageAutomatique: true,
+    ingredients: [
+      { nom: "Filet de Lotte fraîche", quantite: "220g", coutUnitaire: 3300 },
+      { nom: "Poivre noir de Penja", quantite: "5g", coutUnitaire: 300 },
+      { nom: "Beurre doux d'Isigny", quantite: "30g", coutUnitaire: 400 },
+      { nom: "Épinards frais locaux", quantite: "100g", coutUnitaire: 500 },
+      { nom: "Crème & Citron vert", quantite: "5cl", coutUnitaire: 300 },
+    ],
+  },
+  {
+    id: "plat-demo-2",
+    nom: "Thieboudienne Royal Penda Mbaye",
+    categorie: "Plats Signature",
+    prixVente: 12500,
+    coutMatiere: 3200,
+    description: "Le grand classique sénégalais au mérou blanc, légumes du terroir, riz rouge et nététou.",
+    actif: true,
+    destockageAutomatique: true,
+    ingredients: [
+      { nom: "Mérou blanc (Thiof)", quantite: "250g", coutUnitaire: 2000 },
+      { nom: "Riz rouge brisé de la vallée", quantite: "180g", coutUnitaire: 350 },
+      { nom: "Concentré de tomate & Huile", quantite: "60g", coutUnitaire: 350 },
+      { nom: "Assortiment légumes (Manioc, Carotte, Chou)", quantite: "200g", coutUnitaire: 500 },
+    ],
+  },
+  {
+    id: "plat-demo-3",
+    nom: "Carpaccio d'Espadon aux Agrumes & Baies Roses",
+    categorie: "Entrées",
+    prixVente: 8500,
+    coutMatiere: 2100,
+    description: "Tranches extra-fines d'espadon mariné au jus d'orange amère et huile d'olive vierge.",
+    actif: true,
+    destockageAutomatique: true,
+    ingredients: [
+      { nom: "Espadon frais", quantite: "140g", coutUnitaire: 1400 },
+      { nom: "Agrumes (Orange, Citron)", quantite: "1 pièce", coutUnitaire: 300 },
+      { nom: "Huile d'olive & Baies roses", quantite: "3cl", coutUnitaire: 400 },
+    ],
+  },
+  {
+    id: "plat-demo-4",
+    nom: "Burger Teranga au Bœuf Zébu & Aloco",
+    categorie: "Grillades & Poissons",
+    prixVente: 11000,
+    coutMatiere: 2900,
+    description: "Steak haché zébu façon bouchère (180g), oignons confits au bissap, cheddar et frites d'igname.",
+    actif: true,
+    destockageAutomatique: true,
+    ingredients: [
+      { nom: "Bœuf Zébu haché", quantite: "180g", coutUnitaire: 1500 },
+      { nom: "Pain brioché artisanal", quantite: "1 unité", coutUnitaire: 400 },
+      { nom: "Banane plantain (Aloco)", quantite: "150g", coutUnitaire: 500 },
+      { nom: "Fromage & Sauce Teranga", quantite: "50g", coutUnitaire: 500 },
+    ],
+  },
+  {
+    id: "plat-demo-5",
+    nom: "Cocktail Signature : Teranga Sunset Spritz",
+    categorie: "Cocktails Bar",
+    prixVente: 7500,
+    coutMatiere: 1800,
+    description: "Liqueur de Bissap infusée aux épices, Prosecco, gin local et zeste de pamplemousse rose.",
+    actif: true,
+    destockageAutomatique: true,
+    ingredients: [
+      { nom: "Liqueur de Bissap épicée", quantite: "4cl", coutUnitaire: 700 },
+      { nom: "Prosecco DOC", quantite: "8cl", coutUnitaire: 800 },
+      { nom: "Gin artisanal local", quantite: "2cl", coutUnitaire: 300 },
+    ],
+  },
+];
 
 export default function CartesMenusPage() {
   const [recherche, setRecherche] = useState("");
   const [categorieFiltre, setCategorieFiltre] = useState("tous");
   const [platSelectionne, setPlatSelectionne] = useState<PlatMenu | null>(null);
   const [modalNouveauPlat, setModalNouveauPlat] = useState(false);
+  const [modalModifierPlat, setModalModifierPlat] = useState<PlatMenu | null>(null);
   const [succesMsg, setSuccesMsg] = useState<string | null>(null);
 
-  const [plats, setPlats] = useState<PlatMenu[]>([
-    {
-      id: "1",
-      nom: "Filet de Lotte Grillé au Poivre de Penja",
-      categorie: "Plats Signature",
-      prixVente: 16500,
-      coutMatiere: 4800,
-      description: "Pêche locale du jour saisie au feu de bois, tombée d'épinards et émulsion vanille-citron.",
+  // Formulaire d'ajout
+  const [nouveauNom, setNouveauNom] = useState("");
+  const [nouvelleCategorie, setNouvelleCategorie] = useState("Plats Signature");
+  const [nouveauPrixVente, setNouveauPrixVente] = useState("12000");
+  const [nouveauCoutMatiere, setNouveauCoutMatiere] = useState("3500");
+  const [nouvelleDesc, setNouvelleDesc] = useState("");
+
+  // Données persistantes
+  const [plats, setPlats] = useState<PlatMenu[]>(DEFAULT_PLATS);
+  const [isExempleFiligrane, setIsExempleFiligrane] = useState(true);
+
+  useEffect(() => {
+    const loaded = loadHotelData<PlatMenu>("dhotel_plats", DEFAULT_PLATS);
+    setPlats(loaded.items);
+    setIsExempleFiligrane(loaded.isExempleFiligrane);
+  }, []);
+
+  const handleAjoutPlat = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!nouveauNom.trim()) return;
+
+    const nouveau: PlatMenu = {
+      id: "plat-" + Date.now(),
+      nom: nouveauNom.trim(),
+      categorie: nouvelleCategorie,
+      prixVente: Number(nouveauPrixVente) || 0,
+      coutMatiere: Number(nouveauCoutMatiere) || 0,
+      description: nouvelleDesc.trim() || "Préparation maison selon arrivage du jour.",
       actif: true,
       destockageAutomatique: true,
       ingredients: [
-        { nom: "Filet de Lotte fraîche", quantite: "220g", coutUnitaire: 3300 },
-        { nom: "Poivre noir de Penja", quantite: "5g", coutUnitaire: 300 },
-        { nom: "Beurre doux d'Isigny", quantite: "30g", coutUnitaire: 400 },
-        { nom: "Épinards frais locaux", quantite: "100g", coutUnitaire: 500 },
-        { nom: "Crème & Citron vert", quantite: "5cl", coutUnitaire: 300 },
+        { nom: "Ingrédients principaux", quantite: "Portion", coutUnitaire: Number(nouveauCoutMatiere) || 0 },
       ],
-    },
-    {
-      id: "2",
-      nom: "Thieboudienne Royal Penda Mbaye",
-      categorie: "Plats Signature",
-      prixVente: 12500,
-      coutMatiere: 3200,
-      description: "Le grand classique sénégalais au mérou blanc, légumes du terroir, riz rouge et nététou.",
-      actif: true,
-      destockageAutomatique: true,
-      ingredients: [
-        { nom: "Mérou blanc (Thiof)", quantite: "250g", coutUnitaire: 2000 },
-        { nom: "Riz rouge brisé de la vallée", quantite: "180g", coutUnitaire: 350 },
-        { nom: "Concentré de tomate & Huile", quantite: "60g", coutUnitaire: 350 },
-        { nom: "Assortiment légumes (Manioc, Carotte, Chou)", quantite: "200g", coutUnitaire: 500 },
-      ],
-    },
-    {
-      id: "3",
-      nom: "Carpaccio d'Espadon aux Agrumes & Baies Roses",
-      categorie: "Entrées",
-      prixVente: 8500,
-      coutMatiere: 2100,
-      description: "Tranches extra-fines d'espadon mariné au jus d'orange amère et huile d'olive vierge.",
-      actif: true,
-      destockageAutomatique: true,
-      ingredients: [
-        { nom: "Espadon frais", quantite: "140g", coutUnitaire: 1400 },
-        { nom: "Agrumes (Orange, Citron)", quantite: "1 pièce", coutUnitaire: 300 },
-        { nom: "Huile d'olive & Baies roses", quantite: "3cl", coutUnitaire: 400 },
-      ],
-    },
-    {
-      id: "4",
-      nom: "Burger Teranga au Bœuf Zébu & Aloco",
-      categorie: "Grillades & Poissons",
-      prixVente: 11000,
-      coutMatiere: 2900,
-      description: "Steak haché zébu façon bouchère (180g), oignons confits au bissap, cheddar et frites d'igname.",
-      actif: true,
-      destockageAutomatique: true,
-      ingredients: [
-        { nom: "Bœuf Zébu haché", quantite: "180g", coutUnitaire: 1500 },
-        { nom: "Pain brioché artisanal", quantite: "1 unité", coutUnitaire: 400 },
-        { nom: "Banane plantain (Aloco)", quantite: "150g", coutUnitaire: 500 },
-        { nom: "Fromage & Sauce Teranga", quantite: "50g", coutUnitaire: 500 },
-      ],
-    },
-    {
-      id: "5",
-      nom: "Cocktail Signature : Teranga Sunset Spritz",
-      categorie: "Cocktails Bar",
-      prixVente: 7500,
-      coutMatiere: 1800,
-      description: "Liqueur de Bissap infusée aux épices, Prosecco, gin local et zeste de pamplemousse rose.",
-      actif: true,
-      destockageAutomatique: true,
-      ingredients: [
-        { nom: "Prosecco DOC", quantite: "8cl", coutUnitaire: 900 },
-        { nom: "Sirop de Bissap maison", quantite: "4cl", coutUnitaire: 200 },
-        { nom: "Gin artisanal de Dakar", quantite: "3cl", coutUnitaire: 600 },
-        { nom: "Eau gazeuse & Glace", quantite: "10cl", coutUnitaire: 100 },
-      ],
-    },
-    {
-      id: "6",
-      nom: "Fondant Chocolat Noir & Cœur de Mangue Rôtie",
-      categorie: "Desserts",
-      prixVente: 6500,
-      coutMatiere: 1400,
-      description: "Chocolat 70% pur cacao, coulis tiède de mangue de Casamance et sorbet coco.",
-      actif: true,
-      destockageAutomatique: true,
-      ingredients: [
-        { nom: "Chocolat noir 70%", quantite: "80g", coutUnitaire: 600 },
-        { nom: "Mangue fraîche", quantite: "100g", coutUnitaire: 400 },
-        { nom: "Beurre, Œufs & Sucre", quantite: "60g", coutUnitaire: 400 },
-      ],
-    },
-  ]);
+    };
+
+    const updated = isExempleFiligrane ? [nouveau] : [nouveau, ...plats];
+    setPlats(updated);
+    setIsExempleFiligrane(false);
+    saveHotelData("dhotel_plats", updated);
+
+    setModalNouveauPlat(false);
+    setNouveauNom("");
+    setNouvelleDesc("");
+    setSuccesMsg(`Article « ${nouveau.nom} » ajouté à la carte.`);
+    setTimeout(() => setSuccesMsg(null), 3500);
+  };
+
+  const handleModifierPlat = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!modalModifierPlat) return;
+
+    const updated = plats.map((p) =>
+      p.id === modalModifierPlat.id ? modalModifierPlat : p
+    );
+    setPlats(updated);
+    setIsExempleFiligrane(false);
+    saveHotelData("dhotel_plats", updated);
+
+    setModalModifierPlat(null);
+    setSuccesMsg(`Article « ${modalModifierPlat.nom} » mis à jour.`);
+    setTimeout(() => setSuccesMsg(null), 3500);
+  };
+
+  const handleSupprimerPlat = (id: string, nom: string) => {
+    if (!window.confirm(`Confirmez-vous le retrait de « ${nom} » de la carte ?`)) {
+      return;
+    }
+
+    const updated = plats.filter((p) => p.id !== id);
+    setPlats(updated);
+    setIsExempleFiligrane(false);
+    saveHotelData("dhotel_plats", updated);
+
+    setSuccesMsg(`Article « ${nom} » supprimé.`);
+    setTimeout(() => setSuccesMsg(null), 3000);
+  };
+
+  const handleViderExemples = () => {
+    if (window.confirm("Voulez-vous vider tous les exemples de menu pour démarrer avec une carte vierge ?")) {
+      setPlats([]);
+      setIsExempleFiligrane(false);
+      clearHotelData("dhotel_plats");
+      setSuccesMsg("Carte vidée. Vous pouvez créer vos propres recettes et plats.");
+      setTimeout(() => setSuccesMsg(null), 4000);
+    }
+  };
+
+  const handleConvertirExemples = () => {
+    const converted = plats.map((p, i) => ({
+      ...p,
+      id: "plat-reel-" + (i + 1) + "-" + Date.now(),
+    }));
+    setPlats(converted);
+    setIsExempleFiligrane(false);
+    saveHotelData("dhotel_plats", converted);
+    setSuccesMsg("Les plats d'exemple ont été convertis en recettes réelles modifiables.");
+    setTimeout(() => setSuccesMsg(null), 4000);
+  };
+
+  const categories = [
+    "tous",
+    "Entrées",
+    "Plats Signature",
+    "Grillades & Poissons",
+    "Desserts Gourmands",
+    "Cocktails Bar",
+  ];
 
   const platsFiltres = plats.filter((p) => {
-    const correspondRecherche =
+    const matchNom =
       p.nom.toLowerCase().includes(recherche.toLowerCase()) ||
       p.description.toLowerCase().includes(recherche.toLowerCase());
-    const correspondCat =
-      categorieFiltre === "tous" || p.categorie === categorieFiltre;
-    return correspondRecherche && correspondCat;
+    const matchCat = categorieFiltre === "tous" || p.categorie === categorieFiltre;
+    return matchNom && matchCat;
   });
 
   return (
@@ -160,24 +253,50 @@ export default function CartesMenusPage() {
           <div className="flex items-center gap-2">
             <UtensilsCrossed className="w-7 h-7 text-[var(--accent)]" />
             <h1 className="text-2xl font-bold tracking-tight">
-              Cartes, Menus & Fiches Recettes
+              Cartes, Menus & Fiches Techniques (Food & Beverage)
             </h1>
           </div>
           <p className="text-sm text-foreground-muted mt-1">
-            Gestion de la carte gastronomique, ratios matière (Food Cost %) et déstockage automatique
+            Calcul automatique du Food Cost %, marge brute et déstockage PUMP
           </p>
         </div>
 
         <div className="flex items-center gap-3">
           <button
             onClick={() => setModalNouveauPlat(true)}
-            className="flex items-center gap-2 px-4 py-2 text-sm font-bold rounded-lg bg-[var(--primary)] text-[var(--primary-foreground)] hover:opacity-95 shadow-sm transition"
+            className="flex items-center gap-2 px-4 py-2 text-sm font-bold rounded-lg bg-[var(--primary)] text-white hover:opacity-95 shadow-sm transition cursor-pointer"
           >
             <PlusCircle className="w-4 h-4" />
-            Nouveau Plat / Recette
+            Ajouter un Plat
           </button>
         </div>
       </div>
+
+      {/* Bannière filigrane sans impact */}
+      {isExempleFiligrane && (
+        <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-800 dark:text-amber-300 text-xs sm:text-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
+          <div className="flex items-center gap-2.5">
+            <Sparkles className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0" />
+            <span>
+              <strong>Recettes d&apos;exemple en filigrane :</strong> Votre établissement ne possède pas encore de carte enregistrée. Ces {plats.length} plats sont affichés à titre indicatif et sans impact. Vous pouvez les modifier, les supprimer ou ajouter vos propres plats réels.
+            </span>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              onClick={handleConvertirExemples}
+              className="px-3 py-1.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-900 dark:text-amber-200 text-xs font-bold transition cursor-pointer"
+            >
+              Conserver et Modifier
+            </button>
+            <button
+              onClick={handleViderExemples}
+              className="px-3 py-1.5 rounded-lg border border-amber-500/30 hover:bg-black/5 text-amber-900 dark:text-amber-200 text-xs font-semibold transition cursor-pointer"
+            >
+              Partir de zéro
+            </button>
+          </div>
+        </div>
+      )}
 
       {succesMsg && (
         <div className="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200 text-sm flex items-center gap-3">
@@ -186,28 +305,13 @@ export default function CartesMenusPage() {
         </div>
       )}
 
-      {/* Cartouche Food Cost */}
-      <div className="p-4 rounded-xl bg-surface border border-surface-border flex items-center justify-between text-xs">
-        <div className="flex items-center gap-3">
-          <Percent className="w-5 h-5 text-[var(--accent)]" />
-          <div>
-            <span className="font-bold text-foreground block">
-              Contrôle Permanent du Food Cost %
-            </span>
-            <span className="text-foreground-muted">
-              Le coût matière moyen de la carte est actuellement de <strong>26.4%</strong> (Objectif standard Palace : &lt; 28%).
-            </span>
-          </div>
-        </div>
-      </div>
-
       {/* Filtres & Recherche */}
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
           <Search className="w-4 h-4 absolute left-3 top-3 text-foreground-muted" />
           <input
             type="text"
-            placeholder="Rechercher un plat, cocktail, ingrédient..."
+            placeholder="Rechercher par nom de plat ou ingrédient..."
             value={recherche}
             onChange={(e) => setRecherche(e.target.value)}
             className="w-full pl-9 pr-4 py-2 text-sm rounded-lg bg-surface border border-surface-border focus:outline-none"
@@ -219,31 +323,45 @@ export default function CartesMenusPage() {
           onChange={(e) => setCategorieFiltre(e.target.value)}
           className="px-3 py-2 text-sm rounded-lg bg-surface border border-surface-border text-foreground"
         >
-          <option value="tous">Toutes les catégories</option>
-          <option value="Entrées">Entrées</option>
-          <option value="Plats Signature">Plats Signature</option>
-          <option value="Grillades & Poissons">Grillades & Poissons</option>
-          <option value="Desserts">Desserts</option>
-          <option value="Cocktails Bar">Cocktails Bar</option>
+          {categories.map((cat) => (
+            <option key={cat} value={cat}>
+              {cat === "tous" ? "Toutes les catégories" : cat}
+            </option>
+          ))}
         </select>
       </div>
 
       {/* Grille des Plats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {platsFiltres.length === 0 ? (
+          <div className="col-span-full p-8 text-center bg-surface border border-surface-border rounded-2xl text-foreground-muted">
+            Aucun article à la carte.
+          </div>
+        ) : null}
+
         {platsFiltres.map((plat) => {
-          const ratioFoodCost = Math.round((plat.coutMatiere / plat.prixVente) * 100);
+          const ratioFoodCost = plat.prixVente > 0 ? Math.round((plat.coutMatiere / plat.prixVente) * 100) : 0;
           const margeBrute = plat.prixVente - plat.coutMatiere;
 
           return (
             <div
               key={plat.id}
-              className="p-5 rounded-xl bg-surface border border-surface-border hover:shadow-md transition space-y-3 flex flex-col justify-between"
+              className={`p-5 rounded-xl bg-surface border border-surface-border hover:shadow-md transition space-y-3 flex flex-col justify-between ${
+                isExempleFiligrane ? "opacity-75 border-dashed border-amber-500/40" : ""
+              }`}
             >
               <div className="space-y-2">
                 <div className="flex items-start justify-between gap-2">
-                  <span className="text-xs px-2.5 py-0.5 rounded-full font-semibold bg-surface-muted text-foreground-muted">
-                    {plat.categorie}
-                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-xs px-2.5 py-0.5 rounded-full font-semibold bg-surface-muted text-foreground-muted">
+                      {plat.categorie}
+                    </span>
+                    {isExempleFiligrane && (
+                      <span className="text-[9px] px-1.5 py-0.2 rounded font-bold uppercase bg-amber-500/15 text-amber-700 dark:text-amber-300">
+                        Exemple
+                      </span>
+                    )}
+                  </div>
                   <span
                     className={`text-xs px-2 py-0.5 rounded font-bold ${
                       ratioFoodCost <= 28
@@ -272,111 +390,142 @@ export default function CartesMenusPage() {
                 </div>
 
                 <div className="flex items-center justify-between text-xs text-foreground-muted">
-                  <span>Coût matière (PUMP) : {formatXOF(plat.coutMatiere)}</span>
+                  <span>Coût matière : {formatXOF(plat.coutMatiere)}</span>
                   <span className="font-semibold text-emerald-600">
                     Marge : +{formatXOF(margeBrute)}
                   </span>
                 </div>
 
-                <button
-                  onClick={() => setPlatSelectionne(plat)}
-                  className="w-full mt-2 py-1.5 text-xs font-semibold rounded-lg bg-surface-muted hover:bg-surface-border transition text-foreground flex items-center justify-center gap-1.5"
-                >
-                  <Eye className="w-3.5 h-3.5" />
-                  Fiche Technique & Déstockage
-                </button>
+                <div className="pt-2 flex items-center justify-between gap-2 border-t border-surface-border/60">
+                  <button
+                    onClick={() => setPlatSelectionne(plat)}
+                    className="flex-1 py-1.5 text-xs font-semibold rounded-lg bg-surface-muted hover:bg-surface-border transition text-foreground flex items-center justify-center gap-1.5 cursor-pointer"
+                  >
+                    <Eye className="w-3.5 h-3.5" />
+                    Fiche Tech.
+                  </button>
+                  <button
+                    onClick={() => setModalModifierPlat(plat)}
+                    className="px-2.5 py-1.5 text-xs font-semibold rounded-lg bg-surface-border/60 hover:bg-surface-border text-foreground transition cursor-pointer flex items-center gap-1"
+                  >
+                    <Edit2 className="w-3 h-3" />
+                    Modifier
+                  </button>
+                  <button
+                    onClick={() => handleSupprimerPlat(plat.id, plat.nom)}
+                    className="p-1.5 rounded-lg text-danger/70 hover:text-danger hover:bg-danger/10 transition cursor-pointer"
+                    title="Supprimer ce plat"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
               </div>
             </div>
           );
         })}
       </div>
 
-      {/* MODAL FICHE TECHNIQUE RECETTE */}
-      {platSelectionne && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-surface rounded-2xl border border-surface-border shadow-2xl max-w-lg w-full p-6 space-y-4 animate-scale-up">
-            <div className="border-b border-surface-border pb-3">
-              <span className="text-xs text-foreground-muted uppercase tracking-wider font-semibold">
-                Fiche Technique Culinaire
-              </span>
-              <h3 className="text-lg font-bold text-foreground mt-0.5">
-                {platSelectionne.nom}
-              </h3>
-              <p className="text-xs text-foreground-muted mt-1">
-                Catégorie : {platSelectionne.categorie} • Déstockage automatique à chaque commande POS
-              </p>
-            </div>
-
-            {/* Ingrédients */}
-            <div>
-              <h4 className="text-xs font-bold uppercase text-foreground-muted mb-2">
-                Nomenclature des ingrédients (pour 1 portion)
-              </h4>
-              <div className="bg-surface-muted/40 rounded-xl border border-surface-border divide-y divide-surface-border text-xs">
-                {platSelectionne.ingredients.map((ing, i) => (
-                  <div key={i} className="p-2.5 flex items-center justify-between">
-                    <div>
-                      <span className="font-semibold text-foreground block">
-                        {ing.nom}
-                      </span>
-                      <span className="text-foreground-muted">
-                        Grammage : {ing.quantite}
-                      </span>
-                    </div>
-                    <span className="font-bold text-foreground">
-                      {formatXOF(ing.coutUnitaire)}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Bilan financier de la recette */}
-            <div className="p-4 rounded-xl bg-surface-muted/70 border border-surface-border grid grid-cols-3 gap-2 text-center text-xs">
-              <div>
-                <span className="text-foreground-muted block text-[10px] uppercase">
-                  Coût Ingrédients
-                </span>
-                <span className="font-bold text-sm text-foreground">
-                  {formatXOF(platSelectionne.coutMatiere)}
-                </span>
-              </div>
-              <div>
-                <span className="text-foreground-muted block text-[10px] uppercase">
-                  Prix Carte TTC
-                </span>
-                <span className="font-bold text-sm text-[var(--accent)]">
-                  {formatXOF(platSelectionne.prixVente)}
-                </span>
-              </div>
-              <div>
-                <span className="text-foreground-muted block text-[10px] uppercase">
-                  Marge Brute
-                </span>
-                <span className="font-bold text-sm text-emerald-600">
-                  +{formatXOF(platSelectionne.prixVente - platSelectionne.coutMatiere)}
-                </span>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-end gap-3 pt-3">
+      {/* MODAL MODIFIER PLAT */}
+      {modalModifierPlat && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-3 sm:p-4 overflow-y-auto">
+          <div className="bg-surface text-foreground rounded-2xl border border-surface-border shadow-2xl max-w-md w-full p-5 space-y-4">
+            <div className="flex items-center justify-between pb-2 border-b border-surface-border">
+              <h3 className="text-lg font-bold">Modifier Article : {modalModifierPlat.nom}</h3>
               <button
-                onClick={() => setPlatSelectionne(null)}
-                className="px-4 py-2 text-sm font-medium rounded-lg text-foreground-muted hover:bg-surface-muted"
+                onClick={() => setModalModifierPlat(null)}
+                className="p-1 rounded-md text-foreground-muted hover:text-foreground"
               >
-                Fermer
-              </button>
-              <button
-                onClick={() => {
-                  setSuccesMsg("Fiche recette actualisée avec l'Économat.");
-                  setPlatSelectionne(null);
-                  setTimeout(() => setSuccesMsg(null), 3000);
-                }}
-                className="px-4 py-2 text-sm font-bold rounded-lg bg-[var(--primary)] text-[var(--primary-foreground)] shadow-sm"
-              >
-                Enregistrer la Fiche
+                <X className="w-5 h-5" />
               </button>
             </div>
+
+            <form onSubmit={handleModifierPlat} className="space-y-3 text-xs sm:text-sm">
+              <div>
+                <label className="block font-medium mb-1">Nom du Plat / Boisson *</label>
+                <input
+                  type="text"
+                  required
+                  value={modalModifierPlat.nom}
+                  onChange={(e) =>
+                    setModalModifierPlat({ ...modalModifierPlat, nom: e.target.value })
+                  }
+                  className="w-full px-3 py-2 rounded-xl border border-surface-border bg-background"
+                />
+              </div>
+
+              <div>
+                <label className="block font-medium mb-1">Catégorie</label>
+                <select
+                  value={modalModifierPlat.categorie}
+                  onChange={(e) =>
+                    setModalModifierPlat({ ...modalModifierPlat, categorie: e.target.value })
+                  }
+                  className="w-full px-3 py-2 rounded-xl border border-surface-border bg-background"
+                >
+                  <option value="Entrées">Entrées</option>
+                  <option value="Plats Signature">Plats Signature</option>
+                  <option value="Grillades & Poissons">Grillades & Poissons</option>
+                  <option value="Desserts Gourmands">Desserts Gourmands</option>
+                  <option value="Cocktails Bar">Cocktails Bar</option>
+                </select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-medium mb-1">Prix Vente (FCFA) *</label>
+                  <input
+                    type="number"
+                    min="1"
+                    required
+                    value={modalModifierPlat.prixVente}
+                    onChange={(e) =>
+                      setModalModifierPlat({ ...modalModifierPlat, prixVente: Number(e.target.value) })
+                    }
+                    className="w-full px-3 py-2 rounded-xl border border-surface-border bg-background"
+                  />
+                </div>
+                <div>
+                  <label className="block font-medium mb-1">Coût Matière (FCFA)</label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={modalModifierPlat.coutMatiere}
+                    onChange={(e) =>
+                      setModalModifierPlat({ ...modalModifierPlat, coutMatiere: Number(e.target.value) })
+                    }
+                    className="w-full px-3 py-2 rounded-xl border border-surface-border bg-background"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block font-medium mb-1">Description / Ingrédients</label>
+                <textarea
+                  rows={2}
+                  value={modalModifierPlat.description}
+                  onChange={(e) =>
+                    setModalModifierPlat({ ...modalModifierPlat, description: e.target.value })
+                  }
+                  className="w-full px-3 py-2 rounded-xl border border-surface-border bg-background"
+                />
+              </div>
+
+              <div className="flex justify-end gap-2 pt-3 border-t border-surface-border">
+                <button
+                  type="button"
+                  onClick={() => setModalModifierPlat(null)}
+                  className="px-4 py-2 rounded-xl border border-surface-border text-foreground hover:bg-black/5"
+                >
+                  Annuler
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 rounded-xl bg-primary text-white font-bold hover:opacity-95"
+                >
+                  Sauvegarder
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
@@ -384,105 +533,159 @@ export default function CartesMenusPage() {
       {/* MODAL NOUVEAU PLAT */}
       {modalNouveauPlat && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-3 sm:p-4 overflow-y-auto">
-          <div className="bg-surface text-foreground rounded-2xl border border-surface-border shadow-2xl max-w-md w-full max-h-[92vh] sm:max-h-[88vh] flex flex-col overflow-hidden animate-scale-up">
-            <div className="p-4 sm:p-5 border-b border-surface-border flex items-center justify-between shrink-0 bg-surface">
-              <h3 className="text-base font-bold text-foreground">Ajouter un plat au menu</h3>
+          <div className="bg-surface text-foreground rounded-2xl border border-surface-border shadow-2xl max-w-md w-full p-5 space-y-4">
+            <div className="flex items-center justify-between pb-2 border-b border-surface-border">
+              <h3 className="text-lg font-bold">Ajouter un Plat / Recette</h3>
               <button
-                type="button"
                 onClick={() => setModalNouveauPlat(false)}
-                className="p-1.5 rounded-lg text-foreground-muted hover:text-foreground hover:bg-surface-muted transition"
+                className="p-1 rounded-md text-foreground-muted hover:text-foreground"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                setModalNouveauPlat(false);
-                setSuccesMsg("Nouveau plat ajouté à la carte.");
-                setTimeout(() => setSuccesMsg(null), 3000);
-              }}
-              className="flex flex-col flex-1 overflow-hidden"
-            >
-              <div className="p-4 sm:p-5 overflow-y-auto flex-1 space-y-3.5 text-xs">
+            <form onSubmit={handleAjoutPlat} className="space-y-3 text-xs sm:text-sm">
+              <div>
+                <label className="block font-medium mb-1">Nom du Plat / Boisson *</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="ex: Brochettes de Capitaine aux Épices"
+                  value={nouveauNom}
+                  onChange={(e) => setNouveauNom(e.target.value)}
+                  className="w-full px-3 py-2 rounded-xl border border-surface-border bg-background"
+                />
+              </div>
+
+              <div>
+                <label className="block font-medium mb-1">Catégorie</label>
+                <select
+                  value={nouvelleCategorie}
+                  onChange={(e) => setNouvelleCategorie(e.target.value)}
+                  className="w-full px-3 py-2 rounded-xl border border-surface-border bg-background"
+                >
+                  <option value="Entrées">Entrées</option>
+                  <option value="Plats Signature">Plats Signature</option>
+                  <option value="Grillades & Poissons">Grillades & Poissons</option>
+                  <option value="Desserts Gourmands">Desserts Gourmands</option>
+                  <option value="Cocktails Bar">Cocktails Bar</option>
+                </select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="font-semibold text-foreground block mb-1.5">
-                    Nom du plat / cocktail <span className="text-danger">*</span>
-                  </label>
+                  <label className="block font-medium mb-1">Prix Vente (FCFA) *</label>
                   <input
-                    type="text"
+                    type="number"
+                    min="1"
                     required
-                    placeholder="ex: Pavé de Thiof braisé aux herbes"
-                    className="w-full px-3 py-2 text-xs sm:text-sm rounded-xl bg-background text-foreground placeholder:text-foreground-muted/60 border border-surface-border focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                    value={nouveauPrixVente}
+                    onChange={(e) => setNouveauPrixVente(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl border border-surface-border bg-background"
                   />
                 </div>
-
                 <div>
-                  <label className="font-semibold text-foreground block mb-1.5">
-                    Catégorie
-                  </label>
-                  <select className="w-full px-2.5 py-2 text-xs sm:text-sm rounded-xl bg-background text-foreground border border-surface-border focus:outline-none focus:ring-2 focus:ring-[var(--primary)]">
-                    <option value="Plats Signature">Plats Signature</option>
-                    <option value="Entrées">Entrées</option>
-                    <option value="Grillades & Poissons">Grillades & Poissons</option>
-                    <option value="Desserts">Desserts</option>
-                    <option value="Cocktails Bar">Cocktails Bar</option>
-                  </select>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="font-semibold text-foreground block mb-1.5">
-                      Prix de vente TTC (FCFA) <span className="text-danger">*</span>
-                    </label>
-                    <input
-                      type="number"
-                      required
-                      placeholder="15000"
-                      className="w-full px-3 py-2 text-xs sm:text-sm rounded-xl bg-background text-foreground border border-surface-border focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
-                    />
-                  </div>
-                  <div>
-                    <label className="font-semibold text-foreground block mb-1.5">
-                      Coût matière estimé (FCFA)
-                    </label>
-                    <input
-                      type="number"
-                      placeholder="4000"
-                      className="w-full px-3 py-2 text-xs sm:text-sm rounded-xl bg-background text-foreground border border-surface-border focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="font-semibold text-foreground block mb-1.5">
-                    Description / Ingrédients clés
-                  </label>
-                  <textarea
-                    rows={2}
-                    placeholder="Garniture, assaisonnement, allergènes éventuels..."
-                    className="w-full px-3 py-2 text-xs sm:text-sm rounded-xl bg-background text-foreground placeholder:text-foreground-muted/60 border border-surface-border focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                  <label className="block font-medium mb-1">Coût Matière estimé</label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={nouveauCoutMatiere}
+                    onChange={(e) => setNouveauCoutMatiere(e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl border border-surface-border bg-background"
                   />
                 </div>
               </div>
 
-              <div className="p-4 sm:p-5 border-t border-surface-border shrink-0 flex items-center justify-end gap-3 bg-surface">
+              <div>
+                <label className="block font-medium mb-1">Description</label>
+                <textarea
+                  rows={2}
+                  placeholder="Garniture, cuisson, allergènes..."
+                  value={nouvelleDesc}
+                  onChange={(e) => setNouvelleDesc(e.target.value)}
+                  className="w-full px-3 py-2 rounded-xl border border-surface-border bg-background"
+                />
+              </div>
+
+              <div className="flex justify-end gap-2 pt-3 border-t border-surface-border">
                 <button
                   type="button"
                   onClick={() => setModalNouveauPlat(false)}
-                  className="px-4 py-2 text-xs sm:text-sm font-semibold rounded-xl text-foreground-muted hover:text-foreground hover:bg-surface-muted transition"
+                  className="px-4 py-2 rounded-xl border border-surface-border text-foreground hover:bg-black/5"
                 >
                   Annuler
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2.5 text-xs sm:text-sm font-bold rounded-xl bg-[var(--primary)] text-[var(--primary-foreground)] shadow-sm hover:opacity-95 transition"
+                  className="px-4 py-2 rounded-xl bg-primary text-white font-bold hover:opacity-95"
                 >
-                  Créer la Recette
+                  Ajouter à la carte
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL FICHE TECHNIQUE */}
+      {platSelectionne && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-3 sm:p-4 overflow-y-auto">
+          <div className="bg-surface text-foreground rounded-2xl border border-surface-border shadow-2xl max-w-lg w-full p-5 space-y-4">
+            <div className="flex items-start justify-between pb-2 border-b border-surface-border">
+              <div>
+                <span className="text-xs uppercase font-bold text-foreground-muted">
+                  {platSelectionne.categorie}
+                </span>
+                <h3 className="text-lg font-bold text-foreground mt-0.5">
+                  {platSelectionne.nom}
+                </h3>
+              </div>
+              <button
+                onClick={() => setPlatSelectionne(null)}
+                className="p-1 rounded-md text-foreground-muted hover:text-foreground"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-3 text-xs">
+              <p className="text-foreground-muted">{platSelectionne.description}</p>
+
+              <div>
+                <h4 className="font-bold text-foreground mb-1.5 flex items-center gap-1.5">
+                  <Package className="w-3.5 h-3.5 text-primary" />
+                  Nomenclature & Ingrédients (Déstockage automatique)
+                </h4>
+                <div className="bg-background rounded-xl border border-surface-border divide-y divide-surface-border">
+                  {platSelectionne.ingredients.map((ing, i) => (
+                    <div key={i} className="p-2.5 flex items-center justify-between">
+                      <span className="text-foreground">{ing.nom} ({ing.quantite})</span>
+                      <span className="font-mono font-bold text-foreground">{formatXOF(ing.coutUnitaire)}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="p-3 rounded-xl bg-surface-muted/50 border border-surface-border flex justify-between items-center">
+                <div>
+                  <span className="text-foreground-muted block">Coût de revient :</span>
+                  <span className="font-bold text-sm text-foreground">{formatXOF(platSelectionne.coutMatiere)}</span>
+                </div>
+                <div className="text-right">
+                  <span className="text-foreground-muted block">Prix de vente TTC :</span>
+                  <span className="font-bold text-sm text-foreground">{formatXOF(platSelectionne.prixVente)}</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="pt-2 flex justify-end border-t border-surface-border">
+              <button
+                onClick={() => setPlatSelectionne(null)}
+                className="px-4 py-2 text-xs font-bold rounded-xl bg-primary text-white hover:opacity-90 transition"
+              >
+                Fermer
+              </button>
+            </div>
           </div>
         </div>
       )}
