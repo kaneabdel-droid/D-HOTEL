@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   SlidersHorizontal,
@@ -18,8 +18,17 @@ import {
   PlusCircle,
   Eye,
   KeyRound,
+  Trash2,
+  Sparkles,
+  QrCode,
+  Building,
 } from "lucide-react";
 import { ThemeSwitcher } from "@/components/ThemeSwitcher";
+import {
+  CompteMarchandDirect,
+  getComptesMarchandsDirects,
+  saveComptesMarchandsDirects,
+} from "@/lib/paiement-direct-storage";
 
 export default function ParametresHotelPage() {
   const [succesMsg, setSuccesMsg] = useState<string | null>(null);
@@ -35,12 +44,58 @@ export default function ParametresHotelPage() {
   const [taxeSejour, setTaxeSejour] = useState(1000);
   const [devise, setDevise] = useState("XOF");
 
-  // Maketou
-  const [maketouStoreId, setMaketouStoreId] = useState("STORE_TERANGA_PALACE_SN");
-  const [maketouApiKey, setMaketouApiKey] = useState("mkt_live_98a72b4c1029e84d7281f6");
-  const [waveActif, setWaveActif] = useState(true);
-  const [omActif, setOmActif] = useState(true);
-  const [cbActif, setCbActif] = useState(true);
+  // Encaissements directs sur appareils hôtel (Zéro agrégateur)
+  const [comptesDirects, setComptesDirects] = useState<CompteMarchandDirect[]>([]);
+  const [modalAjoutCompte, setModalAjoutCompte] = useState(false);
+  const [nouveauType, setNouveauType] = useState<'wave' | 'orange_money' | 'tpe_banque' | 'free_money'>('wave');
+  const [nouveauNom, setNouveauNom] = useState('');
+  const [nouveauNumero, setNouveauNumero] = useState('');
+  const [nouvelleBanque, setNouvelleBanque] = useState('Wave Business Sénégal');
+  const [nouveauPointVente, setNouveauPointVente] = useState('Front-Desk & Réception');
+  const [nouvellesInstructions, setNouvellesInstructions] = useState('');
+
+  useEffect(() => {
+    setComptesDirects(getComptesMarchandsDirects());
+  }, []);
+
+  const handleAjouterCompte = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!nouveauNom || !nouveauNumero) return;
+    const nouvelElement: CompteMarchandDirect = {
+      id: `cpt-${Date.now()}`,
+      type: nouveauType,
+      nom: nouveauNom,
+      numeroOuCode: nouveauNumero,
+      banqueOuOperateur: nouvelleBanque,
+      pointDeVente: nouveauPointVente,
+      actif: true,
+      instructions: nouvellesInstructions || undefined,
+    };
+    const listeMaj = [...comptesDirects, nouvelElement];
+    setComptesDirects(listeMaj);
+    saveComptesMarchandsDirects(listeMaj);
+    setModalAjoutCompte(false);
+    setNouveauNom('');
+    setNouveauNumero('');
+    setNouvellesInstructions('');
+    setSuccesMsg(`Terminal / Compte « ${nouvelElement.nom} » configuré avec succès.`);
+    setTimeout(() => setSuccesMsg(null), 4000);
+  };
+
+  const handleToggleCompte = (id: string) => {
+    const maj = comptesDirects.map((c) => (c.id === id ? { ...c, actif: !c.actif } : c));
+    setComptesDirects(maj);
+    saveComptesMarchandsDirects(maj);
+  };
+
+  const handleSupprimerCompte = (id: string) => {
+    if (!confirm('Voulez-vous vraiment retirer ce terminal / compte direct ?')) return;
+    const maj = comptesDirects.filter((c) => c.id !== id);
+    setComptesDirects(maj);
+    saveComptesMarchandsDirects(maj);
+    setSuccesMsg('Terminal retiré de la configuration.');
+    setTimeout(() => setSuccesMsg(null), 3000);
+  };
 
   // Utilisateurs & Rôles
   const [utilisateurs, setUtilisateurs] = useState([
@@ -53,7 +108,8 @@ export default function ParametresHotelPage() {
 
   const handleEnregistrer = (e: React.FormEvent) => {
     e.preventDefault();
-    setSuccesMsg("Paramètres de l'hôtel et configuration Maketou enregistrés.");
+    saveComptesMarchandsDirects(comptesDirects);
+    setSuccesMsg("Paramètres de l'établissement et terminaux de paiement direct enregistrés.");
     setTimeout(() => setSuccesMsg(null), 4000);
   };
 
@@ -227,76 +283,134 @@ export default function ParametresHotelPage() {
           </div>
         </div>
 
-        {/* SECTION 3 : PASSERELLE DE PAIEMENT MAKETOU */}
-        <div className="p-6 rounded-2xl bg-surface border border-surface-border space-y-4">
-          <div className="flex items-center gap-2 pb-2 border-b border-surface-border">
-            <Smartphone className="w-5 h-5 text-[var(--accent)]" />
-            <div>
-              <h3 className="font-bold text-base text-foreground">
-                Passerelle de Paiement Maketou (Mobile Money & Cartes)
-              </h3>
-              <p className="text-xs text-foreground-muted">
-                Encaissement direct des acomptes de réservation par Wave, Orange Money et CB sans manipulation de cartes
+        {/* SECTION 3 : TERMINAUX & ENCAISSEMENTS DIRECTS SUR APPAREILS HÔTEL (ZÉRO AGRÉGATEUR) */}
+        <div className="p-6 rounded-2xl bg-surface border border-surface-border space-y-5">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-3 border-b border-surface-border">
+            <div className="flex items-center gap-2.5">
+              <div className="p-2 rounded-xl bg-emerald-600/15 text-emerald-600 dark:text-emerald-400">
+                <ShieldCheck className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="font-bold text-base text-foreground flex items-center gap-2">
+                  <span>Terminaux & Comptes d&apos;Encaissement Direct (Zéro Agrégateur)</span>
+                  <span className="px-2 py-0.5 text-[10px] font-black rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
+                    0% Commission • 100% Direct
+                  </span>
+                </h3>
+                <p className="text-xs text-foreground-muted">
+                  Évitez les frais de 2% à 3.5% des passerelles en encaissant directement sur les téléphones et TPE de l&apos;établissement
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Link
+                href="/tresorerie/encaissements-directs"
+                className="px-3 py-1.5 rounded-lg border border-surface-border text-xs font-semibold text-foreground hover:bg-surface-muted transition flex items-center gap-1.5"
+              >
+                <Eye className="w-3.5 h-3.5" />
+                <span>Voir le Journal</span>
+              </Link>
+              <button
+                type="button"
+                onClick={() => setModalAjoutCompte(true)}
+                className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition flex items-center gap-1.5 shadow-xs cursor-pointer"
+              >
+                <PlusCircle className="w-3.5 h-3.5" />
+                <span>Ajouter un Terminal / Compte</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Bannière explicative d'avantage financier */}
+          <div className="p-3.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800/60 flex items-start gap-3">
+            <Sparkles className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
+            <div className="text-xs text-emerald-950 dark:text-emerald-200 space-y-1">
+              <p className="font-bold">
+                Comment fonctionne l&apos;encaissement direct sans intermédiaire ?
+              </p>
+              <p className="text-[11px] opacity-90">
+                1. <strong>Mobile Money (Wave / Orange Money) :</strong> Le client scanne le QR code marchand officiel de l&apos;hôtel ou compose le code USSD sur place. Le paiement arrive directement sur la carte SIM/compte marchand de l&apos;hôtel.<br />
+                2. <strong>Cartes Bancaires (Visa / Mastercard / GIM) :</strong> Le client insère sa carte dans le terminal TPE physique de votre banque (CBAO, SGBS, Ecobank). Vous saisissez le N° d&apos;autorisation/STAN dans D-Hôtel.
               </p>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-            <div>
-              <label className="font-semibold text-foreground-muted block mb-1">
-                Identifiant Boutique Maketou (Store ID)
-              </label>
-              <input
-                type="text"
-                value={maketouStoreId}
-                onChange={(e) => setMaketouStoreId(e.target.value)}
-                className="w-full px-3 py-2 text-sm rounded-lg bg-surface border border-surface-border font-mono"
-              />
-            </div>
+          {/* Liste des terminaux configurés */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+            {comptesDirects.map((compte) => (
+              <div
+                key={compte.id}
+                className={`p-4 rounded-xl border transition-all ${compte.actif
+                    ? "bg-background border-surface-border shadow-xs"
+                    : "bg-surface-muted/30 border-surface-border/60 opacity-60"
+                  }`}
+              >
+                <div className="flex items-start justify-between gap-3 mb-2.5">
+                  <div className="flex items-center gap-2.5">
+                    <div
+                      className={`p-2 rounded-lg ${compte.type === "wave"
+                          ? "bg-sky-500/15 text-sky-600 dark:text-sky-400"
+                          : compte.type === "orange_money"
+                            ? "bg-amber-500/15 text-amber-600 dark:text-amber-400"
+                            : compte.type === "tpe_banque"
+                              ? "bg-purple-500/15 text-purple-600 dark:text-purple-400"
+                              : "bg-emerald-500/15 text-emerald-600"
+                        }`}
+                    >
+                      {compte.type === "tpe_banque" ? (
+                        <CreditCard className="w-4 h-4" />
+                      ) : (
+                        <Smartphone className="w-4 h-4" />
+                      )}
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-xs sm:text-sm text-foreground">
+                        {compte.nom}
+                      </h4>
+                      <p className="text-[11px] text-foreground-muted">
+                        {compte.banqueOuOperateur} • {compte.pointDeVente}
+                      </p>
+                    </div>
+                  </div>
 
-            <div>
-              <label className="font-semibold text-foreground-muted block mb-1">
-                Clé d'API Secrète (Live API Key)
-              </label>
-              <input
-                type="password"
-                value={maketouApiKey}
-                onChange={(e) => setMaketouApiKey(e.target.value)}
-                className="w-full px-3 py-2 text-sm rounded-lg bg-surface border border-surface-border font-mono"
-              />
-            </div>
-          </div>
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => handleToggleCompte(compte.id)}
+                      className={`px-2 py-0.5 rounded-full text-[10px] font-black cursor-pointer transition ${compte.actif
+                          ? "bg-emerald-500/15 text-emerald-600 border border-emerald-500/30"
+                          : "bg-neutral-500/15 text-neutral-600 border border-neutral-500/30"
+                        }`}
+                    >
+                      {compte.actif ? "Actif" : "Inactif"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleSupprimerCompte(compte.id)}
+                      className="p-1 rounded-md text-red-500/70 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 transition cursor-pointer"
+                      title="Supprimer ce terminal"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
 
-          <div className="pt-2 flex flex-wrap gap-6 text-xs">
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={waveActif}
-                onChange={(e) => setWaveActif(e.target.checked)}
-                className="rounded text-[var(--primary)]"
-              />
-              <span className="font-bold text-foreground">Wave Mobile Money (Actif)</span>
-            </label>
-
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={omActif}
-                onChange={(e) => setOmActif(e.target.checked)}
-                className="rounded text-[var(--primary)]"
-              />
-              <span className="font-bold text-foreground">Orange Money Sénégal (Actif)</span>
-            </label>
-
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={cbActif}
-                onChange={(e) => setCbActif(e.target.checked)}
-                className="rounded text-[var(--primary)]"
-              />
-              <span className="font-bold text-foreground">Cartes Bancaires Visa / Mastercard (Actif)</span>
-            </label>
+                <div className="bg-surface-muted/40 p-2 rounded-lg text-xs font-mono space-y-1">
+                  <div className="flex justify-between items-center text-[11px]">
+                    <span className="text-foreground-muted font-sans font-medium">
+                      {compte.type === "tpe_banque" ? "Identifiant TPE / N° Terminal :" : "N° Marchand / Code Direct :"}
+                    </span>
+                    <span className="font-black text-foreground">{compte.numeroOuCode}</span>
+                  </div>
+                  {compte.instructions && (
+                    <p className="text-[10px] text-foreground-muted font-sans line-clamp-1">
+                      {compte.instructions}
+                    </p>
+                  )}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
 
@@ -356,6 +470,151 @@ export default function ParametresHotelPage() {
           </div>
         </div>
       </form>
+
+      {/* ── MODALE AJOUT TERMINAL / COMPTE DIRECT ── */}
+      {modalAjoutCompte && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm overflow-y-auto">
+          <div className="w-full max-w-md bg-surface text-foreground border border-surface-border rounded-2xl shadow-2xl max-h-[92vh] flex flex-col overflow-hidden animate-scale-up">
+            <div className="p-4 sm:p-5 border-b border-surface-border flex items-center justify-between shrink-0 bg-surface">
+              <div className="flex items-center gap-2">
+                <CreditCard className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                <h3 className="font-bold text-base text-foreground">
+                  Nouveau Terminal / Compte Direct
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setModalAjoutCompte(false)}
+                className="p-1.5 rounded-lg text-foreground-muted hover:text-foreground hover:bg-surface-muted transition"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleAjouterCompte} className="p-5 space-y-4 text-xs">
+              <div>
+                <label className="font-semibold text-foreground-muted block mb-1">
+                  Type de Terminal / Compte *
+                </label>
+                <select
+                  value={nouveauType}
+                  onChange={(e: any) => {
+                    const val = e.target.value;
+                    setNouveauType(val);
+                    if (val === 'wave') {
+                      setNouvelleBanque('Wave Business Sénégal');
+                      setNouveauNom('Wave Marchand');
+                    } else if (val === 'orange_money') {
+                      setNouvelleBanque('Orange Money Sénégal');
+                      setNouveauNom('Orange Money Marchand');
+                    } else if (val === 'tpe_banque') {
+                      setNouvelleBanque('CBAO Attijariwafa Bank');
+                      setNouveauNom('TPE Bancaire Réception');
+                    } else {
+                      setNouvelleBanque('Free Money Sénégal');
+                      setNouveauNom('Free Money Marchand');
+                    }
+                  }}
+                  className="w-full px-3 py-2 text-sm rounded-lg bg-surface border border-surface-border font-bold"
+                >
+                  <option value="wave">Wave Mobile Money (Direct)</option>
+                  <option value="orange_money">Orange Money (Code Marchand Direct)</option>
+                  <option value="tpe_banque">TPE Bancaire Physique (Visa / Mastercard / GIM)</option>
+                  <option value="free_money">Free Money Marchand</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="font-semibold text-foreground-muted block mb-1">
+                  Nom du Terminal / Appareil *
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="Ex: TPE Restaurant SGBS #02"
+                  value={nouveauNom}
+                  onChange={(e) => setNouveauNom(e.target.value)}
+                  className="w-full px-3 py-2 text-sm rounded-lg bg-surface border border-surface-border"
+                />
+              </div>
+
+              <div>
+                <label className="font-semibold text-foreground-muted block mb-1">
+                  {nouveauType === 'tpe_banque' ? 'N° Série / ID Terminal TPE *' : 'N° Téléphone ou Code Marchand *'}
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder={nouveauType === 'tpe_banque' ? 'Ex: TPE-CBAO-9912' : 'Ex: +221 77 000 00 00 ou 584912'}
+                  value={nouveauNumero}
+                  onChange={(e) => setNouveauNumero(e.target.value)}
+                  className="w-full px-3 py-2 text-sm rounded-lg bg-surface border border-surface-border font-mono font-bold"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="font-semibold text-foreground-muted block mb-1">
+                    Banque ou Opérateur
+                  </label>
+                  <input
+                    type="text"
+                    value={nouvelleBanque}
+                    onChange={(e) => setNouvelleBanque(e.target.value)}
+                    className="w-full px-3 py-2 text-xs rounded-lg bg-surface border border-surface-border"
+                  />
+                </div>
+
+                <div>
+                  <label className="font-semibold text-foreground-muted block mb-1">
+                    Point de Vente Rattaché
+                  </label>
+                  <select
+                    value={nouveauPointVente}
+                    onChange={(e) => setNouveauPointVente(e.target.value)}
+                    className="w-full px-3 py-2 text-xs rounded-lg bg-surface border border-surface-border"
+                  >
+                    <option value="Front-Desk & Réception">Front-Desk & Réception</option>
+                    <option value="Restaurant Principal">Restaurant Principal</option>
+                    <option value="Bar & Paillote">Bar & Paillote</option>
+                    <option value="Room Service">Room Service</option>
+                    <option value="Tous Services">Tous Services</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="font-semibold text-foreground-muted block mb-1">
+                  Instructions pour le personnel / client (Optionnel)
+                </label>
+                <input
+                  type="text"
+                  placeholder="Ex: Taper le montant sur le TPE puis insérer la carte"
+                  value={nouvellesInstructions}
+                  onChange={(e) => setNouvellesInstructions(e.target.value)}
+                  className="w-full px-3 py-2 text-xs rounded-lg bg-surface border border-surface-border"
+                />
+              </div>
+
+              <div className="pt-2 flex items-center justify-end gap-2 border-t border-surface-border">
+                <button
+                  type="button"
+                  onClick={() => setModalAjoutCompte(false)}
+                  className="px-4 py-2 text-xs font-semibold rounded-lg border border-surface-border hover:bg-surface-muted transition"
+                >
+                  Annuler
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 text-xs font-bold rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs transition"
+                >
+                  Enregistrer le Terminal
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

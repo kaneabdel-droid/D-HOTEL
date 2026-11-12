@@ -105,6 +105,7 @@ export const SECTIONS_MENUS: MenuItem[] = [
     items: [
       { titre: "Sessions de Caisse", href: "/tresorerie/caisses", key: "nav.caisses" },
       { titre: "Factures & Folios", href: "/tresorerie/factures", key: "nav.factures" },
+      { titre: "Encaissements Directs & TPE", href: "/tresorerie/encaissements-directs", key: "nav.encaissements_directs" },
     ],
   },
   {

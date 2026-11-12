@@ -12,8 +12,11 @@ import {
   UserCheck,
   FileText,
   X,
+  Smartphone,
 } from "lucide-react";
 import { formatXOF } from "@/lib/utils";
+import { ModalEncaissementDirect } from "@/components/ModalEncaissementDirect";
+import { TransactionDirecte } from "@/lib/paiement-direct-storage";
 
 interface VoyageurMouvement {
   id: string;
@@ -32,7 +35,22 @@ interface VoyageurMouvement {
 export default function ArriveesDepartsPage() {
   const [onglet, setOnglet] = useState<"arrivees" | "departs">("arrivees");
   const [modalPolice, setModalPolice] = useState<VoyageurMouvement | null>(null);
+  const [mouvementPaiement, setMouvementPaiement] = useState<VoyageurMouvement | null>(null);
   const [succesMsg, setSuccesMsg] = useState<string | null>(null);
+
+  const handlePaiementDirectValide = (tx: TransactionDirecte) => {
+    if (!mouvementPaiement) return;
+    const nouveauSolde = Math.max(0, mouvementPaiement.soldeRestant - tx.montant);
+    setArrivees((prev) =>
+      prev.map((a) => (a.id === mouvementPaiement.id ? { ...a, soldeRestant: nouveauSolde } : a))
+    );
+    setDeparts((prev) =>
+      prev.map((d) => (d.id === mouvementPaiement.id ? { ...d, soldeRestant: nouveauSolde } : d))
+    );
+    setMouvementPaiement(null);
+    setSuccesMsg(`Paiement de ${formatXOF(tx.montant)} validé sur ${tx.terminalOuCompteNom} (0% frais d'agrégateur). Solde mis à jour !`);
+    setTimeout(() => setSuccesMsg(null), 4000);
+  };
 
   const [arrivees, setArrivees] = useState<VoyageurMouvement[]>([
     {
@@ -226,38 +244,51 @@ export default function ArriveesDepartsPage() {
                   </span>
                 </td>
                 <td className="p-3 text-right">
-                  {onglet === "arrivees" ? (
-                    v.statut === "en_attente" ? (
+                  <div className="flex items-center justify-end gap-1.5">
+                    {v.soldeRestant > 0 && (
                       <button
                         type="button"
-                        onClick={() => setModalPolice(v)}
-                        className="px-3 py-1.5 rounded-lg bg-[#10B981] hover:bg-[#0da06e] text-white font-bold text-[11px]"
+                        onClick={() => setMouvementPaiement(v)}
+                        className="px-2.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] inline-flex items-center gap-1 shadow-xs cursor-pointer"
+                        title="Encaisser le solde sur appareils hôtel (0% agrégateur)"
                       >
-                        Enregistrer Check-in
+                        <Smartphone className="w-3.5 h-3.5" />
+                        <span>Régler Solde</span>
+                      </button>
+                    )}
+                    {onglet === "arrivees" ? (
+                      v.statut === "en_attente" ? (
+                        <button
+                          type="button"
+                          onClick={() => setModalPolice(v)}
+                          className="px-3 py-1.5 rounded-lg bg-[#10B981] hover:bg-[#0da06e] text-white font-bold text-[11px]"
+                        >
+                          Enregistrer Check-in
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => setModalPolice(v)}
+                          className="px-2.5 py-1 rounded-md border border-[var(--surface-border)] hover:bg-[var(--surface-muted)] text-[11px] font-medium text-[var(--foreground)] flex items-center gap-1 inline-flex"
+                        >
+                          <FileText className="w-3.5 h-3.5" />
+                          <span>Fiche Police</span>
+                        </button>
+                      )
+                    ) : v.statut === "en_attente" ? (
+                      <button
+                        type="button"
+                        onClick={() => validerCheckOut(v.id)}
+                        className="px-3 py-1.5 rounded-lg bg-[#9E2A2B] hover:bg-[#801e1f] text-white font-bold text-[11px]"
+                      >
+                        Clôturer Check-out
                       </button>
                     ) : (
-                      <button
-                        type="button"
-                        onClick={() => setModalPolice(v)}
-                        className="px-2.5 py-1 rounded-md border border-[var(--surface-border)] hover:bg-[var(--surface-muted)] text-[11px] font-medium text-[var(--foreground)] flex items-center gap-1 inline-flex"
-                      >
-                        <FileText className="w-3.5 h-3.5" />
-                        <span>Fiche Police</span>
-                      </button>
-                    )
-                  ) : v.statut === "en_attente" ? (
-                    <button
-                      type="button"
-                      onClick={() => validerCheckOut(v.id)}
-                      className="px-3 py-1.5 rounded-lg bg-[#9E2A2B] hover:bg-[#801e1f] text-white font-bold text-[11px]"
-                    >
-                      Clôturer Check-out
-                    </button>
-                  ) : (
-                    <span className="text-[11px] text-[#10B981] font-semibold">
-                      Départ Effectué
-                    </span>
-                  )}
+                      <span className="text-[11px] text-[#10B981] font-semibold">
+                        Départ Effectué
+                      </span>
+                    )}
+                  </div>
                 </td>
               </tr>
             ))}
@@ -345,6 +376,20 @@ export default function ArriveesDepartsPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* ── MODALE ENCAISSEMENT DIRECT SUR APPAREILS HÔTEL (ZÉRO AGRÉGATEUR) ── */}
+      {mouvementPaiement && (
+        <ModalEncaissementDirect
+          montant={mouvementPaiement.soldeRestant}
+          clientNom={mouvementPaiement.client}
+          folioOuCommandeRef={`Séjour ${mouvementPaiement.chambre}`}
+          chambreNumero={mouvementPaiement.chambre}
+          pointDeVente="Front-Desk & Réception"
+          caissier="Agent de Réception"
+          onClose={() => setMouvementPaiement(null)}
+          onSuccess={handlePaiementDirectValide}
+        />
       )}
     </div>
   );

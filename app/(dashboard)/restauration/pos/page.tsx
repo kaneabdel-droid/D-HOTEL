@@ -16,8 +16,11 @@ import {
   Layers,
   Sparkles,
   X,
+  ShieldCheck,
 } from "lucide-react";
 import { formatXOF } from "@/lib/utils";
+import { ModalEncaissementDirect } from "@/components/ModalEncaissementDirect";
+import { TransactionDirecte } from "@/lib/paiement-direct-storage";
 
 interface Produit {
   id: string;
@@ -60,8 +63,18 @@ export default function TouchPosPage() {
     },
   ]);
   const [modalChambre, setModalChambre] = useState(false);
+  const [modalEncaissementDirect, setModalEncaissementDirect] = useState(false);
   const [chambreSaisie, setChambreSaisie] = useState("201");
   const [succesPaiement, setSuccesPaiement] = useState<string | null>(null);
+
+  const handlePaiementDirectValide = (tx: TransactionDirecte) => {
+    setModalEncaissementDirect(false);
+    setSuccesPaiement(`Addition de ${formatXOF(tx.montant)} réglée via ${tx.methodeLibelle} sur les appareils de l'hôtel (Économie de commission : ${formatXOF(tx.fraisAggregateurEconomises)}) !`);
+    setPanier([]);
+    setTimeout(() => {
+      setSuccesPaiement(null);
+    }, 4500);
+  };
 
   const categories = [
     "Tous",
@@ -253,11 +266,10 @@ export default function TouchPosPage() {
                 key={cat}
                 type="button"
                 onClick={() => setCategorieActive(cat)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors ${
-                  categorieActive === cat
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors ${categorieActive === cat
                     ? "bg-[var(--primary)] text-white font-bold"
                     : "bg-[var(--surface)] border border-[var(--surface-border)] text-[var(--foreground-muted)] hover:text-[var(--foreground)]"
-                }`}
+                  }`}
               >
                 {cat}
               </button>
@@ -384,33 +396,34 @@ export default function TouchPosPage() {
               </div>
             </div>
 
-            {/* Boutons d'Action & Paiement */}
+            {/* Boutons d'Action & Paiement Direct */}
             <div className="grid grid-cols-2 gap-2 pt-1">
               <button
                 type="button"
                 disabled={panier.length === 0}
                 onClick={() => handlePayer("Espèces")}
-                className="flex items-center justify-center gap-1.5 py-2 px-2 rounded-lg bg-[var(--surface)] border border-[var(--surface-border)] hover:bg-white text-xs font-semibold text-[var(--foreground)] disabled:opacity-50"
+                className="flex items-center justify-center gap-1.5 py-2 px-2 rounded-lg bg-[var(--surface)] border border-[var(--surface-border)] hover:bg-white text-xs font-semibold text-[var(--foreground)] disabled:opacity-50 cursor-pointer"
               >
                 <Banknote className="w-3.5 h-3.5 text-[#10B981]" />
-                <span>Espèces</span>
+                <span>Espèces Direct</span>
               </button>
 
               <button
                 type="button"
                 disabled={panier.length === 0}
-                onClick={() => handlePayer("Wave / Orange Money")}
-                className="flex items-center justify-center gap-1.5 py-2 px-2 rounded-lg bg-[var(--surface)] border border-[var(--surface-border)] hover:bg-white text-xs font-semibold text-[var(--foreground)] disabled:opacity-50"
+                onClick={() => setModalEncaissementDirect(true)}
+                className="flex items-center justify-center gap-1.5 py-2 px-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-xs font-bold text-white shadow-xs disabled:opacity-50 transition-colors cursor-pointer"
+                title="Paiement direct Wave / Orange Money / TPE Carte sans intermédiaire (0% frais)"
               >
-                <Smartphone className="w-3.5 h-3.5 text-[#3B82F6]" />
-                <span>Mobile Money</span>
+                <Smartphone className="w-3.5 h-3.5" />
+                <span>Mobile & TPE Carte</span>
               </button>
 
               <button
                 type="button"
                 disabled={panier.length === 0}
                 onClick={() => setModalChambre(true)}
-                className="col-span-2 flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg bg-[#D4AF37] hover:bg-[#bfa032] text-black font-black text-xs shadow-xs disabled:opacity-50 transition-colors"
+                className="col-span-2 flex items-center justify-center gap-2 py-2.5 px-3 rounded-lg bg-[#D4AF37] hover:bg-[#bfa032] text-black font-black text-xs shadow-xs disabled:opacity-50 transition-colors cursor-pointer"
               >
                 <Hotel className="w-4 h-4" />
                 <span>Imputer sur la Chambre (Folio)</span>
@@ -495,6 +508,19 @@ export default function TouchPosPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* ── MODALE ENCAISSEMENT DIRECT RESTAURATION (ZÉRO AGRÉGATEUR) ── */}
+      {modalEncaissementDirect && (
+        <ModalEncaissementDirect
+          montant={total}
+          clientNom="Client Restaurant / Bar"
+          folioOuCommandeRef={`Addition Restaurant #${Date.now().toString().slice(-4)}`}
+          pointDeVente="Restaurant Principal"
+          caissier="Chef de Rang / Barman"
+          onClose={() => setModalEncaissementDirect(false)}
+          onSuccess={handlePaiementDirectValide}
+        />
       )}
     </div>
   );

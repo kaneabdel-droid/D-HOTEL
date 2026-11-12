@@ -21,9 +21,12 @@ import {
   Edit2,
   Trash2,
   Sparkles,
+  ShieldCheck,
 } from "lucide-react";
 import { formatXOF } from "@/lib/utils";
 import { loadHotelData, saveHotelData, clearHotelData } from "@/lib/hotel-storage";
+import { ModalEncaissementDirect } from "@/components/ModalEncaissementDirect";
+import { TransactionDirecte } from "@/lib/paiement-direct-storage";
 
 interface Reservation {
   id: string;
@@ -132,6 +135,39 @@ export default function ReservationsPage() {
   const [modalModifierReservation, setModalModifierReservation] = useState<Reservation | null>(null);
   const [succesMsg, setSuccesMsg] = useState<string | null>(null);
   const [reservationDetails, setReservationDetails] = useState<Reservation | null>(null);
+  const [reservationPaiement, setReservationPaiement] = useState<Reservation | null>(null);
+
+  const handlePaiementDirectValide = (tx: TransactionDirecte) => {
+    if (!reservationPaiement) return;
+    const nouvellesReservations = reservations.map((r) => {
+      if (r.id === reservationPaiement.id) {
+        const nouvelAcompte = r.acompteVerse + tx.montant;
+        const estSolde = nouvelAcompte >= r.montantTotal;
+        return {
+          ...r,
+          acompteVerse: nouvelAcompte,
+          statut: (estSolde ? "confirmee" : r.statut) as Reservation["statut"],
+          modePaiement: `${tx.methodeLibelle} (Direct hôtel - 0% agrégateur)`,
+        };
+      }
+      return r;
+    });
+    setReservations(nouvellesReservations);
+    saveHotelData("dhotel_reservations", nouvellesReservations);
+    if (reservationDetails && reservationDetails.id === reservationPaiement.id) {
+      const nouvelAcompte = reservationDetails.acompteVerse + tx.montant;
+      const estSolde = nouvelAcompte >= reservationDetails.montantTotal;
+      setReservationDetails({
+        ...reservationDetails,
+        acompteVerse: nouvelAcompte,
+        statut: (estSolde ? "confirmee" : reservationDetails.statut) as Reservation["statut"],
+        modePaiement: `${tx.methodeLibelle} (Direct hôtel - 0% agrégateur)`,
+      });
+    }
+    setReservationPaiement(null);
+    setSuccesMsg(`Paiement direct de ${formatXOF(tx.montant)} validé sur ${tx.terminalOuCompteNom} ! 0 FCFA de frais d'agrégateur (économie de ${formatXOF(tx.fraisAggregateurEconomises)}).`);
+    setTimeout(() => setSuccesMsg(null), 5000);
+  };
 
   // Formulaire nouvelle réservation
   const [nouveauClient, setNouveauClient] = useState("");
@@ -371,11 +407,10 @@ export default function ReservationsPage() {
               return (
                 <tr
                   key={r.id}
-                  className={`transition-colors ${
-                    isExempleFiligrane
+                  className={`transition-colors ${isExempleFiligrane
                       ? "opacity-75 bg-amber-500/5 hover:bg-amber-500/10"
                       : "hover:bg-[var(--surface-muted)]/50"
-                  }`}
+                    }`}
                 >
                   <td className="p-3">
                     <div className="flex items-center gap-1.5">
@@ -421,27 +456,37 @@ export default function ReservationsPage() {
                   </td>
                   <td className="p-3">
                     <span
-                      className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                        r.statut === "check_in"
+                      className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${r.statut === "check_in"
                           ? "bg-blue-100 text-blue-800"
                           : r.statut === "confirmee"
-                          ? "bg-emerald-100 text-emerald-800"
-                          : r.statut === "attente_acompte"
-                          ? "bg-amber-100 text-amber-800"
-                          : "bg-gray-100 text-gray-800"
-                      }`}
+                            ? "bg-emerald-100 text-emerald-800"
+                            : r.statut === "attente_acompte"
+                              ? "bg-amber-100 text-amber-800"
+                              : "bg-gray-100 text-gray-800"
+                        }`}
                     >
                       {r.statut === "check_in"
                         ? "En Séjour"
                         : r.statut === "confirmee"
-                        ? "Confirmée"
-                        : r.statut === "attente_acompte"
-                        ? "Attente Acompte"
-                        : r.statut}
+                          ? "Confirmée"
+                          : r.statut === "attente_acompte"
+                            ? "Attente Acompte"
+                            : r.statut}
                     </span>
                   </td>
                   <td className="p-3 text-right">
                     <div className="flex items-center justify-end gap-1.5">
+                      {r.montantTotal - r.acompteVerse > 0 && (
+                        <button
+                          type="button"
+                          onClick={() => setReservationPaiement(r)}
+                          className="px-2 py-1 rounded-md text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white transition cursor-pointer flex items-center gap-1 shadow-xs"
+                          title="Encaisser direct sur appareil hôtel (0% agrégateur)"
+                        >
+                          <Smartphone className="w-3 h-3" />
+                          <span>Payer Direct</span>
+                        </button>
+                      )}
                       <button
                         type="button"
                         onClick={() => setReservationDetails(r)}
@@ -794,24 +839,55 @@ export default function ReservationsPage() {
               </div>
             </div>
 
-            <div className="pt-2 flex items-center justify-end gap-2 border-t border-surface-border">
-              <button
-                type="button"
-                onClick={() => window.print()}
-                className="px-4 py-2 rounded-xl border border-surface-border text-xs font-bold text-foreground hover:bg-surface-muted transition flex items-center gap-1.5 cursor-pointer"
-              >
-                <span>Imprimer le Folio</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setReservationDetails(null)}
-                className="px-4 py-2 rounded-xl bg-[var(--primary)] text-white text-xs font-bold hover:opacity-95 transition cursor-pointer"
-              >
-                Fermer
-              </button>
+            <div className="pt-2 flex flex-wrap items-center justify-between gap-2 border-t border-surface-border">
+              <div>
+                {reservationDetails.montantTotal - reservationDetails.acompteVerse > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setReservationPaiement(reservationDetails);
+                    }}
+                    className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition flex items-center gap-1.5 cursor-pointer shadow-xs"
+                  >
+                    <ShieldCheck className="w-4 h-4" />
+                    <span>Encaisser Solde ({formatXOF(reservationDetails.montantTotal - reservationDetails.acompteVerse)}) Direct</span>
+                  </button>
+                )}
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => window.print()}
+                  className="px-4 py-2 rounded-xl border border-surface-border text-xs font-bold text-foreground hover:bg-surface-muted transition flex items-center gap-1.5 cursor-pointer"
+                >
+                  <span>Imprimer le Folio</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setReservationDetails(null)}
+                  className="px-4 py-2 rounded-xl bg-[var(--primary)] text-white text-xs font-bold hover:opacity-95 transition cursor-pointer"
+                >
+                  Fermer
+                </button>
+              </div>
             </div>
           </div>
         </div>
+      )}
+
+      {/* ── MODALE ENCAISSEMENT DIRECT SUR APPAREILS HÔTEL (ZÉRO AGRÉGATEUR) ── */}
+      {reservationPaiement && (
+        <ModalEncaissementDirect
+          montant={reservationPaiement.montantTotal - reservationPaiement.acompteVerse}
+          clientNom={reservationPaiement.client}
+          folioOuCommandeRef={reservationPaiement.code}
+          chambreNumero={reservationPaiement.chambre}
+          pointDeVente="Front-Desk & Réception"
+          caissier="Agent de Réception"
+          onClose={() => setReservationPaiement(null)}
+          onSuccess={handlePaiementDirectValide}
+        />
       )}
     </div>
   );
