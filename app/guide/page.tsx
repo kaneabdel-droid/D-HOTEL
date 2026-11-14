@@ -21,7 +21,10 @@ import {
   ArrowLeft,
   Smartphone,
   SlidersHorizontal,
-  FileText
+  FileText,
+  QrCode,
+  CreditCard,
+  Percent
 } from 'lucide-react'
 
 export default function GuideHotelPage() {
@@ -130,11 +133,10 @@ export default function GuideHotelPage() {
                 <button
                   key={c.id}
                   onClick={() => setActiveSection(c.id)}
-                  className={`w-full text-left p-3.5 rounded-xl transition-all flex items-start gap-3 border ${
-                    isActive
+                  className={`w-full text-left p-3.5 rounded-xl transition-all flex items-start gap-3 border ${isActive
                       ? 'bg-amber-500/10 border-amber-500/30 text-white shadow-lg'
                       : 'bg-slate-900 border-slate-800/80 text-slate-400 hover:text-white hover:bg-slate-850'
-                  }`}
+                    }`}
                 >
                   <div className={`p-2 rounded-lg mt-0.5 shrink-0 ${isActive ? 'bg-amber-500 text-slate-950 font-bold' : 'bg-slate-800 text-slate-400'}`}>
                     <Icon className="w-4 h-4" />
@@ -288,10 +290,44 @@ export default function GuideHotelPage() {
                   </div>
                 </div>
 
-                <div className="space-y-3 text-sm text-slate-300 leading-relaxed">
+                <div className="space-y-4 text-sm text-slate-300 leading-relaxed">
                   <p>
                     La <strong className="text-white">Main Courante</strong> récapitule l'ensemble des débits de la journée (chambres, restaurant, bar, spa) et les règlements reçus.
                   </p>
+
+                  {/* Encaissement direct 0% commission */}
+                  <div className="p-4 rounded-xl bg-slate-950 border border-amber-500/30 space-y-3">
+                    <div className="flex items-center gap-2">
+                      <span className="p-1.5 rounded-lg bg-emerald-500/20 text-emerald-400 font-bold text-xs flex items-center gap-1">
+                        <Percent className="w-3.5 h-3.5" /> 0% Commission
+                      </span>
+                      <h4 className="font-bold text-white text-sm">Paiements Mobile Money & Carte en direct (Sans intermédiaire)</h4>
+                    </div>
+                    <p className="text-xs text-slate-300 leading-relaxed">
+                      D-HOTEL intègre un terminal d'encaissement direct sur vos propres appareils sans recourir aux agrégateurs de paiement en ligne (qui prélèvent de 2% à 3.5% par transaction) :
+                    </p>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+                      <div className="p-3 rounded-lg bg-slate-900 border border-slate-800 text-xs">
+                        <div className="flex items-center gap-1.5 font-bold text-sky-400 mb-1">
+                          <QrCode className="w-4 h-4" /> Wave QR Direct
+                        </div>
+                        <p className="text-slate-400">Présentation du QR code marchand de l'établissement. Le client scanne et valide sans surcoût.</p>
+                      </div>
+                      <div className="p-3 rounded-lg bg-slate-900 border border-slate-800 text-xs">
+                        <div className="flex items-center gap-1.5 font-bold text-orange-400 mb-1">
+                          <Smartphone className="w-4 h-4" /> Orange Money Direct
+                        </div>
+                        <p className="text-slate-400">Paiement via le code marchand officiel ou code USSD direct au comptoir.</p>
+                      </div>
+                      <div className="p-3 rounded-lg bg-slate-900 border border-slate-800 text-xs">
+                        <div className="flex items-center gap-1.5 font-bold text-emerald-400 mb-1">
+                          <CreditCard className="w-4 h-4" /> TPE Carte Bancaire
+                        </div>
+                        <p className="text-slate-400">Saisie du montant sur le terminal bancaire de l'hôtel avec archivage de la référence de télécollecte.</p>
+                      </div>
+                    </div>
+                  </div>
+
                   <p>
                     À la fin de chaque journée ou poste de travail, le réceptionniste procède à la clôture de caisse avec vérification des espèces physiques, des reçus Wave/OM et du terminal de paiement électronique.
                   </p>
