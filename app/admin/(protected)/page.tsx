@@ -27,7 +27,7 @@ const produits = [
   {
     nom: 'SIGGIE',
     description: 'Gestion des GIE agricoles — membres, campagnes, intrants, trésorerie.',
-    href: 'https://siggie.dembasolution.com/admin',
+    href: 'https://siggie.dembasolution.com/admin/siggie',
     externe: true,
     icon: Building2,
     statut: 'en_ligne' as const,
@@ -35,7 +35,7 @@ const produits = [
   {
     nom: 'D-SANTÉ',
     description: 'Système hospitalier et clinique — DPI, consultations, triage, lits, pharmacie et tiers-payant IPM.',
-    href: 'https://d-sante.dembasolution.com/admin',
+    href: 'https://d-sante.dembasolution.com/admin/sante',
     externe: true,
     icon: Activity,
     statut: 'en_ligne' as const,
