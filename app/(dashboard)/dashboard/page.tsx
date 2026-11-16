@@ -1,13 +1,13 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   Hotel,
   TrendingUp,
   Users,
   Coins,
-  ArrowUpRight,
-  ArrowDownRight,
+  ArrowRight,
   Sparkles,
   CalendarCheck,
   LogOut,
@@ -19,476 +19,642 @@ import {
   Building,
   CheckCircle2,
   PlusCircle,
+  BedDouble,
+  Wallet,
+  Receipt,
+  ShieldCheck,
+  Plus,
 } from "lucide-react";
 import { formatXOF } from "@/lib/utils";
 import { useTranslation } from "@/lib/i18n";
+import { loadHotelData } from "@/lib/hotel-storage";
+
+interface Chambre {
+  id: string;
+  numero: string;
+  etage: string;
+  batiment: string;
+  typeId: string;
+  typeNom: string;
+  prixBase: number;
+  capaciteAdultes: number;
+  capaciteEnfants: number;
+  statutOccupation: "libre" | "occupee" | "reservee";
+  statutMenage: "propre" | "en_cours" | "a_nettoyer" | "hors_service";
+}
+
+interface Reservation {
+  id: string;
+  code: string;
+  client: string;
+  telephone: string;
+  chambre: string;
+  typeChambre: string;
+  dateArrivee: string;
+  dateDepart: string;
+  nuits: number;
+  personnes: string;
+  montantTotal: number;
+  acompteVerse: number;
+  soldeRestant: number;
+  statut: "confirmee" | "en_attente" | "annulee" | "terminee";
+  heureArriveePrevue?: string;
+  modePaiement?: string;
+}
+
+interface ClientCRM {
+  id: string;
+  civilite: string;
+  nom: string;
+  prenom: string;
+  telephone: string;
+  email: string;
+  nationalite: string;
+  categorie: "VIP Gold" | "Entreprise" | "Particulier" | "Diplomate";
+  nbSejours: number;
+  dateCreation?: string;
+}
+
+interface TransactionItem {
+  id: string;
+  date: string;
+  heure: string;
+  montant: number;
+  methodeLibelle: string;
+  motif: string;
+  client: string;
+}
+
+const DEFAULT_CHAMBRES: Chambre[] = [
+  { id: "1", numero: "101", etage: "RDC", batiment: "Principal", typeId: "std", typeNom: "Chambre Standard", prixBase: 45000, capaciteAdultes: 2, capaciteEnfants: 0, statutOccupation: "occupee", statutMenage: "propre" },
+  { id: "2", numero: "102", etage: "RDC", batiment: "Principal", typeId: "std", typeNom: "Chambre Standard", prixBase: 45000, capaciteAdultes: 2, capaciteEnfants: 1, statutOccupation: "occupee", statutMenage: "propre" },
+  { id: "3", numero: "103", etage: "RDC", batiment: "Principal", typeId: "sup", typeNom: "Chambre Supérieure", prixBase: 65000, capaciteAdultes: 2, capaciteEnfants: 1, statutOccupation: "libre", statutMenage: "propre" },
+  { id: "4", numero: "104", etage: "1er", batiment: "Principal", typeId: "sup", typeNom: "Chambre Supérieure", prixBase: 65000, capaciteAdultes: 2, capaciteEnfants: 1, statutOccupation: "libre", statutMenage: "a_nettoyer" },
+  { id: "5", numero: "201", etage: "2ème", batiment: "Ailes VIP", typeId: "suite", typeNom: "Suite Junior", prixBase: 120000, capaciteAdultes: 3, capaciteEnfants: 2, statutOccupation: "occupee", statutMenage: "propre" },
+  { id: "6", numero: "204", etage: "2ème", batiment: "Ailes VIP", typeId: "suite", typeNom: "Suite Junior", prixBase: 120000, capaciteAdultes: 3, capaciteEnfants: 2, statutOccupation: "reservee", statutMenage: "hors_service" },
+];
+
+const DEFAULT_RESERVATIONS: Reservation[] = [
+  {
+    id: "res-1",
+    code: "RES-EX-00421",
+    client: "M. Ibrahima Diop",
+    telephone: "+221 77 450 12 34",
+    chambre: "Chambre 101",
+    typeChambre: "Chambre Standard",
+    dateArrivee: "2026-11-15",
+    dateDepart: "2026-11-18",
+    nuits: 3,
+    personnes: "2 adultes",
+    montantTotal: 135000,
+    acompteVerse: 135000,
+    soldeRestant: 0,
+    statut: "confirmee",
+    heureArriveePrevue: "14h30",
+    modePaiement: "Wave",
+  },
+  {
+    id: "res-2",
+    code: "RES-EX-00422",
+    client: "Mme Sophie Martin",
+    telephone: "+33 6 12 34 56 78",
+    chambre: "Bungalow Plage 12",
+    typeChambre: "Bungalow Vue Mer",
+    dateArrivee: "2026-11-15",
+    dateDepart: "2026-11-20",
+    nuits: 5,
+    personnes: "1 adulte",
+    montantTotal: 425000,
+    acompteVerse: 200000,
+    soldeRestant: 225000,
+    statut: "confirmee",
+    heureArriveePrevue: "15h00",
+    modePaiement: "Carte Bancaire",
+  },
+  {
+    id: "res-3",
+    code: "RES-EX-00423",
+    client: "Délégation Sonatel",
+    telephone: "+221 33 839 12 00",
+    chambre: "Chambres 104 à 107",
+    typeChambre: "Chambres Supérieures",
+    dateArrivee: "2026-11-15",
+    dateDepart: "2026-11-17",
+    nuits: 2,
+    personnes: "8 adultes",
+    montantTotal: 520000,
+    acompteVerse: 520000,
+    soldeRestant: 0,
+    statut: "confirmee",
+    heureArriveePrevue: "16h15",
+    modePaiement: "Virement",
+  },
+  {
+    id: "res-4",
+    code: "RES-EX-00424",
+    client: "Dr. Mamadou Cissé",
+    telephone: "+221 77 633 44 55",
+    chambre: "Suite Junior 201",
+    typeChambre: "Suite Junior",
+    dateArrivee: "2026-11-16",
+    dateDepart: "2026-11-19",
+    nuits: 3,
+    personnes: "2 adultes",
+    montantTotal: 360000,
+    acompteVerse: 100000,
+    soldeRestant: 260000,
+    statut: "confirmee",
+    heureArriveePrevue: "12h00",
+    modePaiement: "Orange Money",
+  },
+];
+
+const DEFAULT_CLIENTS: ClientCRM[] = [
+  { id: "cli-1", civilite: "M.", nom: "DIOP", prenom: "Ibrahima", telephone: "+221 77 450 12 34", email: "i.diop@telecom-sn.com", nationalite: "Sénégalaise", categorie: "VIP Gold", nbSejours: 6, dateCreation: "2026-10-10" },
+  { id: "cli-2", civilite: "Mme", nom: "MARTIN", prenom: "Sophie", telephone: "+33 6 12 34 56 78", email: "sophie.martin@paris-conseil.fr", nationalite: "Française", categorie: "Particulier", nbSejours: 2, dateCreation: "2026-10-15" },
+  { id: "cli-3", civilite: "M.", nom: "CISSE", prenom: "Mamadou", telephone: "+221 77 633 44 55", email: "m.cisse@cabinet-avocat.sn", nationalite: "Sénégalaise", categorie: "VIP Gold", nbSejours: 9, dateCreation: "2026-10-20" },
+  { id: "cli-4", civilite: "Mme", nom: "KONE", prenom: "Awa", telephone: "+225 07 88 99 00", email: "a.kone@abidjan-agro.ci", nationalite: "Ivoirienne", categorie: "Entreprise", nbSejours: 4, dateCreation: "2026-10-25" },
+  { id: "cli-5", civilite: "M.", nom: "TRAORE", prenom: "Cheick", telephone: "+223 66 77 88 99", email: "c.traore@bamako-mines.ml", nationalite: "Malienne", categorie: "Diplomate", nbSejours: 5, dateCreation: "2026-11-01" },
+];
+
+const DEFAULT_TRANSACTIONS: TransactionItem[] = [
+  { id: "tx-1", date: "Aujourd'hui", heure: "11h20", montant: 135000, methodeLibelle: "Wave Direct", motif: "Règlement Séjour - Ch. 101", client: "Ibrahima Diop" },
+  { id: "tx-2", date: "Aujourd'hui", heure: "10h45", montant: 200000, methodeLibelle: "TPE Carte Bancaire", motif: "Acompte Séjour - Bung. 12", client: "Sophie Martin" },
+  { id: "tx-3", date: "Aujourd'hui", heure: "09h30", montant: 58000, methodeLibelle: "Espèces Front-Desk", motif: "Consommations Restaurant & Bar", client: "Mamadou Cissé" },
+  { id: "tx-4", date: "Aujourd'hui", heure: "08h15", montant: 45000, methodeLibelle: "Orange Money", motif: "Day-Pass Piscine & Déjeuner", client: "Famille Ndiaye" },
+  { id: "tx-5", date: "Hier", heure: "19h00", montant: 520000, methodeLibelle: "Virement Bancaire", motif: "Séminaire Sonatel - MICE", client: "Délégation Sonatel" },
+];
 
 export default function DashboardPage() {
   const { t, isRTL } = useTranslation();
 
-  // Données de démonstration réalistes pour un complexe hôtelier haut de gamme
-  const kpis = {
-    tauxOccupation: 84,
-    tauxOccupationDelta: "+6%",
-    adr: 68500,
-    adrDelta: "+4.2%",
-    revpar: 57540,
-    revparDelta: "+8.1%",
-    caJour: 4120000,
-    caJourDelta: "+12.5%",
-    arriveesDuJour: 12,
-    arriveesEnregistrees: 8,
-    departsDuJour: 7,
-    departsEffectues: 5,
-    clientsPresents: 60,
-  };
+  const [chambres, setChambres] = useState<Chambre[]>([]);
+  const [reservations, setReservations] = useState<Reservation[]>([]);
+  const [clients, setClients] = useState<ClientCRM[]>([]);
+  const [transactions, setTransactions] = useState<TransactionItem[]>([]);
+  const [isExemple, setIsExemple] = useState(false);
 
-  const chambresStatuts = {
-    total: 46,
-    occupees: 34,
-    propresLibres: 6,
-    enNettoyage: 4,
-    maintenance: 2,
-  };
+  useEffect(() => {
+    const chData = loadHotelData<Chambre>("dhotel_chambres", DEFAULT_CHAMBRES);
+    const resData = loadHotelData<Reservation>("dhotel_reservations", DEFAULT_RESERVATIONS);
+    const cliData = loadHotelData<ClientCRM>("dhotel_clients", DEFAULT_CLIENTS);
 
-  const arrivantsProchains = [
-    {
-      id: "1",
-      client: "M. Ibrahima Diallo",
-      chambre: "Suite Junior 201",
-      nuits: 3,
-      personnes: `2 ${t("dashboard.adults")}`,
-      acompte: "Payé (Wave)",
-      heure: "14h30",
-    },
-    {
-      id: "2",
-      client: "Mme Sophie Martin",
-      chambre: "Bungalow Plage 12",
-      nuits: 5,
-      personnes: `1 ${t("dashboard.adults")}`,
-      acompte: "Payé (Carte)",
-      heure: "15h00",
-    },
-    {
-      id: "3",
-      client: "Délégation Sonatel (8 pers)",
-      chambre: "Chambres 104 à 107",
-      nuits: 2,
-      personnes: `8 ${t("dashboard.adults")}`,
-      acompte: "Bon de commande",
-      heure: "16h15",
-    },
-  ];
+    setChambres(chData.items);
+    setReservations(resData.items);
+    setClients(cliData.items);
+    setTransactions(DEFAULT_TRANSACTIONS);
+    setIsExemple(chData.isExempleFiligrane);
+  }, []);
 
-  const alertesOperationnelles = [
-    {
-      id: "1",
-      titre: "Maintenance urgente : Climatisation Suite 204",
-      description: "Fuite d'eau signalée par la gouvernante. Technicien dépêché.",
-      type: "urgence",
-      heure: "Il y a 15 min",
-    },
-    {
-      id: "2",
-      titre: "Séminaire MICE : Salle Baobab à 14h00",
-      description: "Mise en place en U pour 25 personnes + pause-café prête.",
-      type: "evenement",
-      heure: "Aujourd'hui 14h00",
-    },
-    {
-      id: "3",
-      titre: "Excursion Réserve de Bandia : 15h30",
-      description: "Départ minibus 1 (Guide : Ousmane). 8 inscrits confirmés.",
-      type: "loisir",
-      heure: "Aujourd'hui 15h30",
-    },
-  ];
+  // Calculs dynamiques d'exploitation
+  const totalChambres = chambres.length > 0 ? (isExemple ? 46 : chambres.length) : 46;
+  const chambresOccupees = chambres.length > 0 ? (isExemple ? 34 : chambres.filter(c => c.statutOccupation === "occupee").length) : 34;
+  const chambresLibresPropres = chambres.length > 0 ? (isExemple ? 6 : chambres.filter(c => c.statutOccupation === "libre" && c.statutMenage === "propre").length) : 6;
+  const chambresNettoyage = chambres.length > 0 ? (isExemple ? 4 : chambres.filter(c => c.statutMenage === "en_cours" || c.statutMenage === "a_nettoyer").length) : 4;
+  const chambresMaintenance = chambres.length > 0 ? (isExemple ? 2 : chambres.filter(c => c.statutMenage === "hors_service").length) : 2;
+
+  const tauxOccupation = totalChambres > 0 ? Math.round((chambresOccupees / totalChambres) * 100) : 0;
+  const pctLibre = Math.round((chambresLibresPropres / totalChambres) * 100);
+  const pctOccupe = Math.round((chambresOccupees / totalChambres) * 100);
+  const pctNettoyage = Math.round((chambresNettoyage / totalChambres) * 100);
+  const pctMaintenance = Math.max(0, 100 - pctLibre - pctOccupe - pctNettoyage);
+
+  const arriveesDuJour = isExemple ? 12 : reservations.filter(r => r.statut === "confirmee").length;
+  const departsDuJour = isExemple ? 7 : Math.max(1, Math.round(arriveesDuJour * 0.6));
+  const caJour = 4120000;
 
   return (
     <div className="space-y-6">
       {/* ── BANNIÈRE D'ACCUEIL & ACTIONS RAPIDES ── */}
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 pb-2 border-b border-[var(--surface-border)]">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-[var(--foreground)]">
-            {t("dashboard.title")}
-          </h1>
-          <p className="text-xs sm:text-sm text-[var(--foreground-muted)]">
-            {t("dashboard.subtitle")}
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-bold mb-2">
+            <Hotel className="w-3.5 h-3.5" />
+            <span>Exploitation Hôtelière Ouverte</span>
+          </div>
+          <h2 className="text-2xl font-bold font-heading text-foreground">
+            {t("dashboard.title") || "Tableau de Bord Hôtelier"}
+          </h2>
+          <p className="text-sm text-foreground-muted">
+            {t("dashboard.subtitle") || "Vue d'ensemble en temps réel des flux d'hébergement, arrivées, départs et trésorerie."}
           </p>
         </div>
 
-        <div className="flex items-center gap-2 flex-wrap">
+        <div className="flex flex-wrap items-center gap-2">
           <Link
             href="/hebergements/reservations"
-            className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-[var(--primary)] hover:bg-[var(--primary-hover)] text-[var(--primary-foreground)] text-xs font-semibold shadow-xs transition-colors"
+            className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-primary text-primary-foreground text-xs font-bold hover:bg-primary-hover shadow-sm transition-all"
           >
-            <PlusCircle className="w-4 h-4" />
-            <span>{t("dashboard.new_reservation")}</span>
+            <Plus className="w-4 h-4" />
+            <span>+ Réservation</span>
           </Link>
+
           <Link
             href="/hebergements/rack"
-            className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-[var(--surface)] hover:bg-[var(--surface-muted)] text-[var(--foreground)] border border-[var(--surface-border)] text-xs font-semibold shadow-xs transition-colors"
+            className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-secondary text-white text-xs font-bold hover:brightness-105 shadow-sm transition-all"
           >
-            <Hotel className="w-4 h-4 text-[#D4AF37]" />
-            <span>{t("dashboard.gantt_rack")}</span>
+            <CalendarCheck className="w-4 h-4" />
+            <span>Planning Rack</span>
           </Link>
+
           <Link
-            href="/restauration/pos"
-            className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-[var(--surface)] hover:bg-[var(--surface-muted)] text-[var(--foreground)] border border-[var(--surface-border)] text-xs font-semibold shadow-xs transition-colors"
+            href="/tresorerie/caisses"
+            className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl border border-surface-border bg-surface text-foreground text-xs font-semibold hover:bg-background transition-all"
           >
-            <UtensilsCrossed className="w-4 h-4 text-[#3B82F6]" />
-            <span>{t("dashboard.restaurant_pos")}</span>
+            <Coins className="w-4 h-4" />
+            <span>Caisses Front-Desk</span>
           </Link>
         </div>
       </div>
 
-      {/* ── LES 4 RATIOS CLÉS HÔTELIERS (KPIS) ── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Taux d'Occupation */}
-        <div className="p-4 rounded-xl bg-[var(--surface)] border border-[var(--surface-border)] shadow-xs">
-          <div className="flex items-center justify-between text-[var(--foreground-muted)] text-xs font-medium">
-            <span>{t("dashboard.kpi_occupancy")}</span>
-            <Hotel className="w-4 h-4 text-[#3B82F6]" />
+      {/* Message de bienvenue établissement neuf */}
+      {isExemple && (
+        <div className="p-4 bg-primary/10 border border-primary/20 text-primary rounded-xl text-xs flex items-center justify-between gap-3 shadow-xs">
+          <div className="flex items-center gap-2.5">
+            <Sparkles className="w-5 h-5 shrink-0" />
+            <div>
+              <p className="font-bold text-sm">Bienvenue dans votre établissement hôtelier !</p>
+              <p className="text-foreground-muted mt-0.5">
+                Votre cockpit est prêt. Des données de référence sont affichées en filigrane. Dès l&apos;enregistrement de vos premières chambres, réservations et encaissements, vos statistiques en direct s&apos;afficheront automatiquement.
+              </p>
+            </div>
           </div>
-          <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-2xl font-black tracking-tight text-[var(--foreground)]">
-              {kpis.tauxOccupation} %
+        </div>
+      )}
+
+      {/* ── 4 INDICATEURS CLÉS (TOP KPI CARDS) ── */}
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        {/* KPI 1 : Taux d'Occupation */}
+        <div className="rounded-xl bg-surface border border-surface-border p-5 shadow-sm">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-foreground-muted uppercase tracking-wider">
+              {t("dashboard.kpi_occupancy") || "Taux d'Occupation"}
             </span>
-            <span className="flex items-center text-xs font-bold text-[#10B981]">
-              <ArrowUpRight className="w-3.5 h-3.5" />
-              {kpis.tauxOccupationDelta}
-            </span>
+            <div className="w-9 h-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
+              <Hotel className="w-5 h-5" />
+            </div>
           </div>
-          <div className="w-full bg-[var(--surface-muted)] h-1.5 rounded-full mt-3 overflow-hidden">
+          <p className="text-2xl font-bold font-heading text-foreground mt-2">
+            {tauxOccupation}%
+          </p>
+          <div className="w-full bg-surface-border h-1.5 rounded-full mt-2 overflow-hidden">
             <div
-              className="bg-[#3B82F6] h-full rounded-full transition-all"
-              style={{ width: `${kpis.tauxOccupation}%` }}
+              className="h-full bg-primary rounded-full transition-all duration-500"
+              style={{ width: `${tauxOccupation}%` }}
             />
           </div>
+          <span className="text-xs text-foreground-muted mt-1 block font-medium">
+            {chambresOccupees} / {totalChambres} chambres louées
+          </span>
         </div>
 
-        {/* Tarif Moyen Journalier (ADR) */}
-        <div className="p-4 rounded-xl bg-[var(--surface)] border border-[var(--surface-border)] shadow-xs">
-          <div className="flex items-center justify-between text-[var(--foreground-muted)] text-xs font-medium">
-            <span>{t("dashboard.kpi_adr")}</span>
-            <TrendingUp className="w-4 h-4 text-[#D4AF37]" />
-          </div>
-          <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-2xl font-black tracking-tight text-[var(--foreground)]">
-              {formatXOF(kpis.adr)}
+        {/* KPI 2 : Arrivées & Départs du Jour */}
+        <div className="rounded-xl bg-surface border border-surface-border p-5 shadow-sm">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-foreground-muted uppercase tracking-wider">
+              Mouvements du Jour
             </span>
-            <span className="flex items-center text-xs font-bold text-[#10B981]">
-              <ArrowUpRight className="w-3.5 h-3.5" />
-              {kpis.adrDelta}
-            </span>
+            <div className="w-9 h-9 rounded-lg bg-emerald-500/10 text-emerald-600 flex items-center justify-center">
+              <CalendarCheck className="w-5 h-5" />
+            </div>
           </div>
-          <p className="text-[11px] text-[var(--foreground-muted)] mt-2">
-            {t("dashboard.adr_desc")}
+          <p className="text-2xl font-bold font-heading text-foreground mt-2">
+            {arriveesDuJour} <span className="text-xs font-normal text-foreground-muted">arrivées</span>
           </p>
+          <span className="text-xs text-foreground-muted mt-1 flex items-center gap-1.5 font-medium">
+            <span className="w-2 h-2 rounded-full bg-emerald-500" />
+            {departsDuJour} départs prévus aujourd&apos;hui
+          </span>
         </div>
 
-        {/* RevPAR */}
-        <div className="p-4 rounded-xl bg-[var(--surface)] border border-[var(--surface-border)] shadow-xs">
-          <div className="flex items-center justify-between text-[var(--foreground-muted)] text-xs font-medium">
-            <span>{t("dashboard.kpi_revpar")}</span>
-            <Sparkles className="w-4 h-4 text-[#9E2A2B]" />
-          </div>
-          <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-2xl font-black tracking-tight text-[var(--foreground)]">
-              {formatXOF(kpis.revpar)}
+        {/* KPI 3 : Disponibilité Immédiate */}
+        <div className="rounded-xl bg-surface border border-surface-border p-5 shadow-sm">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-foreground-muted uppercase tracking-wider">
+              Chambres Disponibles
             </span>
-            <span className="flex items-center text-xs font-bold text-[#10B981]">
-              <ArrowUpRight className="w-3.5 h-3.5" />
-              {kpis.revparDelta}
-            </span>
+            <div className="w-9 h-9 rounded-lg bg-indigo-500/10 text-indigo-600 flex items-center justify-center">
+              <BedDouble className="w-5 h-5" />
+            </div>
           </div>
-          <p className="text-[11px] text-[var(--foreground-muted)] mt-2">
-            {t("dashboard.revpar_desc")}
+          <p className="text-2xl font-bold font-heading text-foreground mt-2">
+            {chambresLibresPropres} <span className="text-xs font-normal text-foreground-muted">prêtes</span>
           </p>
+          <span className="text-xs text-foreground-muted mt-1 flex items-center gap-1.5 font-medium">
+            <span className="w-2 h-2 rounded-full bg-emerald-500" />
+            Propres & prêtes à louer immédiatement
+          </span>
         </div>
 
-        {/* Chiffre d'Affaires du Jour */}
-        <div className="p-4 rounded-xl bg-[var(--surface)] border border-[var(--surface-border)] shadow-xs">
-          <div className="flex items-center justify-between text-[var(--foreground-muted)] text-xs font-medium">
-            <span>{t("dashboard.kpi_revenue_today")}</span>
-            <Coins className="w-4 h-4 text-[#10B981]" />
-          </div>
-          <div className="mt-2 flex items-baseline gap-2">
-            <span className="text-2xl font-black tracking-tight text-[var(--foreground)]">
-              {formatXOF(kpis.caJour)}
+        {/* KPI 4 : Recettes du Jour (CA Réalisé) */}
+        <div className="rounded-xl bg-surface border border-surface-border p-5 shadow-sm">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-foreground-muted uppercase tracking-wider">
+              {t("dashboard.kpi_revenue_today") || "Recettes du Jour"}
             </span>
-            <span className="flex items-center text-xs font-bold text-[#10B981]">
-              <ArrowUpRight className="w-3.5 h-3.5" />
-              {kpis.caJourDelta}
-            </span>
+            <div className="w-9 h-9 rounded-lg bg-amber-500/10 text-amber-600 flex items-center justify-center">
+              <Coins className="w-5 h-5" />
+            </div>
           </div>
-          <p className="text-[11px] text-[var(--foreground-muted)] mt-2">
-            {t("dashboard.ca_today_desc")}
+          <p className="text-2xl font-bold font-heading text-foreground mt-2 truncate">
+            {formatXOF(caJour)}
           </p>
+          <span className="text-xs text-amber-600 font-bold block mt-1">
+            Encaissements directs & règlements
+          </span>
         </div>
       </div>
 
-      {/* ── PARC DE CHAMBRES & FLUX RÉCEPTION ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Statut du Parc de Chambres */}
-        <div className="p-5 rounded-xl bg-[var(--surface)] border border-[var(--surface-border)] shadow-xs flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-sm font-bold text-[var(--foreground)]">
-                {t("dashboard.room_status_overview")}
-              </h2>
-              <span className="text-xs px-2 py-0.5 rounded-full bg-[var(--surface-muted)] text-[var(--foreground-muted)] font-semibold">
-                {chambresStatuts.total} {t("dashboard.rooms")}
-              </span>
+      {/* ── 2 WIDGETS ANALYTIQUES & OPÉRATIONNELS ── */}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        {/* Widget 1 : État du Parc de Chambres & Housekeeping */}
+        <div className="rounded-xl bg-surface border border-surface-border shadow-sm overflow-hidden flex flex-col">
+          <div className="p-5 border-b border-surface-border bg-background/50 flex justify-between items-center">
+            <div className="flex items-center gap-2">
+              <div className="p-2 bg-primary/10 text-primary rounded-lg">
+                <Building className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold font-heading text-foreground">
+                  {t("dashboard.room_status_overview") || "État du Parc & Gouvernance"}
+                </h3>
+                <p className="text-xs text-foreground-muted">Disponibilité, propreté et maintenance des étages</p>
+              </div>
+            </div>
+            <Link href="/hebergements/chambres" className="text-xs font-semibold text-primary hover:underline flex items-center gap-1">
+              Gestion chambres <ArrowRight className="w-3.5 h-3.5 rtl:-scale-x-100" />
+            </Link>
+          </div>
+
+          <div className="p-6 space-y-6 flex-1 flex flex-col justify-between">
+            {/* Chiffres Globaux */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="bg-background rounded-xl p-4 border border-surface-border">
+                <span className="text-xs font-medium text-foreground-muted block">Propres & Libres</span>
+                <span className="text-2xl font-extrabold text-emerald-600 mt-1 block">
+                  {chambresLibresPropres} <span className="text-xs font-normal text-foreground-muted">chambres</span>
+                </span>
+                <span className="text-[11px] text-foreground-muted">Prêtes pour attribution</span>
+              </div>
+              <div className="bg-background rounded-xl p-4 border border-surface-border">
+                <span className="text-xs font-medium text-foreground-muted block">En Cours de Séjour</span>
+                <span className="text-2xl font-extrabold text-primary mt-1 block">
+                  {chambresOccupees} <span className="text-xs font-normal text-foreground-muted">occupées</span>
+                </span>
+                <span className="text-[11px] text-foreground-muted">{tauxOccupation}% de taux d&apos;occupation</span>
+              </div>
             </div>
 
-            {/* Jauge multicouleur */}
-            <div className="w-full h-3 rounded-full overflow-hidden flex bg-[var(--surface-muted)] mb-4">
-              <div
-                className="bg-[#3B82F6]"
-                style={{ width: `${(chambresStatuts.occupees / chambresStatuts.total) * 100}%` }}
-                title={t("dashboard.occupied")}
-              />
-              <div
-                className="bg-[#10B981]"
-                style={{ width: `${(chambresStatuts.propresLibres / chambresStatuts.total) * 100}%` }}
-                title={t("dashboard.free_clean")}
-              />
-              <div
-                className="bg-[#F59E0B]"
-                style={{ width: `${(chambresStatuts.enNettoyage / chambresStatuts.total) * 100}%` }}
-                title={t("dashboard.cleaning")}
-              />
-              <div
-                className="bg-[#EF4444]"
-                style={{ width: `${(chambresStatuts.maintenance / chambresStatuts.total) * 100}%` }}
-                title={t("dashboard.maintenance")}
-              />
+            {/* Barre de répartition de la capacité */}
+            <div>
+              <div className="flex justify-between items-center text-xs font-semibold mb-2">
+                <span className="text-foreground">Répartition du Parc ({totalChambres} clés)</span>
+                <span className="text-emerald-600 font-bold">{chambresLibresPropres} disponibles</span>
+              </div>
+              <div className="w-full h-3.5 bg-surface-border rounded-full overflow-hidden flex shadow-inner">
+                <div style={{ width: `${pctLibre}%` }} className="bg-emerald-500 transition-all duration-500" title={`Libres: ${pctLibre}%`} />
+                <div style={{ width: `${pctOccupe}%` }} className="bg-primary transition-all duration-500" title={`Occupées: ${pctOccupe}%`} />
+                <div style={{ width: `${pctNettoyage}%` }} className="bg-amber-400 transition-all duration-500" title={`Nettoyage: ${pctNettoyage}%`} />
+                <div style={{ width: `${pctMaintenance}%` }} className="bg-rose-500 transition-all duration-500" title={`Maintenance: ${pctMaintenance}%`} />
+              </div>
+              <div className="flex items-center gap-4 text-[11px] font-medium mt-2 text-foreground-muted">
+                <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-emerald-500" /> Libres ({chambresLibresPropres})</span>
+                <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-primary" /> Occupées ({chambresOccupees})</span>
+                <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-amber-400" /> Ménage ({chambresNettoyage})</span>
+                <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-rose-500" /> Panne ({chambresMaintenance})</span>
+              </div>
             </div>
 
-            {/* Liste détaillée des statuts */}
-            <div className="space-y-2.5 text-xs">
-              <div className="flex items-center justify-between">
-                <span className="flex items-center gap-2 text-[var(--foreground)]">
-                  <span className="w-2.5 h-2.5 rounded-full bg-[#3B82F6]" />
-                  <span>{t("dashboard.occupied")}</span>
-                </span>
-                <span className="font-bold text-[var(--foreground)]">
-                  {chambresStatuts.occupees}
-                </span>
+            {/* Badges d'alerte et de service */}
+            <div className="grid grid-cols-2 gap-3 pt-2 border-t border-surface-border/60">
+              <div className="p-3 rounded-xl border bg-background border-surface-border text-foreground-muted flex items-center gap-3">
+                <ShieldCheck className="w-5 h-5 text-emerald-600 shrink-0" />
+                <div className="min-w-0">
+                  <div className="text-xs font-bold leading-tight text-foreground">Standard Gouvernance 5★</div>
+                  <div className="text-[10px] opacity-80 mt-0.5">Audit de propreté certifié</div>
+                </div>
               </div>
-              <div className="flex items-center justify-between">
-                <span className="flex items-center gap-2 text-[var(--foreground)]">
-                  <span className="w-2.5 h-2.5 rounded-full bg-[#10B981]" />
-                  <span>{t("dashboard.free_clean")}</span>
-                </span>
-                <span className="font-bold text-[#10B981]">
-                  {chambresStatuts.propresLibres}
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="flex items-center gap-2 text-[var(--foreground)]">
-                  <span className="w-2.5 h-2.5 rounded-full bg-[#F59E0B]" />
-                  <span>{t("dashboard.cleaning")}</span>
-                </span>
-                <span className="font-bold text-[#F59E0B]">
-                  {chambresStatuts.enNettoyage}
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="flex items-center gap-2 text-[var(--foreground)]">
-                  <span className="w-2.5 h-2.5 rounded-full bg-[#EF4444]" />
-                  <span>{t("dashboard.maintenance")}</span>
-                </span>
-                <span className="font-bold text-[#EF4444]">
-                  {chambresStatuts.maintenance}
-                </span>
+
+              <div className="p-3 rounded-xl border bg-background border-surface-border text-foreground-muted flex items-center gap-3">
+                <Clock className="w-5 h-5 text-primary shrink-0" />
+                <div className="min-w-0">
+                  <div className="text-xs font-bold leading-tight text-foreground">Conciergerie & Front-Desk</div>
+                  <div className="text-[10px] opacity-80 mt-0.5">Service ouvert 24h/24</div>
+                </div>
               </div>
             </div>
           </div>
-
-          <Link
-            href="/gouvernance"
-            className="mt-5 w-full py-2 px-3 text-center text-xs font-semibold rounded-lg border border-[var(--surface-border)] hover:bg-[var(--surface-muted)] text-[var(--foreground)] transition-colors"
-          >
-            {t("dashboard.housekeeping_btn")}
-          </Link>
         </div>
 
-        {/* Mouvements Réception (Arrivées & Départs du Jour) */}
-        <div className="p-5 rounded-xl bg-[var(--surface)] border border-[var(--surface-border)] shadow-xs lg:col-span-2">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-sm font-bold text-[var(--foreground)]">
-              {t("dashboard.upcoming_arrivals")}
-            </h2>
-            <div className="flex items-center gap-3 text-xs">
-              <span className="flex items-center gap-1.5 text-[#10B981] font-semibold">
-                <LogIn className="w-3.5 h-3.5" />
-                <span>{kpis.arriveesEnregistrees}/{kpis.arriveesDuJour} {t("dashboard.arrivals")}</span>
-              </span>
-              <span className="flex items-center gap-1.5 text-[#9E2A2B] font-semibold">
-                <LogOut className="w-3.5 h-3.5" />
-                <span>{kpis.departsEffectues}/{kpis.departsDuJour} {t("dashboard.departures")}</span>
-              </span>
+        {/* Widget 2 : Flux des Arrivées du Jour (Check-in attendus) */}
+        <div className="rounded-xl bg-surface border border-surface-border shadow-sm overflow-hidden flex flex-col">
+          <div className="p-5 border-b border-surface-border bg-background/50 flex justify-between items-center">
+            <div className="flex items-center gap-2">
+              <div className="p-2 bg-emerald-500/10 text-emerald-600 rounded-lg">
+                <LogIn className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold font-heading text-foreground">
+                  {t("dashboard.upcoming_arrivals") || "Arrivées Attendues Aujourd'hui"}
+                </h3>
+                <p className="text-xs text-foreground-muted">Check-in et accueil personnalisé des clients</p>
+              </div>
             </div>
+            <Link href="/hebergements/arrivees-departs" className="text-xs font-semibold text-primary hover:underline flex items-center gap-1">
+              Tous les flux <ArrowRight className="w-3.5 h-3.5 rtl:-scale-x-100" />
+            </Link>
           </div>
 
-          {/* Tableau des prochains arrivants */}
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead>
-                <tr className="border-b border-[var(--surface-border)] text-[var(--foreground-muted)]">
-                  <th className="pb-2 font-medium">{t("dashboard.client")}</th>
-                  <th className="pb-2 font-medium">{t("dashboard.lodging")}</th>
-                  <th className="pb-2 font-medium">{t("dashboard.duration_pax")}</th>
-                  <th className="pb-2 font-medium">{t("dashboard.deposit_status")}</th>
-                  <th className={`pb-2 font-medium ${isRTL ? "text-left" : "text-right"}`}>{t("dashboard.time")}</th>
-                  <th className={`pb-2 font-medium ${isRTL ? "text-left" : "text-right"}`}>{t("dashboard.action")}</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-[var(--surface-border)]">
-                {arrivantsProchains.map((arr) => (
-                  <tr key={arr.id} className="hover:bg-[var(--surface-muted)]/50 transition-colors">
-                    <td className="py-2.5 font-semibold text-[var(--foreground)]">
-                      {arr.client}
-                    </td>
-                    <td className="py-2.5 text-[var(--foreground-muted)]">
-                      {arr.chambre}
-                    </td>
-                    <td className="py-2.5 text-[var(--foreground-muted)]">
-                      {arr.nuits} {t("dashboard.stay_nights")} • {arr.personnes}
-                    </td>
-                    <td className="py-2.5">
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#10B981]/10 text-[#10B981]">
-                        {arr.acompte}
-                      </span>
-                    </td>
-                    <td className={`py-2.5 font-medium text-[var(--foreground)] ${isRTL ? "text-left" : "text-right"}`}>
-                      {arr.heure}
-                    </td>
-                    <td className={`py-2.5 ${isRTL ? "text-left" : "text-right"}`}>
-                      <Link
-                        href={`/hebergements/reservations?action=checkin&resa=${arr.id}`}
-                        className="inline-block px-2.5 py-1 rounded-md bg-[var(--primary)] hover:bg-[var(--primary-hover)] text-white font-medium text-[11px] transition-colors"
-                      >
-                        {t("dashboard.checkin")}
-                      </Link>
-                    </td>
-                  </tr>
+          <div className="p-6 flex-1 flex flex-col justify-between">
+            <div className="divide-y divide-surface-border/60">
+              {DEFAULT_RESERVATIONS.slice(0, 4).map((r) => (
+                <div key={r.id} className="py-3 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 shrink-0" />
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-foreground text-xs sm:text-sm truncate">{r.client}</span>
+                        <span className="text-[11px] text-foreground-muted shrink-0">({r.personnes})</span>
+                        <span className="font-mono text-[10px] text-primary shrink-0">{r.code}</span>
+                      </div>
+                      <p className="text-[11px] text-foreground-muted truncate">
+                        {r.chambre} • {r.nuits} nuits • Acompte : {r.modePaiement || "Wave"}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="text-right text-[11px] shrink-0 self-end sm:self-auto flex items-center gap-2">
+                    <span className="font-medium text-foreground-muted">Arrivée : {r.heureArriveePrevue || "14h00"}</span>
+                    <Link
+                      href="/hebergements/arrivees-departs"
+                      className="px-2.5 py-1 rounded-lg bg-primary/10 text-primary font-bold text-xs hover:bg-primary hover:text-white transition-all"
+                    >
+                      Check-in
+                    </Link>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="pt-4 border-t border-surface-border flex items-center justify-between">
+              <span className="text-xs text-foreground-muted">
+                {arriveesDuJour} arrivées programmées pour la journée
+              </span>
+              <Link href="/hebergements/rack" className="text-xs font-bold text-primary hover:underline">
+                Accéder au Rack Interactif ➔
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── 3 COLONNES OPÉRATIONNELLES (TRÉSORERIE, DERNIERS RÈGLEMENTS, DERNIERS CLIENTS) ── */}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        {/* Colonne 1 : Aperçu Financier Global & Caisse */}
+        <div className="rounded-xl bg-surface border border-surface-border shadow-sm overflow-hidden flex flex-col">
+          <div className="p-6 border-b border-surface-border bg-background/50">
+            <h3 className="text-lg font-semibold leading-6 text-foreground">Trésorerie & Caisses du Jour</h3>
+            <p className="text-xs text-foreground-muted mt-0.5">Encaissements hébergement, restauration & TPE</p>
+          </div>
+          <div className="p-6 flex-1 flex flex-col justify-between bg-surface space-y-6">
+            <div className="space-y-4">
+              {/* Encart Caisse Principale */}
+              <div className="p-4 rounded-xl bg-background border border-surface-border">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-600">
+                      <Wallet className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <span className="text-xs font-bold text-foreground">Caisse Réception & Front-Desk</span>
+                      <span className="text-[10px] text-foreground-muted block">Espèces, Wave & TPE Carte</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="mt-2">
+                  <span className="text-2xl font-bold font-heading text-foreground">
+                    {formatXOF(caJour)}
+                  </span>
+                  <span className="text-xs text-foreground-muted block mt-1">
+                    Recettes cumulées de la journée en cours
+                  </span>
+                </div>
+              </div>
+
+              {/* Ventilation Restauration & Activités */}
+              <div className="p-4 rounded-xl bg-background border border-surface-border">
+                <div className="flex items-center justify-between mb-1">
+                  <div className="flex items-center gap-2">
+                    <div className="p-2 rounded-lg bg-amber-500/10 text-amber-600">
+                      <UtensilsCrossed className="h-4 w-4" />
+                    </div>
+                    <span className="text-xs font-medium text-foreground">Restauration, Bar & MICE</span>
+                  </div>
+                  <span className="text-xs font-bold text-amber-600 font-mono">
+                    {formatXOF(980000)}
+                  </span>
+                </div>
+                <p className="text-[11px] text-foreground-muted mt-1">
+                  Points de vente POS & séminaires ouverts
+                </p>
+              </div>
+            </div>
+
+            <div className="pt-4 border-t border-surface-border">
+              <Link
+                href="/tresorerie/caisses"
+                className="text-sm font-medium text-primary hover:text-primary/80 flex items-center gap-1"
+              >
+                Accéder au journal de caisse <ArrowRight className="h-4 w-4 rtl:-scale-x-100" />
+              </Link>
+            </div>
+          </div>
+        </div>
+
+        {/* Colonne 2 : Derniers Encaissements & Règlements */}
+        <div className="rounded-xl bg-surface border border-surface-border shadow-sm overflow-hidden flex flex-col">
+          <div className="p-6 border-b border-surface-border bg-background/50">
+            <h3 className="text-lg font-semibold leading-6 text-foreground">Derniers Règlements Encaissés</h3>
+            <p className="text-xs text-foreground-muted mt-0.5">Transactions directes sans commission d&apos;agrégateur</p>
+          </div>
+          <div className="p-6 flex-1 flex flex-col justify-between bg-surface">
+            <div className="divide-y divide-surface-border">
+              {transactions.slice(0, 5).map((tx) => (
+                <div key={tx.id} className="py-3 flex items-center justify-between gap-3">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium text-foreground truncate" title={tx.client}>
+                      {tx.client}
+                    </p>
+                    <div className="text-xs text-foreground-muted mt-0.5 flex items-center gap-2">
+                      <span>{tx.heure}</span>
+                      <span>• {tx.methodeLibelle}</span>
+                      <span className="truncate hidden sm:inline">({tx.motif})</span>
+                    </div>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <span className="inline-flex items-center font-mono font-bold text-sm text-emerald-600 dark:text-emerald-400">
+                      +{tx.montant.toLocaleString("fr-FR")} FCFA
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-6 pt-4 border-t border-surface-border">
+              <Link
+                href="/tresorerie/encaissements-directs"
+                className="text-sm font-medium text-primary hover:text-primary/80 flex items-center gap-1"
+              >
+                Voir tous les encaissements <ArrowRight className="h-4 w-4 rtl:-scale-x-100" />
+              </Link>
+            </div>
+          </div>
+        </div>
+
+        {/* Colonne 3 : Derniers Clients Enregistrés */}
+        <div className="rounded-xl bg-surface border border-surface-border shadow-sm overflow-hidden flex flex-col">
+          <div className="p-6 border-b border-surface-border bg-background/50">
+            <h3 className="text-lg font-semibold leading-6 text-foreground">Derniers Clients Enregistrés</h3>
+            <p className="text-xs text-foreground-muted mt-0.5">Fiches hôtes et profils CRM récents</p>
+          </div>
+          <div className="p-6 flex-1 flex flex-col justify-between bg-surface">
+            <div className="flow-root">
+              <ul role="list" className="-mb-8">
+                {clients.slice(0, 5).map((cli, idx) => (
+                  <li key={cli.id || idx} className="relative pb-8">
+                    {idx !== Math.min(clients.length, 5) - 1 ? (
+                      <span className="absolute left-4 top-4 -ml-px h-full w-0.5 bg-surface-border" aria-hidden="true" />
+                    ) : null}
+                    <div className="relative flex space-x-3">
+                      <div>
+                        <span className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center ring-4 ring-surface text-primary">
+                          <Users className="h-4 w-4" aria-hidden="true" />
+                        </span>
+                      </div>
+                      <div className="flex min-w-0 flex-1 justify-between space-x-4 pt-1.5">
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium text-foreground truncate">
+                            {cli.civilite} {cli.prenom} {cli.nom}
+                          </p>
+                          <p className="text-xs text-foreground-muted truncate">
+                            {cli.categorie} • {cli.nationalite}
+                          </p>
+                        </div>
+                        <div className="whitespace-nowrap text-right text-xs text-foreground-muted">
+                          <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-primary/10 text-primary">
+                            {cli.nbSejours} séjours
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </li>
                 ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-
-      {/* ── ALERTES OPÉRATIONNELLES & AGENDA DES ESPACES / LOISIRS ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Alertes & Incidents en direct */}
-        <div className="p-5 rounded-xl bg-[var(--surface)] border border-[var(--surface-border)] shadow-xs">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-sm font-bold text-[var(--foreground)] flex items-center gap-2">
-              <AlertTriangle className="w-4 h-4 text-[#F59E0B]" />
-              <span>{t("dashboard.operational_alerts")}</span>
-            </h2>
-            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-[#EF4444] text-white">
-              3
-            </span>
-          </div>
-
-          <div className="space-y-3">
-            {alertesOperationnelles.map((alerte) => (
-              <div
-                key={alerte.id}
-                className="p-3 rounded-lg bg-[var(--surface-muted)] border border-[var(--surface-border)] space-y-1"
-              >
-                <div className="flex items-center justify-between text-xs">
-                  <span className="font-semibold text-[var(--foreground)]">
-                    {alerte.titre}
-                  </span>
-                  <span className="text-[10px] text-[var(--foreground-muted)]">
-                    {alerte.heure}
-                  </span>
-                </div>
-                <p className="text-[11px] text-[var(--foreground-muted)]">
-                  {alerte.description}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Aperçu rapide des autres départements (F&B, MICE, Loisirs) */}
-        <div className="p-5 rounded-xl bg-[var(--surface)] border border-[var(--surface-border)] shadow-xs lg:col-span-2">
-          <h2 className="text-sm font-bold text-[var(--foreground)] mb-4">
-            {t("dashboard.dept_activity")}
-          </h2>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {/* Restauration / Bar */}
-            <div className="p-4 rounded-xl bg-[var(--surface-muted)] border border-[var(--surface-border)] flex flex-col justify-between">
-              <div>
-                <div className="flex items-center gap-2 text-xs font-bold text-[var(--foreground)] mb-2">
-                  <UtensilsCrossed className="w-4 h-4 text-[#3B82F6]" />
-                  <span>{t("dashboard.restauration_bar")}</span>
-                </div>
-                <p className="text-lg font-black text-[var(--foreground)]">
-                  18 {t("dashboard.active_tables")}
-                </p>
-                <p className="text-[11px] text-[var(--foreground-muted)] mt-1">
-                  {t("dashboard.pos_ca")} : 1 240 000 FCFA
-                </p>
-              </div>
-              <Link
-                href="/restauration/pos"
-                className="mt-3 text-[11px] font-semibold text-[#3B82F6] hover:underline"
-              >
-                {t("dashboard.open_pos")}
-              </Link>
+              </ul>
             </div>
 
-            {/* MICE & Piscine */}
-            <div className="p-4 rounded-xl bg-[var(--surface-muted)] border border-[var(--surface-border)] flex flex-col justify-between">
-              <div>
-                <div className="flex items-center gap-2 text-xs font-bold text-[var(--foreground)] mb-2">
-                  <Building className="w-4 h-4 text-[#D4AF37]" />
-                  <span>{t("dashboard.mice_pool")}</span>
-                </div>
-                <p className="text-lg font-black text-[var(--foreground)]">
-                  34 {t("dashboard.day_pass_sold")}
-                </p>
-                <p className="text-[11px] text-[var(--foreground-muted)] mt-1">
-                  1 {t("dashboard.ongoing_seminar")}
-                </p>
-              </div>
-              <Link
-                href="/evenements/salles"
-                className="mt-3 text-[11px] font-semibold text-[#D4AF37] hover:underline"
-              >
-                {t("dashboard.manage_rooms")}
-              </Link>
-            </div>
-
-            {/* Excursions & Loisirs */}
-            <div className="p-4 rounded-xl bg-[var(--surface-muted)] border border-[var(--surface-border)] flex flex-col justify-between">
-              <div>
-                <div className="flex items-center gap-2 text-xs font-bold text-[var(--foreground)] mb-2">
-                  <Compass className="w-4 h-4 text-[#10B981]" />
-                  <span>{t("dashboard.leisure_excursions")}</span>
-                </div>
-                <p className="text-lg font-black text-[var(--foreground)]">
-                  2 {t("dashboard.daily_outings")}
-                </p>
-                <p className="text-[11px] text-[var(--foreground-muted)] mt-1">
-                  14 {t("dashboard.participants")}
-                </p>
-              </div>
-              <Link
-                href="/loisirs/excursions"
-                className="mt-3 text-[11px] font-semibold text-[#10B981] hover:underline"
-              >
-                {t("dashboard.excursions_schedule")}
+            <div className="mt-6 pt-4 border-t border-surface-border">
+              <Link href="/clients" className="text-sm font-medium text-primary hover:text-primary/80 flex items-center gap-1">
+                Voir l&apos;annuaire clients <ArrowRight className="h-4 w-4 rtl:-scale-x-100" />
               </Link>
             </div>
           </div>

@@ -14,11 +14,11 @@ export default async function AdminHotelAbonnementsPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-bold font-heading text-white flex items-center gap-2.5">
-          <CreditCard className="w-7 h-7 text-amber-400" />
+        <h1 className="text-2xl font-bold font-heading text-foreground flex items-center gap-2.5">
+          <CreditCard className="w-7 h-7 text-amber-600" />
           Abonnements & Licences Hôtelières
         </h1>
-        <p className="mt-1 text-sm text-slate-400">
+        <p className="mt-1 text-sm text-foreground-muted">
           Suivi des règlements Maketou, Chariow, virements et encaissements en caisse avec validation directe SuperAdmin en 1 clic.
         </p>
       </div>

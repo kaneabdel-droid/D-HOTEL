@@ -513,4 +513,103 @@ export async function supprimerPaiementAbonnement(paiementId: string) {
   }
 }
 
+export async function modifierEtablissementSuperAdmin(formData: FormData) {
+  const id = (formData.get("id") as string)?.trim();
+  const nom = (formData.get("nom") as string)?.trim();
+  const type = (formData.get("type") as string)?.trim() || "hotel";
+  const ville = (formData.get("ville") as string)?.trim() || "Dakar";
+  const chambres = parseInt((formData.get("chambres") as string) || "15", 10);
+  const directeur = (formData.get("directeur") as string)?.trim() || "Directeur";
+  const telephone = (formData.get("telephone") as string)?.trim() || "+221 77 000 00 00";
+  const email = (formData.get("email") as string)?.trim();
+  const plan = (formData.get("plan") as string)?.trim() || "hotel";
+  const statut = (formData.get("statut") as string)?.trim() || "actif";
+  const bloquer = statut === "suspendu";
+
+  if (!id) return { error: "ID établissement manquant" };
+  if (!nom) return { error: "Le nom est requis" };
+
+  try {
+    const admin = createAdminClient();
+
+    // 1. Mise à jour dans public.hotels
+    try {
+      await admin
+        .from("hotels")
+        .update({
+          nom,
+          telephone,
+          email,
+          ville,
+          subscription_tier: plan,
+          statut,
+          compte_verrouille: bloquer,
+        })
+        .eq("id", id);
+    } catch (e) {
+      console.warn("Notice update hotels table:", e);
+    }
+
+    // 2. Mise à jour auth user metadata
+    try {
+      await admin.auth.admin.updateUserById(id, {
+        email: email || undefined,
+        ban_duration: bloquer ? "87600h" : "none",
+        user_metadata: {
+          nom_complet: directeur,
+          telephone,
+          etablissement_nom: nom,
+          etablissement_type: type,
+          plan,
+          ville,
+          chambres_nb: chambres,
+        },
+      });
+    } catch (e) {
+      console.warn("Notice update auth user:", e);
+    }
+
+    revalidatePath("/admin/etablissements");
+    revalidatePath("/admin/hotel");
+    revalidatePath("/admin");
+    return { success: true };
+  } catch (err: any) {
+    return { error: err.message || "Erreur lors de la modification" };
+  }
+}
+
+export async function supprimerEtablissementSuperAdmin(etablissementId: string) {
+  if (!etablissementId) return { error: "ID établissement manquant" };
+
+  try {
+    const admin = createAdminClient();
+
+    // 1. Suppression dans la base de données
+    try {
+      await admin.from("hotels").delete().eq("id", etablissementId);
+    } catch (e) {
+      console.warn("Notice delete hotels:", e);
+    }
+
+    try {
+      await admin.from("utilisateurs").delete().eq("hotel_id", etablissementId);
+    } catch {}
+
+    // 2. Suppression de l'utilisateur Auth
+    try {
+      await admin.auth.admin.deleteUser(etablissementId);
+    } catch (e) {
+      console.warn("Notice delete auth user:", e);
+    }
+
+    revalidatePath("/admin/etablissements");
+    revalidatePath("/admin/hotel");
+    revalidatePath("/admin");
+    return { success: true };
+  } catch (err: any) {
+    return { error: err.message || "Erreur lors de la suppression" };
+  }
+}
+
+
 

@@ -1,99 +1,63 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import {
-  LayoutDashboard,
-  Hotel,
-  BedDouble,
-  CreditCard,
-  Settings,
-  LogOut,
-  ExternalLink,
-  ShieldCheck,
-  Building2,
-  Users,
-  Zap
-} from 'lucide-react'
-import { isSuperAdminAuthenticated, getSuperAdminUser } from '@/lib/admin/auth'
+import { LayoutDashboard, Building2, Wallet, Settings, LogOut, LayoutGrid, Hotel } from 'lucide-react'
+import { getSharedAdminUser } from '@/utils/supabase/admin-identity'
+import { isAdminEmail } from '@/lib/admin/auth'
 
-export default async function AdminProtectedLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
-  const isAuth = await isSuperAdminAuthenticated()
-  if (!isAuth) {
+export const dynamic = 'force-dynamic'
+
+export default async function AdminLayout({ children }: { children: React.ReactNode }) {
+  const user = await getSharedAdminUser()
+
+  if (!isAdminEmail(user?.email)) {
     redirect('/admin/login')
   }
 
-  const user = await getSuperAdminUser()
-
   const navItems = [
-    { href: '/admin', label: 'Vue d’ensemble', icon: LayoutDashboard },
-    { href: '/admin/etablissements', label: 'Établissements Hôteliers', icon: Hotel },
-    { href: '/admin/passerelles', label: 'Passerelles Maketou & Chariow', icon: Zap },
-    { href: '/admin/abonnements', label: 'Abonnements & Revenus', icon: CreditCard },
+    { href: '/admin', label: 'Accueil Hub', icon: LayoutGrid },
+    { href: '/admin/hotel', label: 'Tableau de bord D-HOTEL', icon: LayoutDashboard },
+    { href: '/admin/etablissements', label: 'Établissements Hôteliers', icon: Building2 },
+    { href: '/admin/abonnements', label: 'Abonnements & Licences', icon: Wallet },
+    { href: '/admin/passerelles', label: 'Passerelles Maketou & Chariow', icon: Settings },
   ]
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col md:flex-row font-sans">
-      {/* Sidebar Desktop */}
-      <aside className="w-full md:w-64 bg-slate-900 border-r border-slate-800 flex flex-col shrink-0">
-        <div className="p-6 border-b border-slate-800 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center">
-              <Hotel className="w-5 h-5 text-amber-400" />
+    <div className="min-h-screen bg-surface flex flex-col md:flex-row">
+      <aside className="w-full md:w-64 shrink-0 bg-background border-r border-surface-border flex flex-col">
+        <div className="p-6 border-b border-surface-border">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-600 flex items-center justify-center font-bold">
+              <Hotel className="w-4 h-4" />
             </div>
             <div>
-              <p className="font-bold font-heading text-base text-white tracking-tight">D-HOTEL</p>
-              <p className="text-xs text-amber-400 font-semibold uppercase tracking-wider">SuperAdmin</p>
+              <p className="font-bold font-heading text-base leading-tight text-foreground">Demba Admin</p>
+              <p className="text-[11px] text-amber-600 font-semibold">SuperAdmin D-HOTEL</p>
             </div>
           </div>
+          <p className="text-xs text-foreground-muted mt-2 truncate font-mono">{user?.email}</p>
         </div>
-
-        <div className="px-4 py-3 bg-slate-950/60 border-b border-slate-800 text-xs">
-          <p className="text-slate-400">Connecté en tant que :</p>
-          <p className="text-slate-200 font-mono truncate">{user?.email}</p>
-        </div>
-
-        <nav className="flex-1 p-4 space-y-1.5">
+        <nav className="flex-1 p-4 space-y-1">
           {navItems.map(({ href, label, icon: Icon }) => (
             <Link
               key={href}
               href={href}
-              className="flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800/80 transition-colors"
+              className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-foreground hover:bg-surface transition-colors"
             >
-              <Icon className="w-4 h-4 text-slate-400" />
-              <span>{label}</span>
+              <Icon className="w-4 h-4 text-amber-600" />
+              {label}
             </Link>
           ))}
         </nav>
-
-        <div className="p-4 border-t border-slate-800 space-y-2">
-          <a
-            href="https://siggie.dembasolution.com/admin"
-            className="flex items-center justify-between px-3.5 py-2 rounded-lg text-xs font-medium text-slate-400 hover:text-white hover:bg-slate-800/50 transition-colors"
-          >
-            <span className="flex items-center gap-2">
-              <Building2 className="w-3.5 h-3.5 text-blue-400" />
-              Hub DEMBA Central
-            </span>
-            <ExternalLink className="w-3 h-3" />
-          </a>
-          <a
-            href="/admin/logout"
-            className="flex items-center gap-2.5 px-3.5 py-2 rounded-lg text-xs font-semibold text-red-400 hover:bg-red-950/30 transition-colors"
-          >
-            <LogOut className="w-3.5 h-3.5" />
-            Déconnexion SuperAdmin
+        <div className="p-4 border-t border-surface-border">
+          <a href="/admin/logout" className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-foreground-muted hover:bg-surface hover:text-danger transition-colors">
+            <LogOut className="w-4 h-4" />
+            Déconnexion
           </a>
         </div>
       </aside>
-
-      {/* Main Content */}
-      <main className="flex-1 p-6 md:p-8 overflow-y-auto max-w-7xl">
+      <main className="flex-1 p-6 sm:p-8 overflow-y-auto">
         {children}
       </main>
     </div>
   )
 }
-

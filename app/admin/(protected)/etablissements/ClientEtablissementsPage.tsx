@@ -20,10 +20,15 @@ import {
   Loader2,
   Lock,
   Unlock,
+  Edit2,
+  Trash2,
+  AlertTriangle,
 } from 'lucide-react'
 import {
   type EtablissementItem,
   creerEtablissementSuperAdmin,
+  modifierEtablissementSuperAdmin,
+  supprimerEtablissementSuperAdmin,
   toggleVerrouillerEtablissement,
 } from '@/app/admin/(protected)/actions'
 
@@ -33,13 +38,24 @@ export function ClientEtablissementsPage({
   initialHotels: EtablissementItem[]
 }) {
   const [modalOpen, setModalOpen] = useState(false)
+  const [editingHotel, setEditingHotel] = useState<EtablissementItem | null>(null)
+  const [deletingHotel, setDeletingHotel] = useState<EtablissementItem | null>(null)
+
   const [search, setSearch] = useState('')
   const [filterStatut, setFilterStatut] = useState('tous')
+  const [filterPlan, setFilterPlan] = useState('tous')
   const [hotels, setHotels] = useState<EtablissementItem[]>(initialHotels)
+
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [loadingActionId, setLoadingActionId] = useState<string | null>(null)
-  const [successToast, setSuccessToast] = useState<string | null>(null)
+  const [toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null)
 
+  const showToast = (message: string, type: 'success' | 'error' = 'success') => {
+    setToast({ type, message })
+    setTimeout(() => setToast(null), 3500)
+  }
+
+  // Verrouiller / Déverrouiller
   const handleToggleLock = async (h: EtablissementItem) => {
     const isLocked = h.statut === 'suspendu' || Boolean(h.compte_verrouille)
     const newBlockedState = !isLocked
@@ -53,86 +69,108 @@ export function ClientEtablissementsPage({
         prev.map((item) =>
           item.id === h.id
             ? {
-              ...item,
-              statut: newBlockedState ? 'suspendu' : 'actif',
-              compte_verrouille: newBlockedState,
-            }
+                ...item,
+                statut: newBlockedState ? 'suspendu' : 'actif',
+                compte_verrouille: newBlockedState,
+              }
             : item
         )
       )
-      setSuccessToast(
+      showToast(
         newBlockedState
           ? `L'établissement "${h.nom}" a été verrouillé (accès bloqué).`
           : `L'établissement "${h.nom}" a été activé et déverrouillé avec succès.`
       )
-      setTimeout(() => setSuccessToast(null), 3500)
     } else {
-      setSuccessToast(`Erreur : ${res?.error || 'Action impossible'}`)
-      setTimeout(() => setSuccessToast(null), 3500)
+      showToast(res?.error || 'Action impossible', 'error')
     }
   }
 
-  // Formulaire modal
-  const [nom, setNom] = useState('')
-  const [ville, setVille] = useState('Dakar')
-  const [chambres, setChambres] = useState(15)
-  const [directeur, setDirecteur] = useState('')
-  const [telephone, setTelephone] = useState('')
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('Demba@2026!')
-  const [plan, setPlan] = useState<'auberge' | 'hotel'>('hotel')
-  const [statut, setStatut] = useState<'actif' | 'essai'>('actif')
-
-  const handleCreate = async (e: React.FormEvent) => {
+  // Création
+  const handleCreate = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setIsSubmitting(true)
-
-    const formData = new FormData()
-    formData.set('nom', nom)
-    formData.set('type', plan)
-    formData.set('ville', ville)
-    formData.set('chambres', String(chambres))
-    formData.set('directeur', directeur)
-    formData.set('telephone', telephone)
-    formData.set('email', email || `contact@${nom.toLowerCase().replace(/[^a-z0-9]/g, '')}.sn`)
-    formData.set('password', password)
-    formData.set('plan', plan)
-    formData.set('statut', statut)
-
+    const formData = new FormData(e.currentTarget)
     const res = await creerEtablissementSuperAdmin(formData)
     setIsSubmitting(false)
 
-    if (res?.success && res.etablissement) {
-      setHotels([res.etablissement as any, ...hotels])
-      setModalOpen(false)
-      setNom('')
-      setDirecteur('')
-      setTelephone('')
-      setEmail('')
-      setSuccessToast(`L'établissement "${res.etablissement.nom}" a été créé avec succès !`)
-      setTimeout(() => setSuccessToast(null), 3500)
-    } else {
-      const newEntry: EtablissementItem = {
-        id: `hot-0${hotels.length + 1}`,
-        nom,
-        type: plan === 'auberge' ? 'Auberge & Campement' : 'Hôtel & Résidence',
-        ville,
-        chambres: Number(chambres),
-        directeur: directeur || 'Directeur Général',
-        telephone: telephone || '+221 77 000 00 00',
-        email,
-        plan,
-        prix: plan === 'auberge' ? '15 000 FCFA/m' : '20 000 FCFA/m',
-        statut,
-        expireLe: new Date(Date.now() + 30 * 24 * 3600 * 1000).toISOString().split('T')[0],
+    if (res?.success) {
+      if (res.etablissement) {
+        setHotels((prev) => [res.etablissement as EtablissementItem, ...prev])
       }
-      setHotels([newEntry, ...hotels])
       setModalOpen(false)
-      setSuccessToast(`L'établissement "${newEntry.nom}" a été créé !`)
-      setTimeout(() => setSuccessToast(null), 3500)
+      showToast(`L'établissement hôtelier a été créé avec succès !`)
+    } else {
+      showToast(res?.error || 'Erreur lors de la création', 'error')
     }
   }
 
+  // Modification
+  const handleEdit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    if (!editingHotel) return
+    setIsSubmitting(true)
+    const formData = new FormData(e.currentTarget)
+    formData.set('id', editingHotel.id)
+
+    const res = await modifierEtablissementSuperAdmin(formData)
+    setIsSubmitting(false)
+
+    if (res?.success) {
+      const updatedNom = (formData.get('nom') as string) || editingHotel.nom
+      const updatedType = (formData.get('type') as string) || editingHotel.type
+      const updatedVille = (formData.get('ville') as string) || editingHotel.ville
+      const updatedChambres = parseInt((formData.get('chambres') as string) || '15', 10)
+      const updatedDirecteur = (formData.get('directeur') as string) || editingHotel.directeur
+      const updatedTelephone = (formData.get('telephone') as string) || editingHotel.telephone
+      const updatedEmail = (formData.get('email') as string) || editingHotel.email
+      const updatedPlan = (formData.get('plan') as string) || editingHotel.plan
+      const updatedStatut = (formData.get('statut') as string) || editingHotel.statut
+
+      setHotels((prev) =>
+        prev.map((item) =>
+          item.id === editingHotel.id
+            ? {
+                ...item,
+                nom: updatedNom,
+                type: updatedType,
+                ville: updatedVille,
+                chambres: updatedChambres,
+                directeur: updatedDirecteur,
+                telephone: updatedTelephone,
+                email: updatedEmail,
+                plan: updatedPlan,
+                statut: updatedStatut as 'actif' | 'essai' | 'suspendu',
+                compte_verrouille: updatedStatut === 'suspendu',
+              }
+            : item
+        )
+      )
+      setEditingHotel(null)
+      showToast(`L'établissement "${updatedNom}" a été modifié avec succès !`)
+    } else {
+      showToast(res?.error || 'Erreur lors de la modification', 'error')
+    }
+  }
+
+  // Suppression
+  const handleDelete = async () => {
+    if (!deletingHotel) return
+    setIsSubmitting(true)
+    const res = await supprimerEtablissementSuperAdmin(deletingHotel.id)
+    setIsSubmitting(false)
+
+    if (res?.success) {
+      setHotels((prev) => prev.filter((item) => item.id !== deletingHotel.id))
+      const nomSupprime = deletingHotel.nom
+      setDeletingHotel(null)
+      showToast(`L'établissement "${nomSupprime}" a été supprimé définitivement.`)
+    } else {
+      showToast(res?.error || 'Erreur lors de la suppression', 'error')
+    }
+  }
+
+  // Filtrage
   const filtered = hotels.filter((h) => {
     const matchSearch =
       h.nom.toLowerCase().includes(search.toLowerCase()) ||
@@ -140,385 +178,567 @@ export function ClientEtablissementsPage({
       h.directeur.toLowerCase().includes(search.toLowerCase()) ||
       (h.email && h.email.toLowerCase().includes(search.toLowerCase()))
     const matchStatut = filterStatut === 'tous' || h.statut === filterStatut
-    return matchSearch && matchStatut
+    const matchPlan = filterPlan === 'tous' || h.plan === filterPlan
+    return matchSearch && matchStatut && matchPlan
   })
 
   return (
-    <div className="space-y-8">
-      {successToast && (
-        <div className="fixed bottom-6 right-6 z-50 px-4 py-3 rounded-2xl bg-emerald-500 text-slate-950 font-bold text-xs shadow-2xl flex items-center gap-2 animate-bounce">
-          <CheckCircle2 className="w-4 h-4" />
-          <span>{successToast}</span>
+    <div className="space-y-6">
+      {/* Toast Notification */}
+      {toast && (
+        <div
+          className={`fixed bottom-6 right-6 z-50 px-4 py-3 rounded-2xl font-bold text-xs shadow-2xl flex items-center gap-2 animate-bounce ${
+            toast.type === 'success' ? 'bg-emerald-500 text-slate-950' : 'bg-rose-500 text-white'
+          }`}
+        >
+          {toast.type === 'success' ? <CheckCircle2 className="w-4 h-4" /> : <AlertTriangle className="w-4 h-4" />}
+          <span>{toast.message}</span>
         </div>
       )}
 
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold font-heading text-white flex items-center gap-2.5">
-            <Hotel className="w-7 h-7 text-amber-400" />
+          <h1 className="text-2xl font-bold font-heading text-foreground flex items-center gap-2.5">
+            <Hotel className="w-7 h-7 text-amber-600" />
             Établissements Hôteliers Déployés
           </h1>
-          <p className="mt-1 text-sm text-slate-400">
-            Gestion du parc hôtelier : hôtels indépendants, résidences, chaînes et auberges affiliées.
+          <p className="text-sm text-foreground-muted mt-1">
+            Supervision, gestion des accès, modifications et suppressions des hôtels, résidences et campements.
           </p>
         </div>
+
         <button
           onClick={() => setModalOpen(true)}
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-semibold text-xs tracking-wider uppercase shadow-lg shadow-amber-500/20 transition-all cursor-pointer"
+          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary text-primary-foreground font-bold text-xs hover:bg-primary-hover shadow-xs transition-all"
         >
           <Plus className="w-4 h-4" />
-          Ajouter un Établissement
+          <span>Nouvel Établissement</span>
         </button>
       </div>
 
-      {/* Statistiques Rapides */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg">
-          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Établissements</p>
-          <p className="mt-2 text-3xl font-extrabold text-white">{hotels.length}</p>
-          <span className="mt-2 inline-flex items-center text-xs text-emerald-400">
-            {hotels.filter((h) => h.statut === 'actif').length} actifs sous contrat
-          </span>
-        </div>
-
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg">
-          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Capacité Totale</p>
-          <p className="mt-2 text-3xl font-extrabold text-white">
-            {hotels.reduce((acc, h) => acc + h.chambres, 0)}
-          </p>
-          <span className="mt-2 text-xs text-slate-400">Chambres & Suites répertoriées</span>
-        </div>
-
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg">
-          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Formule Référence</p>
-          <p className="mt-2 text-3xl font-extrabold text-amber-400">
-            {hotels.filter((h) => h.plan === 'hotel').length}
-          </p>
-          <span className="mt-2 text-xs text-slate-400">Hôtels & Résidences (20k/m)</span>
-        </div>
-
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-lg">
-          <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Auberges & Campements</p>
-          <p className="mt-2 text-3xl font-extrabold text-sky-400">
-            {hotels.filter((h) => h.plan === 'auberge').length}
-          </p>
-          <span className="mt-2 text-xs text-slate-400">Formule Auberge (15k/m)</span>
-        </div>
-      </div>
-
       {/* Barre de Recherche et Filtres */}
-      <div className="bg-slate-900 rounded-2xl border border-slate-800 p-4 flex flex-col md:flex-row gap-4 items-center justify-between shadow-lg">
-        <div className="relative w-full md:w-80">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
+      <div className="p-4 rounded-xl bg-background border border-surface-border flex flex-col md:flex-row items-stretch md:items-center gap-3">
+        <div className="relative flex-1">
+          <Search className="w-4 h-4 text-foreground-muted absolute left-3.5 top-1/2 -translate-y-1/2" />
           <input
             type="text"
-            placeholder="Rechercher par nom, directeur, ville, e-mail..."
+            placeholder="Rechercher un hôtel, une ville, un directeur ou un email..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white placeholder:text-slate-500 focus:outline-hidden focus:border-amber-500"
+            className="w-full pl-9 pr-4 py-2 text-xs rounded-lg bg-surface border border-surface-border text-foreground placeholder:text-foreground-muted focus:outline-none focus:border-primary"
           />
         </div>
 
-        <div className="flex items-center gap-3 w-full md:w-auto">
+        <div className="flex items-center gap-2">
           <select
             value={filterStatut}
             onChange={(e) => setFilterStatut(e.target.value)}
-            className="px-3 py-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-slate-300 focus:outline-hidden focus:border-amber-500"
+            className="px-3 py-2 text-xs rounded-lg bg-surface border border-surface-border text-foreground focus:outline-none focus:border-primary"
           >
             <option value="tous">Tous les statuts</option>
             <option value="actif">Actif</option>
-            <option value="essai">Essai</option>
-            <option value="suspendu">Suspendu</option>
+            <option value="essai">En essai</option>
+            <option value="suspendu">Suspendu / Verrouillé</option>
+          </select>
+
+          <select
+            value={filterPlan}
+            onChange={(e) => setFilterPlan(e.target.value)}
+            className="px-3 py-2 text-xs rounded-lg bg-surface border border-surface-border text-foreground focus:outline-none focus:border-primary"
+          >
+            <option value="tous">Tous les forfaits</option>
+            <option value="auberge">Auberge & Campement</option>
+            <option value="hotel">Hôtel Standard</option>
+            <option value="resort">Resort & Palace</option>
           </select>
         </div>
       </div>
 
-      {/* Tableau des Établissements */}
-      <div className="bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden shadow-xl">
+      {/* Table des Établissements */}
+      <div className="rounded-xl bg-background border border-surface-border shadow-xs overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm text-slate-300">
-            <thead className="bg-slate-950/60 text-xs font-semibold uppercase tracking-wider text-slate-400 border-b border-slate-800">
+          <table className="w-full text-left text-xs">
+            <thead className="bg-surface border-b border-surface-border text-foreground-muted uppercase tracking-wider font-semibold">
               <tr>
-                <th className="py-3 px-4">Établissement</th>
-                <th className="py-3 px-4">Ville</th>
-                <th className="py-3 px-4">Capacité</th>
-                <th className="py-3 px-4">Direction & Contact</th>
-                <th className="py-3 px-4">Formule</th>
-                <th className="py-3 px-4">Statut</th>
-                <th className="py-3 px-4 text-right">Échéance</th>
-                <th className="py-3 px-4 text-center">Actions</th>
+                <th className="py-3.5 px-4">Établissement</th>
+                <th className="py-3.5 px-4">Localisation & Chambres</th>
+                <th className="py-3.5 px-4">Direction & Contact</th>
+                <th className="py-3.5 px-4">Formule / Plan</th>
+                <th className="py-3.5 px-4">Statut</th>
+                <th className="py-3.5 px-4 text-center">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/60 font-medium text-xs">
-              {filtered.map((h) => {
-                const isLocked = h.statut === 'suspendu' || Boolean(h.compte_verrouille)
-                const isLoading = loadingActionId === h.id
+            <tbody className="divide-y divide-surface-border">
+              {filtered.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="py-12 text-center text-foreground-muted">
+                    Aucun établissement hôtelier ne correspond à vos critères.
+                  </td>
+                </tr>
+              ) : (
+                filtered.map((h) => {
+                  const isLocked = h.statut === 'suspendu' || Boolean(h.compte_verrouille)
+                  const isLoading = loadingActionId === h.id
 
-                return (
-                  <tr key={h.id} className="hover:bg-slate-800/40 transition-colors">
-                    <td className="py-3.5 px-4">
-                      <div className="flex items-center gap-2">
-                        <span className="font-bold text-white text-sm">{h.nom}</span>
-                        {(h.source === 'supabase' || h.email) && (
-                          <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                            Inscrit en ligne
+                  return (
+                    <tr key={h.id} className="hover:bg-surface/50 transition-colors">
+                      <td className="py-3.5 px-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-9 h-9 rounded-lg bg-amber-500/10 text-amber-600 flex items-center justify-center shrink-0">
+                            <Hotel className="w-5 h-5" />
+                          </div>
+                          <div className="min-w-0">
+                            <p className="font-bold text-foreground text-sm truncate">{h.nom}</p>
+                            <span className="text-[11px] text-foreground-muted capitalize">
+                              {h.type}
+                            </span>
+                          </div>
+                        </div>
+                      </td>
+
+                      <td className="py-3.5 px-4">
+                        <div className="flex items-center gap-1.5 text-foreground">
+                          <MapPin className="w-3.5 h-3.5 text-foreground-muted shrink-0" />
+                          <span>{h.ville}</span>
+                          <span className="text-foreground-muted">• {h.chambres} clés</span>
+                        </div>
+                      </td>
+
+                      <td className="py-3.5 px-4">
+                        <div>
+                          <p className="font-medium text-foreground">{h.directeur}</p>
+                          <p className="text-[11px] text-foreground-muted">{h.telephone}</p>
+                        </div>
+                      </td>
+
+                      <td className="py-3.5 px-4">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-primary/10 text-primary uppercase">
+                          {h.plan}
+                        </span>
+                      </td>
+
+                      <td className="py-3.5 px-4">
+                        {isLocked ? (
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-danger/10 text-danger border border-danger/20">
+                            <Lock className="w-3 h-3" />
+                            Verrouillé
+                          </span>
+                        ) : h.statut === 'actif' ? (
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
+                            <CheckCircle2 className="w-3 h-3" />
+                            Actif
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-600 border border-amber-500/20">
+                            <Clock className="w-3 h-3" />
+                            Essai
                           </span>
                         )}
-                      </div>
-                      {h.email && (
-                        <p className="text-[11px] text-slate-400 font-mono mt-0.5">{h.email}</p>
-                      )}
-                    </td>
-                    <td className="py-3.5 px-4 text-xs font-medium text-slate-300">
-                      <span className="flex items-center gap-1">
-                        <MapPin className="w-3.5 h-3.5 text-slate-500" />
-                        {h.ville}
-                      </span>
-                    </td>
-                    <td className="py-3.5 px-4">
-                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-slate-800 text-xs font-bold text-slate-200">
-                        <BedDouble className="w-3.5 h-3.5 text-amber-400" />
-                        {h.chambres} hébergements
-                      </span>
-                    </td>
-                    <td className="py-3.5 px-4 text-xs">
-                      <p className="text-white font-medium">{h.directeur}</p>
-                      <p className="text-slate-400 flex items-center gap-1 mt-0.5">
-                        <Phone className="w-3 h-3 text-slate-500" />
-                        {h.telephone}
-                      </p>
-                    </td>
-                    <td className="py-3.5 px-4">
-                      <span
-                        className={`text-xs font-bold px-2 py-1 rounded-lg ${h.plan === 'hotel'
-                            ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
-                            : 'bg-sky-500/10 text-sky-400 border border-sky-500/20'
-                          }`}
-                      >
-                        {h.plan === 'hotel' ? 'Hôtel (20k/m)' : 'Auberge (15k/m)'}
-                      </span>
-                    </td>
-                    <td className="py-3.5 px-4">
-                      {isLocked ? (
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-rose-500/10 text-rose-400 border border-rose-500/20">
-                          <Lock className="w-3.5 h-3.5" />
-                          Verrouillé
-                        </span>
-                      ) : h.statut === 'actif' ? (
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                          <CheckCircle2 className="w-3.5 h-3.5" />
-                          Actif
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20">
-                          <Clock className="w-3.5 h-3.5" />
-                          Essai
-                        </span>
-                      )}
-                    </td>
-                    <td className="py-3.5 px-4 text-right font-mono text-slate-400 text-xs">
-                      {h.expireLe}
-                    </td>
-                    <td className="py-3.5 px-4 text-center">
-                      <button
-                        type="button"
-                        onClick={() => handleToggleLock(h)}
-                        disabled={isLoading}
-                        className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold transition-all disabled:opacity-50 ${isLocked
-                            ? 'bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 border border-emerald-500/30'
-                            : 'bg-rose-600/20 hover:bg-rose-600/30 text-rose-400 border border-rose-500/30'
-                          }`}
-                      >
-                        {isLoading ? (
-                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                        ) : isLocked ? (
-                          <>
-                            <Unlock className="w-3.5 h-3.5" />
-                            <span>Activer</span>
-                          </>
-                        ) : (
-                          <>
-                            <Lock className="w-3.5 h-3.5" />
-                            <span>Verrouiller</span>
-                          </>
-                        )}
-                      </button>
-                    </td>
-                  </tr>
-                )
-              })}
+                      </td>
+
+                      <td className="py-3.5 px-4">
+                        <div className="flex items-center justify-center gap-1.5">
+                          {/* Verrouiller / Activer */}
+                          <button
+                            type="button"
+                            onClick={() => handleToggleLock(h)}
+                            disabled={isLoading}
+                            title={isLocked ? 'Déverrouiller l\'accès' : 'Verrouiller l\'accès'}
+                            className={`p-1.5 rounded-lg transition-all ${
+                              isLocked
+                                ? 'bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20'
+                                : 'bg-danger/10 text-danger hover:bg-danger/20'
+                            }`}
+                          >
+                            {isLoading ? (
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : isLocked ? (
+                              <Unlock className="w-4 h-4" />
+                            ) : (
+                              <Lock className="w-4 h-4" />
+                            )}
+                          </button>
+
+                          {/* Modifier */}
+                          <button
+                            type="button"
+                            onClick={() => setEditingHotel(h)}
+                            title="Modifier cet établissement"
+                            className="p-1.5 rounded-lg bg-surface hover:bg-surface-border text-foreground transition-all"
+                          >
+                            <Edit2 className="w-4 h-4" />
+                          </button>
+
+                          {/* Supprimer */}
+                          <button
+                            type="button"
+                            onClick={() => setDeletingHotel(h)}
+                            title="Supprimer cet établissement"
+                            className="p-1.5 rounded-lg bg-danger/10 text-danger hover:bg-danger/20 transition-all"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  )
+                })
+              )}
             </tbody>
           </table>
         </div>
       </div>
 
-      {/* Modal Création */}
+      {/* ── MODAL NOUVEL ÉTABLISSEMENT ── */}
       {modalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full max-h-[92vh] sm:max-h-[88vh] flex flex-col overflow-hidden shadow-2xl animate-scale-up">
-            <div className="flex items-center justify-between border-b border-slate-800 p-4 sm:p-6 shrink-0 bg-slate-900">
-              <div>
-                <h3 className="text-base sm:text-lg font-bold text-white">Ajouter un Établissement Hôtelier</h3>
-                <p className="text-xs text-slate-400">Renseignez les coordonnées de la structure</p>
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-surface rounded-2xl border border-surface-border shadow-2xl w-full max-w-lg overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+            <div className="p-5 border-b border-surface-border flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="p-2 rounded-lg bg-amber-500/10 text-amber-600">
+                  <Hotel className="w-5 h-5" />
+                </div>
+                <h3 className="font-bold font-heading text-base text-foreground">Ajouter un Établissement Hôtelier</h3>
               </div>
               <button
                 onClick={() => setModalOpen(false)}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition"
+                className="p-1 rounded-lg text-foreground-muted hover:bg-surface-border"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <form onSubmit={handleCreate} className="flex flex-col flex-1 overflow-hidden">
-              <div className="p-4 sm:p-6 overflow-y-auto flex-1 space-y-4 text-xs">
-                <div>
-                  <label className="block font-semibold text-slate-300 mb-1">
-                    Nom de l&apos;Établissement *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="ex: Teranga Luxury Beach"
-                    value={nom}
-                    onChange={(e) => setNom(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-amber-500"
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block font-semibold text-slate-300 mb-1">
-                      Formule de Souscription *
-                    </label>
-                    <select
-                      value={plan}
-                      onChange={(e) => setPlan(e.target.value as any)}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-amber-500"
-                    >
-                      <option value="auberge">Auberge / Campement (15 000 F/m)</option>
-                      <option value="hotel">Hôtel / Résidence (20 000 F/m)</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block font-semibold text-slate-300 mb-1">
-                      Capacité (Chambres)
-                    </label>
-                    <input
-                      type="number"
-                      min="1"
-                      value={chambres}
-                      onChange={(e) => setChambres(Number(e.target.value))}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-amber-500"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block font-semibold text-slate-300 mb-1">
-                      Ville d&apos;implantation *
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      value={ville}
-                      onChange={(e) => setVille(e.target.value)}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-amber-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="block font-semibold text-slate-300 mb-1">
-                      Statut Initial
-                    </label>
-                    <select
-                      value={statut}
-                      onChange={(e) => setStatut(e.target.value as any)}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-amber-500"
-                    >
-                      <option value="actif">Actif (Contrat réglé)</option>
-                      <option value="essai">Essai (Période test)</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block font-semibold text-slate-300 mb-1">
-                      Nom du Directeur
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="ex: Amadou Diop"
-                      value={directeur}
-                      onChange={(e) => setDirecteur(e.target.value)}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-amber-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="block font-semibold text-slate-300 mb-1">
-                      Téléphone Contact
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="+221 77 000 00 00"
-                      value={telephone}
-                      onChange={(e) => setTelephone(e.target.value)}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-amber-500"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block font-semibold text-slate-300 mb-1">
-                      E-mail de connexion
-                    </label>
-                    <input
-                      type="email"
-                      placeholder="contact@hotel.sn"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-amber-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="block font-semibold text-slate-300 mb-1">
-                      Mot de passe initial
-                    </label>
-                    <input
-                      type="text"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-white focus:outline-none focus:border-amber-500 font-mono"
-                    />
-                  </div>
-                </div>
-
+            <form onSubmit={handleCreate} className="p-6 space-y-4 text-xs">
+              <div>
+                <label className="block font-semibold text-foreground mb-1">Nom de l&apos;établissement *</label>
+                <input
+                  type="text"
+                  name="nom"
+                  required
+                  placeholder="Ex : Hôtel Teranga Palace"
+                  className="w-full px-3 py-2 rounded-lg bg-background border border-surface-border text-foreground focus:outline-none focus:border-primary"
+                />
               </div>
 
-              <div className="flex items-center justify-end gap-3 p-4 sm:p-6 border-t border-slate-800 shrink-0 bg-slate-900">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-semibold text-foreground mb-1">Type d&apos;hébergement</label>
+                  <select
+                    name="type"
+                    defaultValue="hotel"
+                    className="w-full px-3 py-2 rounded-lg bg-background border border-surface-border text-foreground focus:outline-none focus:border-primary"
+                  >
+                    <option value="hotel">Hôtel & Résidence</option>
+                    <option value="auberge">Auberge & Gîte</option>
+                    <option value="campement">Campement Touristique</option>
+                    <option value="resort">Resort & Spa 5★</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block font-semibold text-foreground mb-1">Ville / Région</label>
+                  <input
+                    type="text"
+                    name="ville"
+                    defaultValue="Dakar"
+                    className="w-full px-3 py-2 rounded-lg bg-background border border-surface-border text-foreground focus:outline-none focus:border-primary"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-semibold text-foreground mb-1">Directeur / Gérant</label>
+                  <input
+                    type="text"
+                    name="directeur"
+                    placeholder="Mamadou Sow"
+                    className="w-full px-3 py-2 rounded-lg bg-background border border-surface-border text-foreground focus:outline-none focus:border-primary"
+                  />
+                </div>
+                <div>
+                  <label className="block font-semibold text-foreground mb-1">Nombre de chambres</label>
+                  <input
+                    type="number"
+                    name="chambres"
+                    defaultValue={15}
+                    min={1}
+                    className="w-full px-3 py-2 rounded-lg bg-background border border-surface-border text-foreground focus:outline-none focus:border-primary"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-semibold text-foreground mb-1">Téléphone de contact</label>
+                  <input
+                    type="text"
+                    name="telephone"
+                    placeholder="+221 77 000 00 00"
+                    className="w-full px-3 py-2 rounded-lg bg-background border border-surface-border text-foreground focus:outline-none focus:border-primary"
+                  />
+                </div>
+                <div>
+                  <label className="block font-semibold text-foreground mb-1">Email de direction</label>
+                  <input
+                    type="email"
+                    name="email"
+                    placeholder="direction@hotel.sn"
+                    className="w-full px-3 py-2 rounded-lg bg-background border border-surface-border text-foreground focus:outline-none focus:border-primary"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-semibold text-foreground mb-1">Forfait d&apos;abonnement</label>
+                  <select
+                    name="plan"
+                    defaultValue="hotel"
+                    className="w-full px-3 py-2 rounded-lg bg-background border border-surface-border text-foreground focus:outline-none focus:border-primary"
+                  >
+                    <option value="auberge">Auberge & Campement (15 000 FCFA/m)</option>
+                    <option value="hotel">Hôtel Standard (30 000 FCFA/m)</option>
+                    <option value="resort">Resort & Palace (50 000 FCFA/m)</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block font-semibold text-foreground mb-1">Statut initial</label>
+                  <select
+                    name="statut"
+                    defaultValue="actif"
+                    className="w-full px-3 py-2 rounded-lg bg-background border border-surface-border text-foreground focus:outline-none focus:border-primary"
+                  >
+                    <option value="actif">Actif (Accès ouvert)</option>
+                    <option value="essai">En essai (30 jours)</option>
+                    <option value="suspendu">Verrouillé</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="pt-4 border-t border-surface-border flex items-center justify-end gap-2">
                 <button
                   type="button"
                   onClick={() => setModalOpen(false)}
-                  className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold"
+                  className="px-4 py-2 rounded-xl border border-surface-border text-foreground hover:bg-surface-border"
                 >
                   Annuler
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold uppercase tracking-wider flex items-center gap-2 disabled:opacity-50"
+                  className="px-4 py-2 rounded-xl bg-primary text-primary-foreground font-bold hover:bg-primary-hover disabled:opacity-50 flex items-center gap-1.5"
                 >
                   {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
-                  <span>Enregistrer l&apos;Établissement</span>
+                  <span>Créer l&apos;établissement</span>
                 </button>
               </div>
             </form>
           </div>
         </div>
       )}
+
+      {/* ── MODAL MODIFICATION ÉTABLISSEMENT ── */}
+      {editingHotel && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-surface rounded-2xl border border-surface-border shadow-2xl w-full max-w-lg overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+            <div className="p-5 border-b border-surface-border flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="p-2 rounded-lg bg-primary/10 text-primary">
+                  <Edit2 className="w-5 h-5" />
+                </div>
+                <h3 className="font-bold font-heading text-base text-foreground">Modifier l&apos;Établissement</h3>
+              </div>
+              <button
+                onClick={() => setEditingHotel(null)}
+                className="p-1 rounded-lg text-foreground-muted hover:bg-surface-border"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleEdit} className="p-6 space-y-4 text-xs">
+              <div>
+                <label className="block font-semibold text-foreground mb-1">Nom de l&apos;établissement *</label>
+                <input
+                  type="text"
+                  name="nom"
+                  required
+                  defaultValue={editingHotel.nom}
+                  className="w-full px-3 py-2 rounded-lg bg-background border border-surface-border text-foreground focus:outline-none focus:border-primary"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-semibold text-foreground mb-1">Type d&apos;hébergement</label>
+                  <select
+                    name="type"
+                    defaultValue={editingHotel.type}
+                    className="w-full px-3 py-2 rounded-lg bg-background border border-surface-border text-foreground focus:outline-none focus:border-primary"
+                  >
+                    <option value="Hôtel & Résidence">Hôtel & Résidence</option>
+                    <option value="Auberge & Gîte">Auberge & Gîte</option>
+                    <option value="Campement Touristique">Campement Touristique</option>
+                    <option value="Resort & Spa 5★">Resort & Spa 5★</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block font-semibold text-foreground mb-1">Ville / Région</label>
+                  <input
+                    type="text"
+                    name="ville"
+                    defaultValue={editingHotel.ville}
+                    className="w-full px-3 py-2 rounded-lg bg-background border border-surface-border text-foreground focus:outline-none focus:border-primary"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-semibold text-foreground mb-1">Directeur / Gérant</label>
+                  <input
+                    type="text"
+                    name="directeur"
+                    defaultValue={editingHotel.directeur}
+                    className="w-full px-3 py-2 rounded-lg bg-background border border-surface-border text-foreground focus:outline-none focus:border-primary"
+                  />
+                </div>
+                <div>
+                  <label className="block font-semibold text-foreground mb-1">Nombre de chambres</label>
+                  <input
+                    type="number"
+                    name="chambres"
+                    defaultValue={editingHotel.chambres}
+                    min={1}
+                    className="w-full px-3 py-2 rounded-lg bg-background border border-surface-border text-foreground focus:outline-none focus:border-primary"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-semibold text-foreground mb-1">Téléphone de contact</label>
+                  <input
+                    type="text"
+                    name="telephone"
+                    defaultValue={editingHotel.telephone}
+                    className="w-full px-3 py-2 rounded-lg bg-background border border-surface-border text-foreground focus:outline-none focus:border-primary"
+                  />
+                </div>
+                <div>
+                  <label className="block font-semibold text-foreground mb-1">Email de direction</label>
+                  <input
+                    type="email"
+                    name="email"
+                    defaultValue={editingHotel.email || ''}
+                    className="w-full px-3 py-2 rounded-lg bg-background border border-surface-border text-foreground focus:outline-none focus:border-primary"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-semibold text-foreground mb-1">Forfait d&apos;abonnement</label>
+                  <select
+                    name="plan"
+                    defaultValue={editingHotel.plan}
+                    className="w-full px-3 py-2 rounded-lg bg-background border border-surface-border text-foreground focus:outline-none focus:border-primary"
+                  >
+                    <option value="auberge">Auberge & Campement (15 000 FCFA/m)</option>
+                    <option value="hotel">Hôtel Standard (30 000 FCFA/m)</option>
+                    <option value="resort">Resort & Palace (50 000 FCFA/m)</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block font-semibold text-foreground mb-1">Statut du compte</label>
+                  <select
+                    name="statut"
+                    defaultValue={editingHotel.statut}
+                    className="w-full px-3 py-2 rounded-lg bg-background border border-surface-border text-foreground focus:outline-none focus:border-primary"
+                  >
+                    <option value="actif">Actif (Accès ouvert)</option>
+                    <option value="essai">En essai</option>
+                    <option value="suspendu">Verrouillé / Suspendu</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="pt-4 border-t border-surface-border flex items-center justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setEditingHotel(null)}
+                  className="px-4 py-2 rounded-xl border border-surface-border text-foreground hover:bg-surface-border"
+                >
+                  Annuler
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="px-4 py-2 rounded-xl bg-primary text-primary-foreground font-bold hover:bg-primary-hover disabled:opacity-50 flex items-center gap-1.5"
+                >
+                  {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
+                  <span>Enregistrer les modifications</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── MODAL CONFIRMATION SUPPRESSION ── */}
+      {deletingHotel && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-surface rounded-2xl border border-danger/30 shadow-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+            <div className="p-5 border-b border-surface-border flex items-center justify-between bg-danger/10">
+              <div className="flex items-center gap-2">
+                <div className="p-2 rounded-lg bg-danger/20 text-danger">
+                  <Trash2 className="w-5 h-5" />
+                </div>
+                <h3 className="font-bold font-heading text-base text-danger">Supprimer l&apos;Établissement</h3>
+              </div>
+              <button
+                onClick={() => setDeletingHotel(null)}
+                className="p-1 rounded-lg text-foreground-muted hover:bg-surface-border"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-4 text-xs">
+              <p className="text-foreground leading-relaxed">
+                Êtes-vous certain de vouloir supprimer définitivement l&apos;établissement hôtelier{' '}
+                <strong className="text-danger font-bold">{deletingHotel.nom}</strong> ?
+              </p>
+              <div className="p-3.5 rounded-xl bg-danger/10 border border-danger/20 text-danger flex items-start gap-2.5">
+                <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
+                <span className="leading-relaxed">
+                  Cette action est irréversible. Les comptes utilisateurs, réservations, chambres et données rattachés seront purgés de la plateforme.
+                </span>
+              </div>
+
+              <div className="pt-4 border-t border-surface-border flex items-center justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setDeletingHotel(null)}
+                  className="px-4 py-2 rounded-xl border border-surface-border text-foreground hover:bg-surface-border"
+                >
+                  Annuler
+                </button>
+                <button
+                  type="button"
+                  onClick={handleDelete}
+                  disabled={isSubmitting}
+                  className="px-4 py-2 rounded-xl bg-danger text-white font-bold hover:bg-danger/90 disabled:opacity-50 flex items-center gap-1.5"
+                >
+                  {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                  <span>Confirmer la suppression</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
-
