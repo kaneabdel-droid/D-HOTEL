@@ -87,11 +87,7 @@ interface TransactionItem {
 
 const DEFAULT_CHAMBRES: Chambre[] = [
   { id: "1", numero: "101", etage: "RDC", batiment: "Principal", typeId: "std", typeNom: "Chambre Standard", prixBase: 45000, capaciteAdultes: 2, capaciteEnfants: 0, statutOccupation: "occupee", statutMenage: "propre" },
-  { id: "2", numero: "102", etage: "RDC", batiment: "Principal", typeId: "std", typeNom: "Chambre Standard", prixBase: 45000, capaciteAdultes: 2, capaciteEnfants: 1, statutOccupation: "occupee", statutMenage: "propre" },
-  { id: "3", numero: "103", etage: "RDC", batiment: "Principal", typeId: "sup", typeNom: "Chambre Supérieure", prixBase: 65000, capaciteAdultes: 2, capaciteEnfants: 1, statutOccupation: "libre", statutMenage: "propre" },
-  { id: "4", numero: "104", etage: "1er", batiment: "Principal", typeId: "sup", typeNom: "Chambre Supérieure", prixBase: 65000, capaciteAdultes: 2, capaciteEnfants: 1, statutOccupation: "libre", statutMenage: "a_nettoyer" },
-  { id: "5", numero: "201", etage: "2ème", batiment: "Ailes VIP", typeId: "suite", typeNom: "Suite Junior", prixBase: 120000, capaciteAdultes: 3, capaciteEnfants: 2, statutOccupation: "occupee", statutMenage: "propre" },
-  { id: "6", numero: "204", etage: "2ème", batiment: "Ailes VIP", typeId: "suite", typeNom: "Suite Junior", prixBase: 120000, capaciteAdultes: 3, capaciteEnfants: 2, statutOccupation: "reservee", statutMenage: "hors_service" },
+  { id: "2", numero: "102", etage: "RDC", batiment: "Principal", typeId: "std", typeNom: "Chambre Standard", prixBase: 45000, capaciteAdultes: 2, capaciteEnfants: 1, statutOccupation: "libre", statutMenage: "propre" },
 ];
 
 const DEFAULT_RESERVATIONS: Reservation[] = [
@@ -131,58 +127,16 @@ const DEFAULT_RESERVATIONS: Reservation[] = [
     heureArriveePrevue: "15h00",
     modePaiement: "Carte Bancaire",
   },
-  {
-    id: "res-3",
-    code: "RES-EX-00423",
-    client: "Délégation Sonatel",
-    telephone: "+221 33 839 12 00",
-    chambre: "Chambres 104 à 107",
-    typeChambre: "Chambres Supérieures",
-    dateArrivee: "2026-11-15",
-    dateDepart: "2026-11-17",
-    nuits: 2,
-    personnes: "8 adultes",
-    montantTotal: 520000,
-    acompteVerse: 520000,
-    soldeRestant: 0,
-    statut: "confirmee",
-    heureArriveePrevue: "16h15",
-    modePaiement: "Virement",
-  },
-  {
-    id: "res-4",
-    code: "RES-EX-00424",
-    client: "Dr. Mamadou Cissé",
-    telephone: "+221 77 633 44 55",
-    chambre: "Suite Junior 201",
-    typeChambre: "Suite Junior",
-    dateArrivee: "2026-11-16",
-    dateDepart: "2026-11-19",
-    nuits: 3,
-    personnes: "2 adultes",
-    montantTotal: 360000,
-    acompteVerse: 100000,
-    soldeRestant: 260000,
-    statut: "confirmee",
-    heureArriveePrevue: "12h00",
-    modePaiement: "Orange Money",
-  },
 ];
 
 const DEFAULT_CLIENTS: ClientCRM[] = [
   { id: "cli-1", civilite: "M.", nom: "DIOP", prenom: "Ibrahima", telephone: "+221 77 450 12 34", email: "i.diop@telecom-sn.com", nationalite: "Sénégalaise", categorie: "VIP Gold", nbSejours: 6, dateCreation: "2026-10-10" },
   { id: "cli-2", civilite: "Mme", nom: "MARTIN", prenom: "Sophie", telephone: "+33 6 12 34 56 78", email: "sophie.martin@paris-conseil.fr", nationalite: "Française", categorie: "Particulier", nbSejours: 2, dateCreation: "2026-10-15" },
-  { id: "cli-3", civilite: "M.", nom: "CISSE", prenom: "Mamadou", telephone: "+221 77 633 44 55", email: "m.cisse@cabinet-avocat.sn", nationalite: "Sénégalaise", categorie: "VIP Gold", nbSejours: 9, dateCreation: "2026-10-20" },
-  { id: "cli-4", civilite: "Mme", nom: "KONE", prenom: "Awa", telephone: "+225 07 88 99 00", email: "a.kone@abidjan-agro.ci", nationalite: "Ivoirienne", categorie: "Entreprise", nbSejours: 4, dateCreation: "2026-10-25" },
-  { id: "cli-5", civilite: "M.", nom: "TRAORE", prenom: "Cheick", telephone: "+223 66 77 88 99", email: "c.traore@bamako-mines.ml", nationalite: "Malienne", categorie: "Diplomate", nbSejours: 5, dateCreation: "2026-11-01" },
 ];
 
 const DEFAULT_TRANSACTIONS: TransactionItem[] = [
   { id: "tx-1", date: "Aujourd'hui", heure: "11h20", montant: 135000, methodeLibelle: "Wave Direct", motif: "Règlement Séjour - Ch. 101", client: "Ibrahima Diop" },
   { id: "tx-2", date: "Aujourd'hui", heure: "10h45", montant: 200000, methodeLibelle: "TPE Carte Bancaire", motif: "Acompte Séjour - Bung. 12", client: "Sophie Martin" },
-  { id: "tx-3", date: "Aujourd'hui", heure: "09h30", montant: 58000, methodeLibelle: "Espèces Front-Desk", motif: "Consommations Restaurant & Bar", client: "Mamadou Cissé" },
-  { id: "tx-4", date: "Aujourd'hui", heure: "08h15", montant: 45000, methodeLibelle: "Orange Money", motif: "Day-Pass Piscine & Déjeuner", client: "Famille Ndiaye" },
-  { id: "tx-5", date: "Hier", heure: "19h00", montant: 520000, methodeLibelle: "Virement Bancaire", motif: "Séminaire Sonatel - MICE", client: "Délégation Sonatel" },
 ];
 
 export default function DashboardPage() {

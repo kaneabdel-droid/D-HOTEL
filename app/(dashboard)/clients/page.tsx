@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import { formatXOF } from "@/lib/utils";
 import { loadHotelData, saveHotelData, clearHotelData } from "@/lib/hotel-storage";
+import { getClientHotelRole, verifierPermissionsHotel } from "@/lib/auth-role";
 
 interface ClientCRM {
   id: string;
@@ -85,45 +86,6 @@ const DEFAULT_CLIENTS: ClientCRM[] = [
       { date: "15/01/2026", chambre: "Bungalow Plage 11", montant: 720000 },
     ],
   },
-  {
-    id: "cli-demo-3",
-    civilite: "S.E. M.",
-    nom: "AL-MANSOORI",
-    prenom: "Rashid",
-    telephone: "+971 50 123 4567",
-    email: "almansoori@invest-uae.ae",
-    nationalite: "Émiratie",
-    typePiece: "Passeport",
-    numeroPiece: "N8871290",
-    categorie: "Diplomate",
-    nbSejours: 2,
-    totalDepense: 3800000,
-    dernierSejour: "10/09/2026",
-    preferences: ["Suite Présidentielle", "Voiture avec chauffeur", "Discrétion absolue"],
-    historiqueSejours: [
-      { date: "10/09/2026", chambre: "Suite Royale", montant: 3800000 },
-    ],
-  },
-  {
-    id: "cli-demo-4",
-    civilite: "Mme",
-    nom: "FALL",
-    prenom: "Aminata",
-    telephone: "+221 78 901 23 45",
-    email: "a.fall@ong-afrique.org",
-    nationalite: "Sénégalaise",
-    typePiece: "Passeport",
-    numeroPiece: "SN091244",
-    categorie: "Entreprise",
-    nbSejours: 4,
-    totalDepense: 890000,
-    dernierSejour: "02/10/2026",
-    preferences: ["Facture avec mention TVA", "Arrivée tardive après 22h", "Chambre étage élevé"],
-    historiqueSejours: [
-      { date: "02/10/2026", chambre: "Chambre Standard 102", montant: 180000 },
-      { date: "15/06/2026", chambre: "Chambre Deluxe 103", montant: 260000 },
-    ],
-  },
 ];
 
 export default function ClientsCRMPage() {
@@ -146,15 +108,19 @@ export default function ClientsCRMPage() {
   const [nouvelleCat, setNouvelleCat] = useState<ClientCRM["categorie"]>("Particulier");
   const [nouvellePref, setNouvellePref] = useState("");
 
-  // Données persistantes
+  // Données persistantes et permissions
   const [clients, setClients] = useState<ClientCRM[]>(DEFAULT_CLIENTS);
   const [isExempleFiligrane, setIsExempleFiligrane] = useState(true);
+  const [userRole, setUserRole] = useState("directeur");
 
   useEffect(() => {
     const loaded = loadHotelData<ClientCRM>("dhotel_clients", DEFAULT_CLIENTS);
     setClients(loaded.items);
     setIsExempleFiligrane(loaded.isExempleFiligrane);
+    setUserRole(getClientHotelRole());
   }, []);
+
+  const permissions = verifierPermissionsHotel(userRole, "reservations");
 
   const handleAjoutClient = (e: React.FormEvent) => {
     e.preventDefault();
@@ -204,6 +170,11 @@ export default function ClientsCRMPage() {
     e.preventDefault();
     if (!modalModifierClient) return;
 
+    if (!permissions.peutModifier) {
+      alert("Action non autorisée. Votre rôle ne vous permet pas de modifier une fiche client.");
+      return;
+    }
+
     const updated = clients.map((c) =>
       c.id === modalModifierClient.id ? modalModifierClient : c
     );
@@ -217,7 +188,12 @@ export default function ClientsCRMPage() {
   };
 
   const handleSupprimerClient = (id: string, nom: string, prenom: string) => {
-    if (!window.confirm(`Confirmez-vous la suppression du client ${nom} ${prenom} ?`)) {
+    if (!permissions.peutSupprimer) {
+      alert("Action non autorisée. Seule la direction ou l'administrateur peut supprimer définitivement une fiche client.");
+      return;
+    }
+
+    if (!window.confirm(`Confirmez-vous la suppression définitive du client ${nom} ${prenom} ?`)) {
       return;
     }
 
@@ -226,30 +202,8 @@ export default function ClientsCRMPage() {
     setIsExempleFiligrane(false);
     saveHotelData("dhotel_clients", updated);
 
-    setSuccesMsg(`Client ${nom} ${prenom} supprimé.`);
+    setSuccesMsg(`Client ${nom} ${prenom} supprimé définitivement.`);
     setTimeout(() => setSuccesMsg(null), 3000);
-  };
-
-  const handleViderExemples = () => {
-    if (window.confirm("Voulez-vous vider tous les exemples de clients pour démarrer avec un fichier vierge ?")) {
-      setClients([]);
-      setIsExempleFiligrane(false);
-      clearHotelData("dhotel_clients");
-      setSuccesMsg("Fichier clients vidé. Vous pouvez enregistrer vos premiers clients réels.");
-      setTimeout(() => setSuccesMsg(null), 4000);
-    }
-  };
-
-  const handleConvertirExemples = () => {
-    const converted = clients.map((c, i) => ({
-      ...c,
-      id: "cli-reel-" + (i + 1) + "-" + Date.now(),
-    }));
-    setClients(converted);
-    setIsExempleFiligrane(false);
-    saveHotelData("dhotel_clients", converted);
-    setSuccesMsg("Les profils clients d'exemple ont été convertis en données réelles modifiables.");
-    setTimeout(() => setSuccesMsg(null), 4000);
   };
 
   const clientsFiltres = clients.filter((c) => {
@@ -292,26 +246,12 @@ export default function ClientsCRMPage() {
 
       {/* Bannière filigrane sans impact */}
       {isExempleFiligrane && (
-        <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-800 dark:text-amber-300 text-xs sm:text-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
+        <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-800 dark:text-amber-300 text-xs flex items-center justify-between gap-3 shadow-xs">
           <div className="flex items-center gap-2.5">
-            <Sparkles className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0" />
+            <Sparkles className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
             <span>
-              <strong>Clients d&apos;exemple en filigrane :</strong> Votre établissement ne possède pas encore de clients enregistrés. Ces {clients.length} fiches sont affichées à titre indicatif et sans impact. Vous pouvez les modifier, les supprimer ou ajouter vos propres clients réels.
+              <strong>Profils modèles en filigrane :</strong> Votre établissement ne compte aucun client enregistré. Les {clients.length} fiches ci-dessous sont présentées à titre indicatif et sans impact. Cliquez sur « Nouveau Client » pour débuter.
             </span>
-          </div>
-          <div className="flex items-center gap-2 shrink-0">
-            <button
-              onClick={handleConvertirExemples}
-              className="px-3 py-1.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-900 dark:text-amber-200 text-xs font-bold transition cursor-pointer"
-            >
-              Conserver et Modifier
-            </button>
-            <button
-              onClick={handleViderExemples}
-              className="px-3 py-1.5 rounded-lg border border-amber-500/30 hover:bg-black/5 text-amber-900 dark:text-amber-200 text-xs font-semibold transition cursor-pointer"
-            >
-              Partir de zéro
-            </button>
           </div>
         </div>
       )}
@@ -438,29 +378,42 @@ export default function ClientsCRMPage() {
                   </span>
                 </div>
 
-                <div className="flex items-center gap-1.5">
-                  <button
-                    onClick={() => setClientSelectionne(client)}
-                    className="px-3 py-1.5 text-xs font-bold rounded-lg bg-[var(--primary)]/10 text-[var(--primary)] hover:bg-[var(--primary)]/20 flex items-center gap-1.5 transition cursor-pointer"
-                  >
-                    <Eye className="w-3.5 h-3.5" />
-                    Dossier 360°
-                  </button>
-                  <button
-                    onClick={() => setModalModifierClient(client)}
-                    className="px-2.5 py-1.5 text-xs font-semibold rounded-lg bg-surface-border/60 hover:bg-surface-border text-foreground transition cursor-pointer flex items-center gap-1"
-                  >
-                    <Edit2 className="w-3 h-3" />
-                    Modifier
-                  </button>
-                  <button
-                    onClick={() => handleSupprimerClient(client.id, client.nom, client.prenom)}
-                    className="p-1.5 rounded-lg text-danger/70 hover:text-danger hover:bg-danger/10 transition cursor-pointer"
-                    title="Supprimer ce client"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
-                </div>
+                {isExempleFiligrane ? (
+                  <div className="flex items-center gap-1.5 text-[11px] text-foreground-muted italic">
+                    <span className="px-2 py-0.5 rounded bg-amber-500/10 text-amber-600 dark:text-amber-400 font-medium border border-amber-500/20">
+                      Exemple indicatif
+                    </span>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      onClick={() => setClientSelectionne(client)}
+                      className="px-3 py-1.5 text-xs font-bold rounded-lg bg-[var(--primary)]/10 text-[var(--primary)] hover:bg-[var(--primary)]/20 flex items-center gap-1.5 transition cursor-pointer"
+                    >
+                      <Eye className="w-3.5 h-3.5" />
+                      Dossier 360°
+                    </button>
+                    {permissions.peutModifier && (
+                      <button
+                        onClick={() => setModalModifierClient(client)}
+                        className="px-2.5 py-1.5 text-xs font-semibold rounded-lg bg-surface-border/60 hover:bg-surface-border text-foreground transition cursor-pointer flex items-center gap-1"
+                        title="Modifier cette fiche client"
+                      >
+                        <Edit2 className="w-3 h-3" />
+                        Modifier
+                      </button>
+                    )}
+                    {permissions.peutSupprimer && (
+                      <button
+                        onClick={() => handleSupprimerClient(client.id, client.nom, client.prenom)}
+                        className="p-1.5 rounded-lg text-danger/70 hover:text-danger hover:bg-danger/10 transition cursor-pointer"
+                        title="Supprimer définitivement ce client"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           );

@@ -27,6 +27,7 @@ import { formatXOF } from "@/lib/utils";
 import { loadHotelData, saveHotelData, clearHotelData } from "@/lib/hotel-storage";
 import { ModalEncaissementDirect } from "@/components/ModalEncaissementDirect";
 import { TransactionDirecte } from "@/lib/paiement-direct-storage";
+import { getClientHotelRole, verifierPermissionsHotel } from "@/lib/auth-role";
 
 interface Reservation {
   id: string;
@@ -77,54 +78,6 @@ const DEFAULT_RESERVATIONS: Reservation[] = [
     acompteVerse: 50000,
     statut: "confirmee",
     modePaiement: "Orange Money",
-  },
-  {
-    id: "res-demo-3",
-    code: "RES-EX-00423",
-    client: "Dr. K. Ndiaye",
-    telephone: "+221 76 888 45 12",
-    chambre: "Chambre 103",
-    typeChambre: "Chambre Deluxe",
-    dateArrivee: "2026-10-24",
-    dateDepart: "2026-10-25",
-    nuits: 1,
-    personnes: "1 adulte",
-    montantTotal: 65000,
-    acompteVerse: 0,
-    statut: "check_in",
-    modePaiement: "Facture Entreprise",
-  },
-  {
-    id: "res-demo-4",
-    code: "RES-EX-00424",
-    client: "M. & Mme Moreau",
-    telephone: "+33 6 12 34 56 78",
-    chambre: "Suite Junior 201",
-    typeChambre: "Suite Junior",
-    dateArrivee: "2026-10-24",
-    dateDepart: "2026-10-28",
-    nuits: 4,
-    personnes: "2 adultes",
-    montantTotal: 380000,
-    acompteVerse: 190000,
-    statut: "check_in",
-    modePaiement: "Carte Bancaire Visa",
-  },
-  {
-    id: "res-demo-5",
-    code: "RES-EX-00425",
-    client: "Délégation PNUD (VIP)",
-    telephone: "+221 33 800 00 00",
-    chambre: "Suite Exécutive 202",
-    typeChambre: "Suite Exécutive",
-    dateArrivee: "2026-10-25",
-    dateDepart: "2026-10-30",
-    nuits: 5,
-    personnes: "3 adultes",
-    montantTotal: 675000,
-    acompteVerse: 675000,
-    statut: "confirmee",
-    modePaiement: "Virement Bancaire",
   },
 ];
 
@@ -178,15 +131,19 @@ export default function ReservationsPage() {
   const [nouveauRegime, setNouveauRegime] = useState("BB");
   const [nouvelAcompte, setNouvelAcompte] = useState("50000");
 
-  // Données persistantes
+  // Données persistantes et permissions par rôle
   const [reservations, setReservations] = useState<Reservation[]>(DEFAULT_RESERVATIONS);
   const [isExempleFiligrane, setIsExempleFiligrane] = useState(true);
+  const [userRole, setUserRole] = useState("directeur");
 
   useEffect(() => {
     const loaded = loadHotelData<Reservation>("dhotel_reservations", DEFAULT_RESERVATIONS);
     setReservations(loaded.items);
     setIsExempleFiligrane(loaded.isExempleFiligrane);
+    setUserRole(getClientHotelRole());
   }, []);
+
+  const permissions = verifierPermissionsHotel(userRole, "reservations");
 
   function handleCreerReservation(e: React.FormEvent) {
     e.preventDefault();
@@ -225,6 +182,11 @@ export default function ReservationsPage() {
     e.preventDefault();
     if (!modalModifierReservation) return;
 
+    if (!permissions.peutModifier) {
+      alert("Action non autorisée. Votre rôle ne vous permet pas de modifier une réservation.");
+      return;
+    }
+
     const updated = reservations.map((r) =>
       r.id === modalModifierReservation.id ? modalModifierReservation : r
     );
@@ -237,8 +199,36 @@ export default function ReservationsPage() {
     setTimeout(() => setSuccesMsg(null), 3500);
   }
 
+  function handleAnnulerReservation(id: string, code: string) {
+    if (!permissions.peutAnnuler) {
+      alert("Action non autorisée. Seule la direction ou le chef de réception peut annuler une réservation.");
+      return;
+    }
+
+    const motif = window.prompt(
+      `Confirmez-vous l'annulation de la réservation ${code} ?\nPrécisez le motif d'annulation (désistement, no-show, force majeure...) :`,
+      "Désistement client"
+    );
+    if (motif === null) return;
+
+    const updated = reservations.map((r) =>
+      r.id === id ? { ...r, statut: "annulee" as const } : r
+    );
+    setReservations(updated);
+    setIsExempleFiligrane(false);
+    saveHotelData("dhotel_reservations", updated);
+
+    setSuccesMsg(`Réservation ${code} annulée avec succès (Motif : ${motif}).`);
+    setTimeout(() => setSuccesMsg(null), 4000);
+  }
+
   function handleSupprimerReservation(id: string, code: string) {
-    if (!window.confirm(`Confirmez-vous la suppression de la réservation ${code} ?`)) {
+    if (!permissions.peutSupprimer) {
+      alert("Action non autorisée. Seule la direction ou l'administrateur peut supprimer définitivement une réservation.");
+      return;
+    }
+
+    if (!window.confirm(`Confirmez-vous la suppression définitive de la réservation ${code} ?`)) {
       return;
     }
 
@@ -247,30 +237,8 @@ export default function ReservationsPage() {
     setIsExempleFiligrane(false);
     saveHotelData("dhotel_reservations", updated);
 
-    setSuccesMsg(`Réservation ${code} supprimée.`);
+    setSuccesMsg(`Réservation ${code} supprimée définitivement.`);
     setTimeout(() => setSuccesMsg(null), 3000);
-  }
-
-  function handleViderExemples() {
-    if (window.confirm("Voulez-vous vider tous les exemples de réservations pour partir de zéro ?")) {
-      setReservations([]);
-      setIsExempleFiligrane(false);
-      clearHotelData("dhotel_reservations");
-      setSuccesMsg("Liste des réservations vidée. Vous pouvez créer votre première réservation réelle.");
-      setTimeout(() => setSuccesMsg(null), 4000);
-    }
-  }
-
-  function handleConvertirExemples() {
-    const converted = reservations.map((r, idx) => ({
-      ...r,
-      id: "res-reel-" + (idx + 1) + "-" + Date.now(),
-    }));
-    setReservations(converted);
-    setIsExempleFiligrane(false);
-    saveHotelData("dhotel_reservations", converted);
-    setSuccesMsg("Les réservations d'exemple ont été converties en données réelles modifiables.");
-    setTimeout(() => setSuccesMsg(null), 4000);
   }
 
   const reservationsFiltrees = reservations.filter((r) => {
@@ -317,26 +285,12 @@ export default function ReservationsPage() {
 
       {/* Bannière filigrane sans impact */}
       {isExempleFiligrane && (
-        <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-800 dark:text-amber-300 text-xs sm:text-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
+        <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-800 dark:text-amber-300 text-xs flex items-center justify-between gap-3 shadow-xs">
           <div className="flex items-center gap-2.5">
-            <Sparkles className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0" />
+            <Sparkles className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
             <span>
-              <strong>Réservations d&apos;exemple en filigrane :</strong> Votre établissement ne possède pas encore de réservations enregistrées. Ces {reservations.length} dossiers sont affichés à titre indicatif et sans impact. Vous pouvez les modifier, les supprimer ou ajouter vos propres réservations.
+              <strong>Dossiers modèles en filigrane :</strong> Votre établissement ne compte aucune réservation enregistrée. Les {reservations.length} dossiers ci-dessous sont présentés à titre d&apos;exemple indicatif sans impact. Cliquez sur « Créer une Réservation » pour enregistrer votre premier client.
             </span>
-          </div>
-          <div className="flex items-center gap-2 shrink-0">
-            <button
-              onClick={handleConvertirExemples}
-              className="px-3 py-1.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-900 dark:text-amber-200 text-xs font-bold transition cursor-pointer"
-            >
-              Conserver et Modifier
-            </button>
-            <button
-              onClick={handleViderExemples}
-              className="px-3 py-1.5 rounded-lg border border-amber-500/30 hover:bg-black/5 text-amber-900 dark:text-amber-200 text-xs font-semibold transition cursor-pointer"
-            >
-              Partir de zéro
-            </button>
           </div>
         </div>
       )}
@@ -475,43 +429,67 @@ export default function ReservationsPage() {
                     </span>
                   </td>
                   <td className="p-3 text-right">
-                    <div className="flex items-center justify-end gap-1.5">
-                      {r.montantTotal - r.acompteVerse > 0 && (
+                    {isExempleFiligrane ? (
+                      <div className="flex items-center justify-end gap-1.5 text-[11px] text-foreground-muted italic">
+                        <span className="px-2 py-0.5 rounded bg-amber-500/10 text-amber-600 dark:text-amber-400 font-medium border border-amber-500/20">
+                          Exemple indicatif
+                        </span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-end gap-1.5">
+                        {r.montantTotal - r.acompteVerse > 0 && r.statut !== "annulee" && (
+                          <button
+                            type="button"
+                            onClick={() => setReservationPaiement(r)}
+                            className="px-2 py-1 rounded-md text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white transition cursor-pointer flex items-center gap-1 shadow-xs"
+                            title="Encaisser direct sur appareil hôtel (0% agrégateur)"
+                          >
+                            <Smartphone className="w-3 h-3" />
+                            <span>Payer Direct</span>
+                          </button>
+                        )}
                         <button
                           type="button"
-                          onClick={() => setReservationPaiement(r)}
-                          className="px-2 py-1 rounded-md text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white transition cursor-pointer flex items-center gap-1 shadow-xs"
-                          title="Encaisser direct sur appareil hôtel (0% agrégateur)"
+                          onClick={() => setReservationDetails(r)}
+                          className="p-1.5 rounded-md hover:bg-[var(--surface-muted)] text-[var(--foreground-muted)] hover:text-[var(--foreground)] cursor-pointer"
+                          title="Voir Folio et Facture"
                         >
-                          <Smartphone className="w-3 h-3" />
-                          <span>Payer Direct</span>
+                          <FileText className="w-4 h-4" />
                         </button>
-                      )}
-                      <button
-                        type="button"
-                        onClick={() => setReservationDetails(r)}
-                        className="p-1.5 rounded-md hover:bg-[var(--surface-muted)] text-[var(--foreground-muted)] hover:text-[var(--foreground)] cursor-pointer"
-                        title="Voir Folio et Facture"
-                      >
-                        <FileText className="w-4 h-4" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setModalModifierReservation(r)}
-                        className="px-2 py-1 rounded-md text-xs font-semibold bg-surface-border/60 hover:bg-surface-border text-foreground transition cursor-pointer flex items-center gap-1"
-                      >
-                        <Edit2 className="w-3 h-3" />
-                        <span>Modifier</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleSupprimerReservation(r.id, r.code)}
-                        className="p-1 rounded-md text-danger/70 hover:text-danger hover:bg-danger/10 transition cursor-pointer"
-                        title="Supprimer cette réservation"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
+                        {permissions.peutModifier && (
+                          <button
+                            type="button"
+                            onClick={() => setModalModifierReservation(r)}
+                            className="px-2 py-1 rounded-md text-xs font-semibold bg-surface-border/60 hover:bg-surface-border text-foreground transition cursor-pointer flex items-center gap-1"
+                            title="Modifier cette réservation"
+                          >
+                            <Edit2 className="w-3 h-3" />
+                            <span>Modifier</span>
+                          </button>
+                        )}
+                        {permissions.peutAnnuler && r.statut !== "annulee" && (
+                          <button
+                            type="button"
+                            onClick={() => handleAnnulerReservation(r.id, r.code)}
+                            className="px-2 py-1 rounded-md text-xs font-semibold bg-amber-500/10 hover:bg-amber-500/20 text-amber-700 dark:text-amber-300 transition cursor-pointer flex items-center gap-1 border border-amber-500/20"
+                            title="Annuler cette réservation"
+                          >
+                            <Ban className="w-3 h-3" />
+                            <span>Annuler</span>
+                          </button>
+                        )}
+                        {permissions.peutSupprimer && (
+                          <button
+                            type="button"
+                            onClick={() => handleSupprimerReservation(r.id, r.code)}
+                            className="p-1 rounded-md text-danger/70 hover:text-danger hover:bg-danger/10 transition cursor-pointer"
+                            title="Supprimer définitivement cette réservation"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                      </div>
+                    )}
                   </td>
                 </tr>
               );

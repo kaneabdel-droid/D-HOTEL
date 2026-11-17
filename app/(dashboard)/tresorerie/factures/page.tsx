@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   FileText,
   Printer,
@@ -19,11 +19,17 @@ import {
   Layers,
   X,
   ShieldCheck,
+  Sparkles,
+  Ban,
+  Trash2,
+  Edit2,
 } from "lucide-react";
 import { formatXOF } from "@/lib/utils";
 import { genererFactureFolioPdf } from "@/lib/pdf/facture-pdf";
 import { ModalEncaissementDirect } from "@/components/ModalEncaissementDirect";
 import { TransactionDirecte } from "@/lib/paiement-direct-storage";
+import { loadHotelData, saveHotelData } from "@/lib/hotel-storage";
+import { getClientHotelRole, verifierPermissionsHotel } from "@/lib/auth-role";
 
 interface LigneDepense {
   designation: string;
@@ -47,10 +53,60 @@ interface FolioFacture {
   totalTTC: number;
   totalRegle: number;
   soldeDu: number;
-  statut: "solde" | "ouvert";
+  statut: "solde" | "ouvert" | "annulee";
   modeReglement: string;
   lignes: LigneDepense[];
+  motifAnnulation?: string;
 }
+
+const DEFAULT_FACTURES: FolioFacture[] = [
+  {
+    id: "1",
+    numeroFacture: "FACT-2026-00412",
+    client: "M. Ibrahima Diop",
+    chambre: "Chambre 101",
+    dates: "24/10/2026 ➔ 27/10/2026",
+    nuits: 3,
+    totalHebergement: 135000,
+    totalRestauration: 24000,
+    totalExtras: 9000,
+    taxeSejour: 3000,
+    totalTTC: 171000,
+    totalRegle: 171000,
+    soldeDu: 0,
+    statut: "solde",
+    modeReglement: "Wave Mobile Money (Maketou)",
+    lignes: [
+      { designation: "Nuitée Chambre Standard (3 nuits)", categorie: "Hébergement", quantite: 3, pu: 45000, total: 135000 },
+      { designation: "Dîner Thieboudienne Royal (x2)", categorie: "Restaurant", quantite: 2, pu: 12000, total: 24000 },
+      { designation: "Consommations Minibar (Gazelle x2 + Kirène)", categorie: "Minibar", quantite: 1, pu: 9000, total: 9000 },
+      { designation: "Taxe Touristique Réglementaire (1 000 F/nuit)", categorie: "Taxe", quantite: 3, pu: 1000, total: 3000 },
+    ],
+  },
+  {
+    id: "2",
+    numeroFacture: "FACT-2026-00413",
+    client: "Mme Sophie Martin",
+    chambre: "Bungalow Plage 12",
+    dates: "24/10/2026 ➔ 29/10/2026",
+    nuits: 5,
+    totalHebergement: 900000,
+    totalRestauration: 85000,
+    totalExtras: 67000,
+    taxeSejour: 5000,
+    totalTTC: 1057000,
+    totalRegle: 900000,
+    soldeDu: 157000,
+    statut: "ouvert",
+    modeReglement: "Carte Visa (Acompte 900k)",
+    lignes: [
+      { designation: "Séjour Bungalow Plage 5★ (5 nuits)", categorie: "Hébergement", quantite: 5, pu: 180000, total: 900000 },
+      { designation: "Champagne Taittinger Brut", categorie: "Bar", quantite: 1, pu: 38000, total: 38000 },
+      { designation: "Dîners Gastronomiques Restaurant", categorie: "Restaurant", quantite: 1, pu: 47000, total: 47000 },
+      { designation: "Taxe Touristique Réglementaire", categorie: "Taxe", quantite: 5, pu: 1000, total: 5000 },
+    ],
+  },
+];
 
 export default function FacturesFoliosPage() {
   const [recherche, setRecherche] = useState("");
@@ -59,23 +115,39 @@ export default function FacturesFoliosPage() {
   const [facturePaiementDirect, setFacturePaiementDirect] = useState<FolioFacture | null>(null);
   const [succesMsg, setSuccesMsg] = useState<string | null>(null);
 
+  const [factures, setFactures] = useState<FolioFacture[]>(DEFAULT_FACTURES);
+  const [isExempleFiligrane, setIsExempleFiligrane] = useState(true);
+  const [userRole, setUserRole] = useState("directeur");
+
+  useEffect(() => {
+    const loaded = loadHotelData<FolioFacture>("dhotel_factures", DEFAULT_FACTURES);
+    setFactures(loaded.items);
+    setIsExempleFiligrane(loaded.isExempleFiligrane);
+    setUserRole(getClientHotelRole());
+  }, []);
+
+  const permissions = verifierPermissionsHotel(userRole, "factures");
+
   const handlePaiementDirectValide = (tx: TransactionDirecte) => {
-    setFactures((prev) =>
-      prev.map((f) => {
-        if (f.id === facturePaiementDirect?.id) {
-          const nouveauRegle = f.totalRegle + tx.montant;
-          const nouveauSolde = Math.max(0, f.totalTTC - nouveauRegle);
-          return {
-            ...f,
-            totalRegle: nouveauRegle,
-            soldeDu: nouveauSolde,
-            statut: nouveauSolde === 0 ? "solde" : "ouvert",
-            modeReglement: `${tx.methodeLibelle} (Direct établissement - 0% agrégateur)`,
-          };
-        }
-        return f;
-      })
-    );
+    const nouvelles = factures.map((f) => {
+      if (f.id === facturePaiementDirect?.id) {
+        const nouveauRegle = f.totalRegle + tx.montant;
+        const nouveauSolde = Math.max(0, f.totalTTC - nouveauRegle);
+        return {
+          ...f,
+          totalRegle: nouveauRegle,
+          soldeDu: nouveauSolde,
+          statut: (nouveauSolde === 0 ? "solde" : "ouvert") as FolioFacture["statut"],
+          modeReglement: `${tx.methodeLibelle} (Direct établissement - 0% agrégateur)`,
+        };
+      }
+      return f;
+    });
+
+    setFactures(nouvelles);
+    setIsExempleFiligrane(false);
+    saveHotelData("dhotel_factures", nouvelles);
+
     if (factureSelectionnee && factureSelectionnee.id === facturePaiementDirect?.id) {
       const nouveauRegle = factureSelectionnee.totalRegle + tx.montant;
       const nouveauSolde = Math.max(0, factureSelectionnee.totalTTC - nouveauRegle);
@@ -83,7 +155,7 @@ export default function FacturesFoliosPage() {
         ...factureSelectionnee,
         totalRegle: nouveauRegle,
         soldeDu: nouveauSolde,
-        statut: nouveauSolde === 0 ? "solde" : "ouvert",
+        statut: (nouveauSolde === 0 ? "solde" : "ouvert") as FolioFacture["statut"],
         modeReglement: `${tx.methodeLibelle} (Direct établissement - 0% agrégateur)`,
       });
     }
@@ -92,79 +164,47 @@ export default function FacturesFoliosPage() {
     setTimeout(() => setSuccesMsg(null), 5000);
   };
 
-  const [factures, setFactures] = useState<FolioFacture[]>([
-    {
-      id: "1",
-      numeroFacture: "FACT-2026-00412",
-      client: "M. Ibrahima Diop",
-      chambre: "Chambre 101",
-      dates: "24/10/2026 ➔ 27/10/2026",
-      nuits: 3,
-      totalHebergement: 135000,
-      totalRestauration: 24000,
-      totalExtras: 9000,
-      taxeSejour: 3000,
-      totalTTC: 171000,
-      totalRegle: 171000,
-      soldeDu: 0,
-      statut: "solde",
-      modeReglement: "Wave Mobile Money (Maketou)",
-      lignes: [
-        { designation: "Nuitée Chambre Standard (3 nuits)", categorie: "Hébergement", quantite: 3, pu: 45000, total: 135000 },
-        { designation: "Dîner Thieboudienne Royal (x2)", categorie: "Restaurant", quantite: 2, pu: 12000, total: 24000 },
-        { designation: "Consommations Minibar (Gazelle x2 + Kirène)", categorie: "Minibar", quantite: 1, pu: 9000, total: 9000 },
-        { designation: "Taxe Touristique Réglementaire (1 000 F/nuit)", categorie: "Taxe", quantite: 3, pu: 1000, total: 3000 },
-      ],
-    },
-    {
-      id: "2",
-      numeroFacture: "FACT-2026-00413",
-      client: "Mme Sophie Martin",
-      chambre: "Bungalow Plage 12",
-      dates: "24/10/2026 ➔ 29/10/2026",
-      nuits: 5,
-      totalHebergement: 900000,
-      totalRestauration: 85000,
-      totalExtras: 67000,
-      taxeSejour: 5000,
-      totalTTC: 1057000,
-      totalRegle: 900000, // Acompte versé
-      soldeDu: 157000,
-      statut: "ouvert",
-      modeReglement: "Carte Visa (Acompte 900k)",
-      lignes: [
-        { designation: "Séjour Bungalow Plage 5★ (5 nuits)", categorie: "Hébergement", quantite: 5, pu: 180000, total: 900000 },
-        { designation: "Champagne Taittinger Brut", categorie: "Bar", quantite: 1, pu: 38000, total: 38000 },
-        { designation: "Dîners Gastronomiques Restaurant", categorie: "Restaurant", quantite: 1, pu: 47000, total: 47000 },
-        { designation: "Safari Bandia (1 pers)", categorie: "Excursion", quantite: 1, pu: 35000, total: 35000 },
-        { designation: "Soin Massage Spa", categorie: "Spa", quantite: 1, pu: 32000, total: 32000 },
-        { designation: "Taxe Touristique Réglementaire", categorie: "Taxe", quantite: 5, pu: 1000, total: 5000 },
-      ],
-    },
-    {
-      id: "3",
-      numeroFacture: "FACT-2026-00414",
-      client: "Dr. K. Ndiaye",
-      chambre: "Chambre 103",
-      dates: "23/10/2026 ➔ 24/10/2026",
-      nuits: 1,
-      totalHebergement: 65000,
-      totalRestauration: 15000,
-      totalExtras: 1500,
-      taxeSejour: 1000,
-      totalTTC: 82500,
-      totalRegle: 82500,
-      soldeDu: 0,
-      statut: "solde",
-      modeReglement: "Orange Money",
-      lignes: [
-        { designation: "Nuitée Chambre Deluxe", categorie: "Hébergement", quantite: 1, pu: 65000, total: 65000 },
-        { designation: "Déjeuner Service Chambre", categorie: "Room-Service", quantite: 1, pu: 15000, total: 15000 },
-        { designation: "Eau Kirène Minibar", categorie: "Minibar", quantite: 1, pu: 1500, total: 1500 },
-        { designation: "Taxe de séjour", categorie: "Taxe", quantite: 1, pu: 1000, total: 1000 },
-      ],
-    },
-  ]);
+  const handleAnnulerFacture = (id: string, numero: string) => {
+    if (!permissions.peutAnnuler) {
+      alert("Action non autorisée. Seule la direction ou le chef comptable peut annuler une facture.");
+      return;
+    }
+
+    const motif = window.prompt(
+      `Confirmez-vous l'annulation de la facture ${numero} ?\nPrécisez le motif d'annulation (erreur de saisie, contestation client, contre-passation...) :`,
+      "Erreur d'imputation"
+    );
+    if (motif === null) return;
+
+    const nouvelles = factures.map((f) =>
+      f.id === id ? { ...f, statut: "annulee" as const, motifAnnulation: motif } : f
+    );
+    setFactures(nouvelles);
+    setIsExempleFiligrane(false);
+    saveHotelData("dhotel_factures", nouvelles);
+
+    setSuccesMsg(`Facture ${numero} annulée avec succès (Motif : ${motif}).`);
+    setTimeout(() => setSuccesMsg(null), 4000);
+  };
+
+  const handleSupprimerFacture = (id: string, numero: string) => {
+    if (!permissions.peutSupprimer) {
+      alert("Action non autorisée. Seule la direction ou l'administrateur peut supprimer définitivement une facture.");
+      return;
+    }
+
+    if (!window.confirm(`Confirmez-vous la suppression définitive de la facture ${numero} ?`)) {
+      return;
+    }
+
+    const nouvelles = factures.filter((f) => f.id !== id);
+    setFactures(nouvelles);
+    setIsExempleFiligrane(false);
+    saveHotelData("dhotel_factures", nouvelles);
+
+    setSuccesMsg(`Facture ${numero} supprimée définitivement.`);
+    setTimeout(() => setSuccesMsg(null), 3000);
+  };
 
   const facturesFiltrees = factures.filter((f) => {
     const correspondRecherche =
@@ -192,6 +232,18 @@ export default function FacturesFoliosPage() {
           </p>
         </div>
       </div>
+
+      {/* Bannière filigrane sans impact */}
+      {isExempleFiligrane && (
+        <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-800 dark:text-amber-300 text-xs flex items-center justify-between gap-3 shadow-xs">
+          <div className="flex items-center gap-2.5">
+            <Sparkles className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
+            <span>
+              <strong>Factures modèles en filigrane :</strong> Votre établissement ne compte aucune pièce comptable enregistrée. Les {factures.length} folios ci-dessous sont présentés à titre indicatif et sans impact.
+            </span>
+          </div>
+        </div>
+      )}
 
       {succesMsg && (
         <div className="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200 text-sm flex items-center gap-3">
@@ -283,35 +335,67 @@ export default function FacturesFoliosPage() {
                     </td>
                     <td className="px-4 py-3 text-center">
                       <span
-                        className={`text-xs px-2.5 py-0.5 rounded-full font-bold uppercase ${estSolde
-                            ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300"
-                            : "bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300"
+                        className={`text-xs px-2.5 py-0.5 rounded-full font-bold uppercase ${f.statut === "annulee"
+                            ? "bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300"
+                            : estSolde
+                              ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300"
+                              : "bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300"
                           }`}
                       >
-                        {estSolde ? "Soldé" : "En cours"}
+                        {f.statut === "annulee" ? "Annulée" : estSolde ? "Soldé" : "En cours"}
                       </span>
                     </td>
                     <td className="px-4 py-3 text-center">
-                      <div className="flex items-center justify-center gap-1.5">
-                        {!estSolde && f.soldeDu > 0 && (
+                      {isExempleFiligrane ? (
+                        <div className="flex items-center justify-center gap-1.5 text-[11px] text-foreground-muted italic">
+                          <span className="px-2 py-0.5 rounded bg-amber-500/10 text-amber-600 dark:text-amber-400 font-medium border border-amber-500/20">
+                            Exemple indicatif
+                          </span>
+                        </div>
+                      ) : (
+                        <div className="flex items-center justify-center gap-1.5">
+                          {!estSolde && f.soldeDu > 0 && f.statut !== "annulee" && (
+                            <button
+                              type="button"
+                              onClick={() => setFacturePaiementDirect(f)}
+                              className="px-2.5 py-1.5 text-xs font-bold rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white inline-flex items-center gap-1 transition shadow-xs cursor-pointer"
+                              title="Encaisser direct sur appareil hôtel (0% agrégateur)"
+                            >
+                              <Smartphone className="w-3.5 h-3.5" />
+                              <span>Encaisser</span>
+                            </button>
+                          )}
                           <button
-                            type="button"
-                            onClick={() => setFacturePaiementDirect(f)}
-                            className="px-2.5 py-1.5 text-xs font-bold rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white inline-flex items-center gap-1 transition shadow-xs cursor-pointer"
-                            title="Encaisser direct sur appareil hôtel (0% agrégateur)"
+                            onClick={() => setFactureSelectionnee(f)}
+                            className="px-3 py-1.5 text-xs font-bold rounded-lg bg-[var(--primary-soft)] text-[var(--primary)] hover:opacity-90 inline-flex items-center gap-1.5 transition cursor-pointer"
+                            title="Visualiser et imprimer la facture"
                           >
-                            <Smartphone className="w-3.5 h-3.5" />
-                            <span>Encaisser</span>
+                            <Eye className="w-3.5 h-3.5" />
+                            <span>Voir A4</span>
                           </button>
-                        )}
-                        <button
-                          onClick={() => setFactureSelectionnee(f)}
-                          className="px-3 py-1.5 text-xs font-bold rounded-lg bg-[var(--primary-soft)] text-[var(--primary)] hover:opacity-90 inline-flex items-center gap-1.5 transition cursor-pointer"
-                        >
-                          <Eye className="w-3.5 h-3.5" />
-                          <span>Voir A4</span>
-                        </button>
-                      </div>
+                          {permissions.peutAnnuler && f.statut !== "annulee" && (
+                            <button
+                              type="button"
+                              onClick={() => handleAnnulerFacture(f.id, f.numeroFacture)}
+                              className="px-2 py-1.5 rounded-lg text-xs font-semibold bg-amber-500/10 hover:bg-amber-500/20 text-amber-700 dark:text-amber-300 transition cursor-pointer flex items-center gap-1 border border-amber-500/20"
+                              title="Annuler cette facture (création d'un avoir/contre-passation)"
+                            >
+                              <Ban className="w-3.5 h-3.5" />
+                              <span>Annuler</span>
+                            </button>
+                          )}
+                          {permissions.peutSupprimer && (
+                            <button
+                              type="button"
+                              onClick={() => handleSupprimerFacture(f.id, f.numeroFacture)}
+                              className="p-1.5 rounded-lg text-danger/70 hover:text-danger hover:bg-danger/10 transition cursor-pointer"
+                              title="Supprimer définitivement cette facture"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          )}
+                        </div>
+                      )}
                     </td>
                   </tr>
                 );

@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { formatXOF } from "@/lib/utils";
 import { loadHotelData, saveHotelData, clearHotelData } from "@/lib/hotel-storage";
+import { getClientHotelRole, verifierPermissionsHotel } from "@/lib/auth-role";
 
 interface IngredientFiche {
   nom: string;
@@ -73,52 +74,6 @@ const DEFAULT_PLATS: PlatMenu[] = [
       { nom: "Assortiment légumes (Manioc, Carotte, Chou)", quantite: "200g", coutUnitaire: 500 },
     ],
   },
-  {
-    id: "plat-demo-3",
-    nom: "Carpaccio d'Espadon aux Agrumes & Baies Roses",
-    categorie: "Entrées",
-    prixVente: 8500,
-    coutMatiere: 2100,
-    description: "Tranches extra-fines d'espadon mariné au jus d'orange amère et huile d'olive vierge.",
-    actif: true,
-    destockageAutomatique: true,
-    ingredients: [
-      { nom: "Espadon frais", quantite: "140g", coutUnitaire: 1400 },
-      { nom: "Agrumes (Orange, Citron)", quantite: "1 pièce", coutUnitaire: 300 },
-      { nom: "Huile d'olive & Baies roses", quantite: "3cl", coutUnitaire: 400 },
-    ],
-  },
-  {
-    id: "plat-demo-4",
-    nom: "Burger Teranga au Bœuf Zébu & Aloco",
-    categorie: "Grillades & Poissons",
-    prixVente: 11000,
-    coutMatiere: 2900,
-    description: "Steak haché zébu façon bouchère (180g), oignons confits au bissap, cheddar et frites d'igname.",
-    actif: true,
-    destockageAutomatique: true,
-    ingredients: [
-      { nom: "Bœuf Zébu haché", quantite: "180g", coutUnitaire: 1500 },
-      { nom: "Pain brioché artisanal", quantite: "1 unité", coutUnitaire: 400 },
-      { nom: "Banane plantain (Aloco)", quantite: "150g", coutUnitaire: 500 },
-      { nom: "Fromage & Sauce Teranga", quantite: "50g", coutUnitaire: 500 },
-    ],
-  },
-  {
-    id: "plat-demo-5",
-    nom: "Cocktail Signature : Teranga Sunset Spritz",
-    categorie: "Cocktails Bar",
-    prixVente: 7500,
-    coutMatiere: 1800,
-    description: "Liqueur de Bissap infusée aux épices, Prosecco, gin local et zeste de pamplemousse rose.",
-    actif: true,
-    destockageAutomatique: true,
-    ingredients: [
-      { nom: "Liqueur de Bissap épicée", quantite: "4cl", coutUnitaire: 700 },
-      { nom: "Prosecco DOC", quantite: "8cl", coutUnitaire: 800 },
-      { nom: "Gin artisanal local", quantite: "2cl", coutUnitaire: 300 },
-    ],
-  },
 ];
 
 export default function CartesMenusPage() {
@@ -136,15 +91,22 @@ export default function CartesMenusPage() {
   const [nouveauCoutMatiere, setNouveauCoutMatiere] = useState("3500");
   const [nouvelleDesc, setNouvelleDesc] = useState("");
 
-  // Données persistantes
+  // Données persistantes et permissions
   const [plats, setPlats] = useState<PlatMenu[]>(DEFAULT_PLATS);
   const [isExempleFiligrane, setIsExempleFiligrane] = useState(true);
+  const [userRole, setUserRole] = useState("directeur");
 
   useEffect(() => {
     const loaded = loadHotelData<PlatMenu>("dhotel_plats", DEFAULT_PLATS);
     setPlats(loaded.items);
     setIsExempleFiligrane(loaded.isExempleFiligrane);
+    setUserRole(getClientHotelRole());
   }, []);
+
+  const permissions = {
+    peutModifier: ["directeur", "admin", "serveur", "chef_cuisinier"].includes(userRole),
+    peutSupprimer: ["directeur", "admin"].includes(userRole),
+  };
 
   const handleAjoutPlat = (e: React.FormEvent) => {
     e.preventDefault();
@@ -180,6 +142,11 @@ export default function CartesMenusPage() {
     e.preventDefault();
     if (!modalModifierPlat) return;
 
+    if (!permissions.peutModifier) {
+      alert("Action non autorisée pour votre rôle.");
+      return;
+    }
+
     const updated = plats.map((p) =>
       p.id === modalModifierPlat.id ? modalModifierPlat : p
     );
@@ -193,6 +160,11 @@ export default function CartesMenusPage() {
   };
 
   const handleSupprimerPlat = (id: string, nom: string) => {
+    if (!permissions.peutSupprimer) {
+      alert("Action non autorisée. Seule la direction ou l'administrateur peut supprimer un article de la carte.");
+      return;
+    }
+
     if (!window.confirm(`Confirmez-vous le retrait de « ${nom} » de la carte ?`)) {
       return;
     }
@@ -204,28 +176,6 @@ export default function CartesMenusPage() {
 
     setSuccesMsg(`Article « ${nom} » supprimé.`);
     setTimeout(() => setSuccesMsg(null), 3000);
-  };
-
-  const handleViderExemples = () => {
-    if (window.confirm("Voulez-vous vider tous les exemples de menu pour démarrer avec une carte vierge ?")) {
-      setPlats([]);
-      setIsExempleFiligrane(false);
-      clearHotelData("dhotel_plats");
-      setSuccesMsg("Carte vidée. Vous pouvez créer vos propres recettes et plats.");
-      setTimeout(() => setSuccesMsg(null), 4000);
-    }
-  };
-
-  const handleConvertirExemples = () => {
-    const converted = plats.map((p, i) => ({
-      ...p,
-      id: "plat-reel-" + (i + 1) + "-" + Date.now(),
-    }));
-    setPlats(converted);
-    setIsExempleFiligrane(false);
-    saveHotelData("dhotel_plats", converted);
-    setSuccesMsg("Les plats d'exemple ont été convertis en recettes réelles modifiables.");
-    setTimeout(() => setSuccesMsg(null), 4000);
   };
 
   const categories = [
@@ -274,26 +224,12 @@ export default function CartesMenusPage() {
 
       {/* Bannière filigrane sans impact */}
       {isExempleFiligrane && (
-        <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-800 dark:text-amber-300 text-xs sm:text-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
+        <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-800 dark:text-amber-300 text-xs flex items-center justify-between gap-3 shadow-xs">
           <div className="flex items-center gap-2.5">
-            <Sparkles className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0" />
+            <Sparkles className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
             <span>
-              <strong>Recettes d&apos;exemple en filigrane :</strong> Votre établissement ne possède pas encore de carte enregistrée. Ces {plats.length} plats sont affichés à titre indicatif et sans impact. Vous pouvez les modifier, les supprimer ou ajouter vos propres plats réels.
+              <strong>Recettes modèles en filigrane :</strong> Votre établissement ne compte aucun article de restauration enregistré. Les {plats.length} plats ci-dessous sont présentés à titre indicatif et sans impact. Cliquez sur « Ajouter un Plat » pour concevoir votre carte.
             </span>
-          </div>
-          <div className="flex items-center gap-2 shrink-0">
-            <button
-              onClick={handleConvertirExemples}
-              className="px-3 py-1.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-900 dark:text-amber-200 text-xs font-bold transition cursor-pointer"
-            >
-              Conserver et Modifier
-            </button>
-            <button
-              onClick={handleViderExemples}
-              className="px-3 py-1.5 rounded-lg border border-amber-500/30 hover:bg-black/5 text-amber-900 dark:text-amber-200 text-xs font-semibold transition cursor-pointer"
-            >
-              Partir de zéro
-            </button>
           </div>
         </div>
       )}
@@ -404,20 +340,34 @@ export default function CartesMenusPage() {
                     <Eye className="w-3.5 h-3.5" />
                     Fiche Tech.
                   </button>
-                  <button
-                    onClick={() => setModalModifierPlat(plat)}
-                    className="px-2.5 py-1.5 text-xs font-semibold rounded-lg bg-surface-border/60 hover:bg-surface-border text-foreground transition cursor-pointer flex items-center gap-1"
-                  >
-                    <Edit2 className="w-3 h-3" />
-                    Modifier
-                  </button>
-                  <button
-                    onClick={() => handleSupprimerPlat(plat.id, plat.nom)}
-                    className="p-1.5 rounded-lg text-danger/70 hover:text-danger hover:bg-danger/10 transition cursor-pointer"
-                    title="Supprimer ce plat"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
+
+                  {isExempleFiligrane ? (
+                    <span className="px-2 py-0.5 rounded bg-amber-500/10 text-amber-600 dark:text-amber-400 font-medium text-[11px] border border-amber-500/20 italic">
+                      Exemple indicatif
+                    </span>
+                  ) : (
+                    <div className="flex items-center gap-1.5">
+                      {permissions.peutModifier && (
+                        <button
+                          onClick={() => setModalModifierPlat(plat)}
+                          className="px-2.5 py-1.5 text-xs font-semibold rounded-lg bg-surface-border/60 hover:bg-surface-border text-foreground transition cursor-pointer flex items-center gap-1"
+                          title="Modifier cet article"
+                        >
+                          <Edit2 className="w-3 h-3" />
+                          Modifier
+                        </button>
+                      )}
+                      {permissions.peutSupprimer && (
+                        <button
+                          onClick={() => handleSupprimerPlat(plat.id, plat.nom)}
+                          className="p-1.5 rounded-lg text-danger/70 hover:text-danger hover:bg-danger/10 transition cursor-pointer"
+                          title="Supprimer cet article"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

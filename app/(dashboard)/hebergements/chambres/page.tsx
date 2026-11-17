@@ -28,6 +28,7 @@ import {
 } from "lucide-react";
 import { formatXOF } from "@/lib/utils";
 import { loadHotelData, saveHotelData, clearHotelData } from "@/lib/hotel-storage";
+import { getClientHotelRole, verifierPermissionsHotel } from "@/lib/auth-role";
 
 interface Chambre {
   id: string;
@@ -79,39 +80,6 @@ const DEFAULT_TYPES_CHAMBRES: TypeChambre[] = [
     saisonHaute: 80000,
     saisonBasse: 55000,
   },
-  {
-    id: "ste-jr",
-    nom: "Suite Junior",
-    code: "SJR",
-    tarifBase: 95000,
-    capacite: "2 adultes + 1 enfant",
-    nbTotal: 8,
-    description: "Espace salon distinct, lit king size, baignoire balnéo et machine Nespresso.",
-    saisonHaute: 120000,
-    saisonBasse: 80000,
-  },
-  {
-    id: "bung-plage",
-    nom: "Bungalow Plage",
-    code: "BPL",
-    tarifBase: 180000,
-    capacite: "4 personnes (2 chambres)",
-    nbTotal: 6,
-    description: "Accès direct au sable blanc, terrasse panoramique, plunge pool privée.",
-    saisonHaute: 230000,
-    saisonBasse: 150000,
-  },
-  {
-    id: "lodge",
-    nom: "Tente Lodge Safari",
-    code: "LOD",
-    tarifBase: 110000,
-    capacite: "2 adultes",
-    nbTotal: 4,
-    description: "Immersion nature avec le confort 5 étoiles, terrasse sur pilotis ombragée.",
-    saisonHaute: 140000,
-    saisonBasse: 90000,
-  },
 ];
 
 const DEFAULT_CHAMBRES: Chambre[] = [
@@ -139,51 +107,9 @@ const DEFAULT_CHAMBRES: Chambre[] = [
     prixBase: 45000,
     capaciteAdultes: 2,
     capaciteEnfants: 0,
-    statutOccupation: "reservee",
+    statutOccupation: "libre",
     statutMenage: "propre",
     equipements: ["wifi", "clim", "tv", "minibar"],
-  },
-  {
-    id: "demo-3",
-    numero: "103",
-    etage: "RDC",
-    batiment: "Principal",
-    typeId: "dlx",
-    typeNom: "Chambre Deluxe",
-    prixBase: 65000,
-    capaciteAdultes: 2,
-    capaciteEnfants: 1,
-    statutOccupation: "libre",
-    statutMenage: "en_cours",
-    equipements: ["wifi", "clim", "tv", "minibar", "balcon"],
-  },
-  {
-    id: "demo-4",
-    numero: "201",
-    etage: "1er étage",
-    batiment: "Principal",
-    typeId: "ste-jr",
-    typeNom: "Suite Junior",
-    prixBase: 95000,
-    capaciteAdultes: 2,
-    capaciteEnfants: 1,
-    statutOccupation: "occupee",
-    statutMenage: "propre",
-    equipements: ["wifi", "clim", "tv", "minibar", "balneo", "nespresso"],
-  },
-  {
-    id: "demo-5",
-    numero: "204",
-    etage: "1er étage",
-    batiment: "Principal",
-    typeId: "ste-jr",
-    typeNom: "Suite Junior",
-    prixBase: 95000,
-    capaciteAdultes: 2,
-    capaciteEnfants: 1,
-    statutOccupation: "libre",
-    statutMenage: "hors_service",
-    equipements: ["wifi", "clim", "tv", "minibar", "balneo"],
   },
 ];
 
@@ -203,10 +129,11 @@ export default function ChambresPage() {
   const [nouvelEtage, setNouvelEtage] = useState("RDC");
   const [nouveauBatiment, setNouveauBatiment] = useState("Principal");
 
-  // Données persistantes
+  // Données persistantes et permissions
   const [chambres, setChambres] = useState<Chambre[]>(DEFAULT_CHAMBRES);
   const [typesChambres, setTypesChambres] = useState<TypeChambre[]>(DEFAULT_TYPES_CHAMBRES);
   const [isExempleFiligrane, setIsExempleFiligrane] = useState(true);
+  const [userRole, setUserRole] = useState("directeur");
 
   // Chargement storage
   useEffect(() => {
@@ -216,11 +143,19 @@ export default function ChambresPage() {
 
     const loadedTypes = loadHotelData<TypeChambre>("dhotel_types_chambres", DEFAULT_TYPES_CHAMBRES);
     setTypesChambres(loadedTypes.items);
+    setUserRole(getClientHotelRole());
   }, []);
+
+  const permissions = verifierPermissionsHotel(userRole, "chambres");
 
   const handleAjoutChambre = (e: React.FormEvent) => {
     e.preventDefault();
     if (!nouveauNumero.trim()) return;
+
+    if (!permissions.peutCreer) {
+      alert("Action non autorisée. Seule la direction ou l'administrateur peut créer une nouvelle chambre.");
+      return;
+    }
 
     const typeObj = typesChambres.find((t) => t.id === nouveauType) || typesChambres[0];
 
@@ -255,6 +190,11 @@ export default function ChambresPage() {
     e.preventDefault();
     if (!modalModifierChambre) return;
 
+    if (!permissions.peutModifier) {
+      alert("Action non autorisée pour votre niveau d'habilitation.");
+      return;
+    }
+
     const updated = chambres.map((ch) =>
       ch.id === modalModifierChambre.id ? modalModifierChambre : ch
     );
@@ -268,6 +208,11 @@ export default function ChambresPage() {
   };
 
   const handleSupprimerChambre = (id: string, numero: string) => {
+    if (!permissions.peutSupprimer) {
+      alert("Action non autorisée. Seule la direction ou l'administrateur peut supprimer définitivement une chambre.");
+      return;
+    }
+
     if (!window.confirm(`Confirmez-vous la suppression définitive de la chambre ${numero} ?`)) {
       return;
     }
@@ -279,29 +224,6 @@ export default function ChambresPage() {
 
     setSuccesMsg(`Chambre ${numero} supprimée.`);
     setTimeout(() => setSuccesMsg(null), 3000);
-  };
-
-  const handleViderExemples = () => {
-    if (window.confirm("Voulez-vous vider tous les exemples pour démarrer avec un inventaire vierge ?")) {
-      setChambres([]);
-      setIsExempleFiligrane(false);
-      clearHotelData("dhotel_chambres");
-      setSuccesMsg("Inventaire vidé. Vous pouvez maintenant ajouter vos propres chambres.");
-      setTimeout(() => setSuccesMsg(null), 4000);
-    }
-  };
-
-  const handleConvertirExemples = () => {
-    // Rend les chambres de démo modifiables comme réelles
-    const converted = chambres.map((c, i) => ({
-      ...c,
-      id: "ch-reel-" + (i + 1) + "-" + Date.now(),
-    }));
-    setChambres(converted);
-    setIsExempleFiligrane(false);
-    saveHotelData("dhotel_chambres", converted);
-    setSuccesMsg("Les chambres d'exemple ont été converties en données réelles modifiables.");
-    setTimeout(() => setSuccesMsg(null), 4000);
   };
 
   const chambresFiltrees = chambres.filter((ch) => {
@@ -344,26 +266,12 @@ export default function ChambresPage() {
 
       {/* Bannière filigrane sans impact */}
       {isExempleFiligrane && (
-        <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-800 dark:text-amber-300 text-xs sm:text-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
+        <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-800 dark:text-amber-300 text-xs flex items-center justify-between gap-3 shadow-xs">
           <div className="flex items-center gap-2.5">
-            <Sparkles className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0" />
+            <Sparkles className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
             <span>
-              <strong>Données d&apos;exemple en filigrane :</strong> Votre établissement ne possède pas encore de chambres enregistrées. Ces {chambres.length} chambres sont affichées à titre d&apos;exemple sans impact. Vous pouvez les modifier, les supprimer ou ajouter vos propres chambres.
+              <strong>Chambres modèles en filigrane :</strong> Votre établissement ne compte aucune chambre enregistrée. Les {chambres.length} chambres ci-dessous sont présentées à titre indicatif et sans impact. Cliquez sur « Ajouter une Chambre » pour configurer votre inventaire.
             </span>
-          </div>
-          <div className="flex items-center gap-2 shrink-0">
-            <button
-              onClick={handleConvertirExemples}
-              className="px-3 py-1.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-900 dark:text-amber-200 text-xs font-bold transition cursor-pointer"
-            >
-              Conserver et Modifier
-            </button>
-            <button
-              onClick={handleViderExemples}
-              className="px-3 py-1.5 rounded-lg border border-amber-500/30 hover:bg-black/5 text-amber-900 dark:text-amber-200 text-xs font-semibold transition cursor-pointer"
-            >
-              Partir de zéro
-            </button>
           </div>
         </div>
       )}
@@ -530,24 +438,35 @@ export default function ChambresPage() {
                       <Tv className="w-3.5 h-3.5 ml-1" />
                     </div>
 
-                    <div className="flex items-center gap-1.5">
-                      <button
-                        type="button"
-                        onClick={() => setModalModifierChambre(chambre)}
-                        className="px-2 py-1 rounded-md text-xs font-semibold bg-surface-border/60 hover:bg-surface-border text-foreground transition cursor-pointer flex items-center gap-1"
-                      >
-                        <Edit2 className="w-3 h-3" />
-                        <span>Modifier</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleSupprimerChambre(chambre.id, chambre.numero)}
-                        className="p-1 rounded-md text-danger/70 hover:text-danger hover:bg-danger/10 transition cursor-pointer"
-                        title="Supprimer cette chambre"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
+                    {isExempleFiligrane ? (
+                      <span className="px-2 py-0.5 rounded bg-amber-500/10 text-amber-600 dark:text-amber-400 font-medium text-[11px] border border-amber-500/20 italic">
+                        Exemple indicatif
+                      </span>
+                    ) : (
+                      <div className="flex items-center gap-1.5">
+                        {permissions.peutModifier && (
+                          <button
+                            type="button"
+                            onClick={() => setModalModifierChambre(chambre)}
+                            className="px-2 py-1 rounded-md text-xs font-semibold bg-surface-border/60 hover:bg-surface-border text-foreground transition cursor-pointer flex items-center gap-1"
+                            title="Modifier cette chambre"
+                          >
+                            <Edit2 className="w-3 h-3" />
+                            <span>Modifier</span>
+                          </button>
+                        )}
+                        {permissions.peutSupprimer && (
+                          <button
+                            type="button"
+                            onClick={() => handleSupprimerChambre(chambre.id, chambre.numero)}
+                            className="p-1 rounded-md text-danger/70 hover:text-danger hover:bg-danger/10 transition cursor-pointer"
+                            title="Supprimer définitivement cette chambre"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               );
