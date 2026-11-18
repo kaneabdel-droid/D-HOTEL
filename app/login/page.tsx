@@ -263,18 +263,32 @@ export default function LoginPage() {
             </div>
           </div>
 
-          {/* Badge de sécurité Cloudflare & HSTS */}
-          <div className="pt-2 flex items-center justify-between text-[11px] text-[#8E9EAF] border-t border-white/5">
-            <div className="flex items-center gap-1.5">
-              <ShieldCheck className="w-3.5 h-3.5 text-[#10B981]" />
-              <span>Bouclier HSTS actif</span>
+          {/* Bloc Inscription Établissement Hôtelier */}
+          <div className="rounded-2xl border-2 border-dashed border-[#D4AF37]/35 bg-[#D4AF37]/5 p-4 text-center transition-all hover:border-[#D4AF37]/60 hover:bg-[#D4AF37]/10">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#D4AF37]/15 text-[#D4AF37] text-xs font-bold uppercase tracking-wider mb-1.5">
+              <Sparkles className="w-3.5 h-3.5" /> Nouvel hôtel ou résidence ?
             </div>
+            <h3 className="font-heading font-bold text-white text-sm">
+              Créez votre établissement hôtelier en 2 minutes
+            </h3>
+            <p className="text-[11px] text-slate-400 mt-0.5">
+              Chambres, réservations, room-service & caisse • 7 jours d&apos;essai gratuit
+            </p>
             <Link
               href="/signup"
-              className="text-[#D4AF37] hover:underline font-semibold"
+              className="mt-3 inline-flex items-center justify-center gap-2 w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-[#D4AF37] to-[#B89628] text-[#0B132B] text-xs sm:text-sm font-bold shadow-md hover:brightness-105 transition-all group"
             >
-              Créer un compte établissement
+              <span>Créer un compte établissement hôtelier</span>
+              <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
             </Link>
+          </div>
+
+          {/* Badge de sécurité Cloudflare & HSTS */}
+          <div className="pt-2 flex items-center justify-center text-[11px] text-[#8E9EAF] border-t border-white/5">
+            <div className="flex items-center gap-1.5">
+              <ShieldCheck className="w-3.5 h-3.5 text-[#10B981]" />
+              <span>Bouclier HSTS actif • Chiffrement SSL 256-bit</span>
+            </div>
           </div>
         </div>
 
