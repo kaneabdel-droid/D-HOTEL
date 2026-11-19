@@ -311,8 +311,8 @@ export default function ClientsCRMPage() {
                   <div className="flex items-center gap-2">
                     <span
                       className={`text-xs px-2.5 py-0.5 rounded-full font-bold flex items-center gap-1 ${estVip
-                          ? "bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300"
-                          : "bg-surface-muted text-foreground-muted"
+                        ? "bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300"
+                        : "bg-surface-muted text-foreground-muted"
                         }`}
                     >
                       {estVip && <Crown className="w-3 h-3 text-amber-600" />}

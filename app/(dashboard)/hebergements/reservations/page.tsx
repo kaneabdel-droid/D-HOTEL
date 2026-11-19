@@ -362,8 +362,8 @@ export default function ReservationsPage() {
                 <tr
                   key={r.id}
                   className={`transition-colors ${isExempleFiligrane
-                      ? "opacity-75 bg-amber-500/5 hover:bg-amber-500/10"
-                      : "hover:bg-[var(--surface-muted)]/50"
+                    ? "opacity-75 bg-amber-500/5 hover:bg-amber-500/10"
+                    : "hover:bg-[var(--surface-muted)]/50"
                     }`}
                 >
                   <td className="p-3">
@@ -411,12 +411,12 @@ export default function ReservationsPage() {
                   <td className="p-3">
                     <span
                       className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${r.statut === "check_in"
-                          ? "bg-blue-100 text-blue-800"
-                          : r.statut === "confirmee"
-                            ? "bg-emerald-100 text-emerald-800"
-                            : r.statut === "attente_acompte"
-                              ? "bg-amber-100 text-amber-800"
-                              : "bg-gray-100 text-gray-800"
+                        ? "bg-blue-100 text-blue-800"
+                        : r.statut === "confirmee"
+                          ? "bg-emerald-100 text-emerald-800"
+                          : r.statut === "attente_acompte"
+                            ? "bg-amber-100 text-amber-800"
+                            : "bg-gray-100 text-gray-800"
                         }`}
                     >
                       {r.statut === "check_in"

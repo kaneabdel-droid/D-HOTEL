@@ -25,7 +25,6 @@ export default function TarifsDHotelPage() {
   const { t, isRTL, dict } = useTranslation();
   const ab = dict.abonnement;
   const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">("yearly");
-  const [contactSubmitted, setContactSubmitted] = useState(false);
 
   const plans = [
     {
@@ -248,111 +247,24 @@ export default function TarifsDHotelPage() {
         </div>
       </div>
 
-      {/* Order & Contact Form Section */}
-      <section id="commander" className="max-w-4xl mx-auto px-4 sm:px-6 pb-20 scroll-mt-24">
-        <div className="bg-slate-900 border border-slate-800 rounded-3xl p-8 sm:p-12 relative overflow-hidden">
-          <div className="text-center mb-8">
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-white">
-              Besoin d&apos;un devis multi-établissements ou d&apos;un audit sur site ?
-            </h2>
-            <p className="text-slate-400 text-xs sm:text-sm mt-2 max-w-xl mx-auto">
-              Notre équipe d&apos;ingénieurs hôteliers installe D-HOTEL sur site ou à distance et forme vos équipes.
-            </p>
-          </div>
-
-          {contactSubmitted ? (
-            <div className="p-6 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-center">
-              <ShieldCheck className="w-10 h-10 mx-auto mb-2 text-emerald-400" />
-              <h3 className="font-bold text-base text-white">Demande transmise avec succès</h3>
-              <p className="text-xs text-slate-300 mt-1">
-                Un conseiller hôtelier DEMBA prendra contact avec vous rapidement.
-              </p>
-            </div>
-          ) : (
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                setContactSubmitted(true);
-              }}
-              className="space-y-4"
-            >
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1">
-                    Nom de l&apos;établissement *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="Ex: Hôtel Teranga Saly"
-                    className="w-full px-3 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white placeholder-slate-600 text-xs focus:outline-hidden focus:border-amber-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1">
-                    Type d&apos;établissement *
-                  </label>
-                  <select
-                    required
-                    className="w-full px-3 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs focus:outline-hidden focus:border-amber-500"
-                  >
-                    <option value="auberge">Auberge / Campement / Écolodge (15 000 FCFA/mois)</option>
-                    <option value="hotel">Hôtel / Résidence hôtelière (20 000 FCFA/mois)</option>
-                    <option value="chaine">Chaîne hôtelière / Multi-sites</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1">
-                    Responsable / Directeur *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="Ex: Babacar Diop"
-                    className="w-full px-3 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white placeholder-slate-600 text-xs focus:outline-hidden focus:border-amber-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1">
-                    Téléphone WhatsApp *
-                  </label>
-                  <input
-                    type="tel"
-                    required
-                    placeholder="Ex: +221 77 000 00 00"
-                    className="w-full px-3 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white placeholder-slate-600 text-xs focus:outline-hidden focus:border-amber-500"
-                  />
-                </div>
-              </div>
-
-              <button
-                type="submit"
-                className="w-full py-3.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all shadow-lg shadow-amber-500/20 cursor-pointer"
-              >
-                Envoyer ma demande de devis & d&apos;assistance
-                <ArrowRight className={`w-4 h-4 ${isRTL ? "rotate-180" : ""}`} />
-              </button>
-            </form>
-          )}
-
-          <div className="mt-8 pt-6 border-t border-slate-800 grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
+      {/* Support & Engagements */}
+      <section className="max-w-4xl mx-auto px-4 sm:px-6 pb-20">
+        <div className="bg-slate-900/60 border border-slate-800 rounded-3xl p-8 sm:p-10 relative overflow-hidden">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 text-center">
             <div className="flex flex-col items-center">
-              <Headphones className="w-5 h-5 text-amber-400 mb-1" />
-              <span className="text-xs font-semibold text-white">Support WhatsApp 7j/7</span>
-              <span className="text-[11px] text-slate-400">+221 77 123 45 67</span>
+              <Headphones className="w-6 h-6 text-amber-400 mb-2" />
+              <span className="text-sm font-semibold text-white">Support WhatsApp 7j/7</span>
+              <span className="text-xs text-slate-400 mt-0.5">+221 77 123 45 67</span>
             </div>
             <div className="flex flex-col items-center">
-              <ShieldCheck className="w-5 h-5 text-emerald-400 mb-1" />
-              <span className="text-xs font-semibold text-white">Sans Engagement</span>
-              <span className="text-[11px] text-slate-400">Résiliation libre à tout moment</span>
+              <ShieldCheck className="w-6 h-6 text-emerald-400 mb-2" />
+              <span className="text-sm font-semibold text-white">Sans Engagement</span>
+              <span className="text-xs text-slate-400 mt-0.5">Résiliation libre à tout moment</span>
             </div>
             <div className="flex flex-col items-center">
-              <Zap className="w-5 h-5 text-sky-400 mb-1" />
-              <span className="text-xs font-semibold text-white">Mise en route rapide</span>
-              <span className="text-[11px] text-slate-400">Opérationnel en 24 heures</span>
+              <Zap className="w-6 h-6 text-sky-400 mb-2" />
+              <span className="text-sm font-semibold text-white">Mise en route rapide</span>
+              <span className="text-xs text-slate-400 mt-0.5">Opérationnel en 24 heures</span>
             </div>
           </div>
         </div>

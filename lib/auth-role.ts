@@ -85,3 +85,4 @@ export function verifierPermissionsHotel(role: string = 'directeur', ressource: 
     peutSupprimer: estDirectionOuAdmin,
   }
 }
+
