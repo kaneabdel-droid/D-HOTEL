@@ -113,20 +113,20 @@ export default function DecouvrirDHotelPage() {
           </p>
 
           <div className="flex flex-wrap items-center justify-center gap-4 pt-4">
-            <a
-              href="#demo-interactive"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-sm shadow-xl shadow-amber-500/25 transition-all"
+            <Link
+              href="/demo"
+              className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-sm shadow-xl shadow-amber-500/25 transition-all"
             >
               <Play className="w-4 h-4 fill-slate-950" />
-              Tester la démo interactive
-            </a>
-            <Link
-              href="/tarifs"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-slate-900 border border-slate-700 hover:border-slate-500 text-slate-200 font-semibold text-sm transition-all"
-            >
-              Consulter les formules
-              <ArrowRight className="w-4 h-4" />
+              Explorer l&apos;Application Hôtelière Complète (Accès Immédiat)
             </Link>
+            <a
+              href="#demo-interactive"
+              className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl bg-slate-900 border border-slate-700 hover:border-slate-500 text-slate-200 font-semibold text-sm transition-all"
+            >
+              <Sparkles className="w-4 h-4 text-amber-400" />
+              Simulateur rapide de séjour
+            </a>
           </div>
         </div>
       </section>

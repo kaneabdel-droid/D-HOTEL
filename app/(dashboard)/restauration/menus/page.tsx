@@ -74,6 +74,35 @@ const DEFAULT_PLATS: PlatMenu[] = [
       { nom: "Assortiment légumes (Manioc, Carotte, Chou)", quantite: "200g", coutUnitaire: 500 },
     ],
   },
+  {
+    id: "plat-demo-3",
+    nom: "Carpaccio de Thon Rouge des Almadies",
+    categorie: "Entrées",
+    prixVente: 8500,
+    coutMatiere: 2400,
+    description: "Fines tranches de thon rouge mariné au combawa, baies roses et huile d'olive vierge.",
+    actif: true,
+    destockageAutomatique: true,
+    ingredients: [
+      { nom: "Thon rouge frais", quantite: "150g", coutUnitaire: 1800 },
+      { nom: "Agrumes & Huile vierge", quantite: "30ml", coutUnitaire: 600 },
+    ],
+  },
+  {
+    id: "plat-demo-4",
+    nom: "Cocktail Signature Teranga Sunset",
+    categorie: "Boissons & Cocktails",
+    prixVente: 6500,
+    coutMatiere: 1500,
+    description: "Rhum ambré, infusion de bissap royal à la menthe douce et sirop de gingembre maison.",
+    actif: true,
+    destockageAutomatique: true,
+    ingredients: [
+      { nom: "Rhum ambré", quantite: "5cl", coutUnitaire: 800 },
+      { nom: "Infusion de bissap frais", quantite: "12cl", coutUnitaire: 400 },
+      { nom: "Sirop de gingembre", quantite: "2cl", coutUnitaire: 300 },
+    ],
+  },
 ];
 
 export default function CartesMenusPage() {

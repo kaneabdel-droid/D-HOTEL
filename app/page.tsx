@@ -146,8 +146,8 @@ export default async function DHotelHomePage() {
               <a href="#modules" className="hover:text-amber-400 transition-colors">
                 {t.nav_modules}
               </a>
-              <Link href="/decouvrir-dhotel" className="hover:text-amber-400 transition-colors flex items-center gap-1.5">
-                <Play className="w-3.5 h-3.5 text-amber-400" />
+              <Link href="/demo" className="hover:text-amber-300 transition-colors flex items-center gap-1.5 font-bold text-amber-400">
+                <Play className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
                 {t.nav_demo}
               </Link>
               <Link href="/guide" className="hover:text-amber-400 transition-colors flex items-center gap-1.5">
@@ -210,10 +210,10 @@ export default async function DHotelHomePage() {
               <ArrowRight className={`w-4 h-4 ${isRtl ? "rotate-180" : ""}`} />
             </Link>
             <Link
-              href="/decouvrir-dhotel"
-              className="w-full sm:w-auto px-6 py-4 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-sm border border-slate-800 transition-all flex items-center justify-center gap-2"
+              href="/demo"
+              className="w-full sm:w-auto px-6 py-4 rounded-2xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 font-bold text-sm border border-amber-500/40 transition-all flex items-center justify-center gap-2 shadow-lg shadow-amber-500/10"
             >
-              <Play className="w-4 h-4 text-amber-400 shrink-0" />
+              <Play className="w-4 h-4 text-amber-400 fill-amber-400 shrink-0" />
               <span>{t.hero_cta_demo}</span>
             </Link>
             <Link
@@ -509,8 +509,11 @@ export default async function DHotelHomePage() {
             </div>
 
             <div className="flex items-center gap-6 text-xs text-slate-400">
-              <Link href="/decouvrir-dhotel" className="hover:text-white transition-colors">
+              <Link href="/demo" className="hover:text-amber-300 transition-colors font-semibold text-amber-400">
                 {t.nav_demo}
+              </Link>
+              <Link href="/decouvrir-dhotel" className="hover:text-white transition-colors">
+                Présentation
               </Link>
               <Link href="/guide" className="hover:text-white transition-colors">
                 {t.nav_guide}

@@ -88,6 +88,12 @@ interface TransactionItem {
 const DEFAULT_CHAMBRES: Chambre[] = [
   { id: "1", numero: "101", etage: "RDC", batiment: "Principal", typeId: "std", typeNom: "Chambre Standard", prixBase: 45000, capaciteAdultes: 2, capaciteEnfants: 0, statutOccupation: "occupee", statutMenage: "propre" },
   { id: "2", numero: "102", etage: "RDC", batiment: "Principal", typeId: "std", typeNom: "Chambre Standard", prixBase: 45000, capaciteAdultes: 2, capaciteEnfants: 1, statutOccupation: "libre", statutMenage: "propre" },
+  { id: "3", numero: "103", etage: "1er étage", batiment: "Principal", typeId: "dlx", typeNom: "Chambre Deluxe Balcon", prixBase: 65000, capaciteAdultes: 2, capaciteEnfants: 1, statutOccupation: "occupee", statutMenage: "propre" },
+  { id: "4", numero: "201", etage: "2e étage", batiment: "Aile Ouest", typeId: "dlx", typeNom: "Chambre Deluxe Vue Mer", prixBase: 75000, capaciteAdultes: 2, capaciteEnfants: 1, statutOccupation: "reservee", statutMenage: "propre" },
+  { id: "5", numero: "202", etage: "2e étage", batiment: "Aile Ouest", typeId: "dlx", typeNom: "Chambre Deluxe Vue Mer", prixBase: 75000, capaciteAdultes: 2, capaciteEnfants: 0, statutOccupation: "libre", statutMenage: "a_nettoyer" },
+  { id: "6", numero: "301", etage: "3e étage", batiment: "Panoramique", typeId: "ste", typeNom: "Suite Junior Prestige", prixBase: 120000, capaciteAdultes: 2, capaciteEnfants: 2, statutOccupation: "occupee", statutMenage: "propre" },
+  { id: "7", numero: "401", etage: "Penthouse", batiment: "Panoramique", typeId: "pres", typeNom: "Suite Présidentielle", prixBase: 250000, capaciteAdultes: 4, capaciteEnfants: 2, statutOccupation: "reservee", statutMenage: "propre" },
+  { id: "8", numero: "B01", etage: "Plage", batiment: "Bungalows", typeId: "bung", typeNom: "Bungalow Pieds dans l'Eau", prixBase: 95000, capaciteAdultes: 2, capaciteEnfants: 1, statutOccupation: "occupee", statutMenage: "en_cours" },
 ];
 
 const DEFAULT_RESERVATIONS: Reservation[] = [
@@ -114,29 +120,69 @@ const DEFAULT_RESERVATIONS: Reservation[] = [
     code: "RES-EX-00422",
     client: "Mme Sophie Martin",
     telephone: "+33 6 12 34 56 78",
-    chambre: "Bungalow Plage 12",
+    chambre: "Bungalow B01",
     typeChambre: "Bungalow Vue Mer",
     dateArrivee: "2026-11-15",
     dateDepart: "2026-11-20",
     nuits: 5,
     personnes: "1 adulte",
-    montantTotal: 425000,
-    acompteVerse: 200000,
+    montantTotal: 475000,
+    acompteVerse: 250000,
     soldeRestant: 225000,
     statut: "confirmee",
     heureArriveePrevue: "15h00",
     modePaiement: "Carte Bancaire",
+  },
+  {
+    id: "res-3",
+    code: "RES-EX-00423",
+    client: "Ambassadeur M. Jean-Luc Dubois",
+    telephone: "+33 6 88 99 00 11",
+    chambre: "Suite Panoramique 301",
+    typeChambre: "Suite Junior Prestige",
+    dateArrivee: "2026-11-16",
+    dateDepart: "2026-11-22",
+    nuits: 6,
+    personnes: "2 adultes",
+    montantTotal: 720000,
+    acompteVerse: 720000,
+    soldeRestant: 0,
+    statut: "confirmee",
+    heureArriveePrevue: "18h00",
+    modePaiement: "Virement Bancaire",
+  },
+  {
+    id: "res-4",
+    code: "RES-EX-00424",
+    client: "Mme Marième Sow",
+    telephone: "+221 78 555 43 21",
+    chambre: "Chambre 103",
+    typeChambre: "Chambre Deluxe Balcon",
+    dateArrivee: "2026-11-17",
+    dateDepart: "2026-11-19",
+    nuits: 2,
+    personnes: "2 adultes + 1 enfant",
+    montantTotal: 130000,
+    acompteVerse: 70000,
+    soldeRestant: 60000,
+    statut: "confirmee",
+    heureArriveePrevue: "13h00",
+    modePaiement: "Orange Money",
   },
 ];
 
 const DEFAULT_CLIENTS: ClientCRM[] = [
   { id: "cli-1", civilite: "M.", nom: "DIOP", prenom: "Ibrahima", telephone: "+221 77 450 12 34", email: "i.diop@telecom-sn.com", nationalite: "Sénégalaise", categorie: "VIP Gold", nbSejours: 6, dateCreation: "2026-10-10" },
   { id: "cli-2", civilite: "Mme", nom: "MARTIN", prenom: "Sophie", telephone: "+33 6 12 34 56 78", email: "sophie.martin@paris-conseil.fr", nationalite: "Française", categorie: "Particulier", nbSejours: 2, dateCreation: "2026-10-15" },
+  { id: "cli-3", civilite: "S.E.", nom: "DUBOIS", prenom: "Jean-Luc", telephone: "+33 6 88 99 00 11", email: "jldubois@diplomatie.eu", nationalite: "Belge", categorie: "Diplomate", nbSejours: 4, dateCreation: "2026-09-01" },
+  { id: "cli-4", civilite: "Mme", nom: "SOW", prenom: "Marième", telephone: "+221 78 555 43 21", email: "m.sow@banque-atlantique.sn", nationalite: "Sénégalaise", categorie: "Entreprise", nbSejours: 8, dateCreation: "2026-08-12" },
 ];
 
 const DEFAULT_TRANSACTIONS: TransactionItem[] = [
   { id: "tx-1", date: "Aujourd'hui", heure: "11h20", montant: 135000, methodeLibelle: "Wave Direct", motif: "Règlement Séjour - Ch. 101", client: "Ibrahima Diop" },
-  { id: "tx-2", date: "Aujourd'hui", heure: "10h45", montant: 200000, methodeLibelle: "TPE Carte Bancaire", motif: "Acompte Séjour - Bung. 12", client: "Sophie Martin" },
+  { id: "tx-2", date: "Aujourd'hui", heure: "10h45", montant: 250000, methodeLibelle: "TPE Carte Bancaire", motif: "Acompte Séjour - Bung. B01", client: "Sophie Martin" },
+  { id: "tx-3", date: "Aujourd'hui", heure: "09h15", montant: 720000, methodeLibelle: "Virement Direct", motif: "Règlement Suite 301 - S.E. Dubois", client: "Jean-Luc Dubois" },
+  { id: "tx-4", date: "Hier", heure: "19h30", montant: 42500, methodeLibelle: "Orange Money Direct", motif: "Addition Restaurant Teranga", client: "Marième Sow" },
 ];
 
 export default function DashboardPage() {

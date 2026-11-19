@@ -25,6 +25,7 @@ import {
   PlusCircle,
   Clock,
   ShieldCheck,
+  ArrowRight,
 } from "lucide-react";
 import { SECTIONS_MENUS, type MenuItem, type SousMenuItem } from "@/lib/menus";
 import { ThemeSwitcher } from "@/components/ThemeSwitcher";
@@ -52,6 +53,8 @@ interface AppShellProps {
   hotelNom?: string;
   utilisateurNom?: string;
   roleLibelle?: string;
+  isDemo?: boolean;
+  currentRole?: string;
 }
 
 export function AppShell({
@@ -59,6 +62,8 @@ export function AppShell({
   hotelNom = "Hôtel Teranga Palace 5★",
   utilisateurNom = "Mamadou Sow (Directeur)",
   roleLibelle = "Direction Générale",
+  isDemo = false,
+  currentRole = "directeur",
 }: AppShellProps) {
   const { t, isRTL } = useTranslation();
   const pathname = usePathname();
@@ -285,7 +290,7 @@ export function AppShell({
                 try {
                   localStorage.removeItem("dhotel_demo_role");
                   localStorage.removeItem("dhotel_offline_user");
-                } catch {}
+                } catch { }
                 window.location.href = "/auth/logout";
               }}
               title={t("common.logout", "Déconnexion")}
@@ -394,6 +399,50 @@ export function AppShell({
             </div>
           </div>
         </header>
+
+        {isDemo && (
+          <div className="bg-slate-900 border-b border-amber-500/30 px-4 py-2.5 text-xs text-amber-200 flex flex-wrap items-center justify-between gap-3 shadow-inner">
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-amber-400 shrink-0 animate-pulse" />
+              <span className="font-bold text-white">
+                Démonstration Hôtelière Interactive • {hotelNom}
+              </span>
+              <span className="hidden md:inline text-amber-300/80 text-[11px]">
+                (Licence Intégrale Débloquée • PMS, POS Restaurant, Gouvernance, MICE & Caisse)
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] text-amber-300 hidden sm:inline">Tester par rôle :</span>
+              <div className="flex items-center gap-1">
+                {[
+                  { r: "directeur", l: "Directeur" },
+                  { r: "receptionniste", l: "Réception (PMS)" },
+                  { r: "serveur", l: "Restaurant / Bar" },
+                  { r: "gouvernante", l: "Gouvernante" },
+                ].map((item) => (
+                  <a
+                    key={item.r}
+                    href={`/demo?role=${item.r}`}
+                    className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all ${
+                      currentRole === item.r
+                        ? "bg-amber-400 text-slate-950 shadow-xs"
+                        : "bg-slate-800 text-amber-200 hover:bg-slate-700"
+                    }`}
+                  >
+                    {item.l}
+                  </a>
+                ))}
+              </div>
+              <Link
+                href="/signup"
+                className="ms-2 px-3 py-1 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs shadow-md transition-all flex items-center gap-1"
+              >
+                <span>Créer mon hôtel</span>
+                <ArrowRight className="w-3 h-3" />
+              </Link>
+            </div>
+          </div>
+        )}
 
         {/* Corps de la Page (Scrollable) */}
         <main className="flex-1 overflow-y-auto p-4 sm:p-6 pb-20 lg:pb-6">

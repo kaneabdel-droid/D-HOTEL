@@ -38,6 +38,7 @@ export default async function DashboardLayout({
   let utilisateurNom = "Mamadou Sow (Directeur)";
   let roleLibelle = "Direction Générale";
   let hotelNom = "Hôtel Teranga Palace 5★";
+  let hasRealUser = false;
 
   const cookieStore = await cookies();
   const demoRole = cookieStore.get("dhotel_demo_role")?.value;
@@ -53,6 +54,7 @@ export default async function DashboardLayout({
     const { data: { user } } = await supabase.auth.getUser();
 
     if (user) {
+      hasRealUser = true;
       const meta = user.user_metadata || {};
       utilisateurNom = meta.nom_complet || meta.nom || user.email?.split("@")[0] || utilisateurNom;
       if (meta.etablissement_nom) hotelNom = meta.etablissement_nom;
@@ -94,12 +96,16 @@ export default async function DashboardLayout({
     console.warn("Échec chargement profil hôtelier:", err);
   }
 
+  const isDemo = Boolean(demoRole || cookieStore.get("d_hotel_session")?.value === "demo" || !hasRealUser);
+
   return (
     <I18nProvider dict={dict} locale={locale}>
       <AppShell
         hotelNom={hotelNom}
         utilisateurNom={utilisateurNom}
         roleLibelle={roleLibelle}
+        isDemo={isDemo}
+        currentRole={demoRole || "directeur"}
       >
         {children}
       </AppShell>
